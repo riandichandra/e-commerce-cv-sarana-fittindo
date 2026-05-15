@@ -9,6 +9,7 @@ use App\Http\Controllers\Marketing;
 use App\Http\Controllers\Direktur;
 use App\Http\Controllers\Pelanggan;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Admin\ProductCategoryController;
 
 // Public Routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -30,6 +31,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::resource('products', Admin\ProductController::class);
     Route::resource('users', Admin\UserController::class);
+    Route::resource('categories', Admin\ProductCategoryController::class);
     // Route::resource('orders', Admin\OrderController::class);
 });
 

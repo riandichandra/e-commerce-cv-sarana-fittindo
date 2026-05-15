@@ -1,16 +1,34 @@
 <x-admin-layout>
     <div class="flex flex-col gap-2">
         <div class="text-xs flex items-center gap-1">
-            <p class="tracking-wider">{{ $pagePath[0] }}</p>
-            <p>></p>
-            <p class="font-bold text-primary tracking-wider">{{ $pagePath[1] }}</p>
+            @for ($i = 0; $i < count($pagePath) - 1; $i++)
+                <p class="tracking-wider">{{ $pagePath[$i] }}</p>
+                <p>></p>
+                <p class="font-bold text-primary tracking-wider">{{ $pagePath[$i++] }}</p>
+                @if ($i == count($pagePath) - 1)
+                    @break
+                @endif
+                <p>></p>
+            @endfor
         </div>
-
         <div class="w-full flex items-center justify-between mb-7">
             <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
-            <x-button bgColor="primary" textColor="white" icon="mdi:plus" size="auto" href="{{ route('admin.products.create') }}">
-                ADD PRODUCT
-            </x-button>
+            <div class="flex items-center gap-3 justify-end">
+                <x-button bgColor="primary" textColor="white" icon="mdi:plus" size="auto"
+                    href="{{ route('admin.products.create') }}">
+                    ADD PRODUCT
+                </x-button>
+
+                <x-button bgColor="primary" textColor="white" icon="mdi:plus" size="auto"
+                    href="{{ route('admin.categories.index') }}">
+                    MANAGE CATEGORY
+                </x-button>
+
+                <x-button bgColor="primary" textColor="white" icon="mdi:plus" size="auto"
+                    href="{{ route('admin.products.create') }}">
+                    MANAGE BRAND
+                </x-button>
+            </div>
         </div>
 
         <div class="bg-[#EFF4FF] p-5 w-full">
