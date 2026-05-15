@@ -9,6 +9,9 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return view('admin.dashboard');
+        $pagePath = 'Admin/Dashboard';
+        $pagePath = explode('/', $pagePath);
+        $pageName = 'Dashboard';
+        return view('admin.dashboard', compact('pagePath', 'pageName'));
     }
 }

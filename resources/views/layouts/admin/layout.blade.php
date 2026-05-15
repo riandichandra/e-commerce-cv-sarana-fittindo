@@ -55,23 +55,17 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100">
-        @include('layouts.admin.navigation')
-
-        <!-- Page Heading -->
-        @isset($header)
-            <header class="bg-white shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    {{ $header }}
-                </div>
-            </header>
-        @endisset
-
-        <!-- Page Content -->
-        <main>
-            {{ $slot }}
-        </main>
+<body class="font-sans antialiased text-text">
+    <div class="min-h-screen bg-background">
+        <div class="flex justify-between h-screen">
+            <div class="w-1/5 h-full">
+                @include('layouts.admin.navigation')
+            </div>
+            <!-- Page Content -->
+            <main class="w-4/5 p-9">
+                {{ $slot }}
+            </main>
+        </div>
     </div>
 </body>
 

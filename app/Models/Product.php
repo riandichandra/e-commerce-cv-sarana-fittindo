@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -14,9 +16,9 @@ class Product extends Model
         'category_id',
         'brand_id',
         'name',
-        'slug', 
-        'description', 
-        'price', 
+        'slug',
+        'description',
+        'price',
         'stock',
         'weight',
         'thickness',
@@ -77,11 +79,11 @@ class Product extends Model
         parent::boot();
 
         static::creating(function ($product) {
-            $product->slug = \Str::slug($product->name);
+            $product->slug = Str::slug($product->name);
         });
 
         static::updating(function ($product) {
-            $product->slug = \Str::slug($product->name);
+            $product->slug = Str::slug($product->name);
         });
     }
 }
