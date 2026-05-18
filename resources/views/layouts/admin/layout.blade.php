@@ -57,6 +57,35 @@
 
 <body class="font-sans antialiased text-text">
     <div class="min-h-screen bg-background">
+        @if (session('success') || session('error'))
+            <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 translate-y-2"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 translate-y-2"
+                class="fixed right-6 top-6 z-50 w-full max-w-sm bg-white shadow-lg border-l-4 {{ session('success') ? 'border-green-500' : 'border-red-500' }}">
+                <div class="flex items-start gap-3 p-4">
+                    <div
+                        class="mt-0.5 flex h-8 w-8 items-center justify-center {{ session('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                        <iconify-icon icon="{{ session('success') ? 'mdi:check' : 'mdi:alert-circle' }}" class="fs-5"></iconify-icon>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-texthighlight">
+                            {{ session('success') ? 'Berhasil' : 'Gagal' }}
+                        </p>
+                        <p class="mt-1 text-sm text-gray-600">
+                            {{ session('success') ?? session('error') }}
+                        </p>
+                    </div>
+                    <button type="button" class="text-gray-400 hover:text-gray-700" x-on:click="show = false">
+                        <iconify-icon icon="mdi:close" class="fs-5"></iconify-icon>
+                    </button>
+                </div>
+            </div>
+        @endif
+
         <div class="flex justify-between h-screen">
             <div class="w-1/5 h-full">
                 @include('layouts.admin.navigation')

@@ -23,16 +23,21 @@ Route::middleware(['auth', 'role:pelanggan'])->prefix('pelanggan')->name('pelang
     Route::get('/', [Pelanggan\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::resource('products', Pelanggan\ProductController::class)->only(['index', 'show']);
     // Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 });
 
 // Admin routes
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
-    Route::resource('products', Admin\ProductController::class);
-    Route::resource('users', Admin\UserController::class);
-    Route::resource('categories', Admin\ProductCategoryController::class);
-    // Route::resource('orders', Admin\OrderController::class);
+    Route::resource('products', Admin\ProductController::class)->except(['show', 'destroy']);
+    Route::resource('users', Admin\UserController::class)->except(['show', 'destroy']);
+    Route::resource('categories', Admin\ProductCategoryController::class)->except(['show', 'destroy']);
+    Route::resource('brands', Admin\ProductBrandController::class)->except(['show', 'destroy']);
+    Route::resource('orders', Admin\OrderController::class)->only(['index', 'show', 'update']);
+    Route::resource('payments', Admin\PaymentController::class)->only(['index']);
+    Route::patch('payments/{payment}/verify', [Admin\PaymentController::class, 'verify'])->name('payments.verify');
+    Route::patch('payments/{payment}/reject', [Admin\PaymentController::class, 'reject'])->name('payments.reject');
 });
 
 // Marketing routes

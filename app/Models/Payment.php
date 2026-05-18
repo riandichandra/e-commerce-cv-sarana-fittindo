@@ -12,7 +12,7 @@ class Payment extends Model
         'payment_method_id', 
         'amount', 
         'proof_image',
-        'tranfer_date',
+        'transfer_date',
         'sender_name',
         'status',
         'verified_by',
@@ -23,7 +23,7 @@ class Payment extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
-        'tranfer_date' => 'date',
+        'transfer_date' => 'date',
         'verified_at' => 'datetime',
     ];
 

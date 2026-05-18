@@ -18,14 +18,18 @@
                     <p>PRODUCTS</p>
                 </li>
             </a>
-            <li class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.orders.index') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
-                <iconify-icon icon="mdi:shopping" class="nav-small-cap-icon fs-5"></iconify-icon>
-                <p>ORDERS</p>
-            </li>
-            <li class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.payments.index') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
-                <iconify-icon icon="mdi:money" class="nav-small-cap-icon fs-5"></iconify-icon>
-                <p>PAYMENTS</p>
-            </li>
+            <a href="{{ route('admin.orders.index') }}">
+                <li class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.orders.*') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
+                    <iconify-icon icon="mdi:shopping" class="nav-small-cap-icon fs-5"></iconify-icon>
+                    <p>ORDERS</p>
+                </li>
+            </a>
+            <a href="{{ route('admin.payments.index') }}">
+                <li class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.payments.*') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
+                    <iconify-icon icon="mdi:money" class="nav-small-cap-icon fs-5"></iconify-icon>
+                    <p>PAYMENTS</p>
+                </li>
+            </a>
             <li class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.promotions.index') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
                 <iconify-icon icon="mdi:loudspeaker" class="nav-small-cap-icon fs-5"></iconify-icon>
                 <p>PROMOTIONS</p>
@@ -34,10 +38,12 @@
                 <iconify-icon icon="mdi:paper" class="nav-small-cap-icon fs-5"></iconify-icon>
                 <p>REPORTS</p>
             </li>
-            <li class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.users.index') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
-                <iconify-icon icon="mdi:account" class="nav-small-cap-icon fs-5"></iconify-icon>
-                <p>USERS</p>
-            </li>
+            <a href="{{ route('admin.users.index') }}">
+                <li class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.users.*') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
+                    <iconify-icon icon="mdi:account" class="nav-small-cap-icon fs-5"></iconify-icon>
+                    <p>USERS</p>
+                </li>
+            </a>
         </ul>
     </div>
 

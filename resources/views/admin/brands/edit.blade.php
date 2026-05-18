@@ -5,28 +5,29 @@
             <p>></p>
             <p class="tracking-wider">PRODUCTS</p>
             <p>></p>
-            <p class="tracking-wider">CATEGORIES</p>
+            <p class="tracking-wider">BRANDS</p>
             <p>></p>
-            <p class="font-bold text-primary tracking-wider">CREATE</p>
+            <p class="font-bold text-primary tracking-wider">EDIT</p>
         </div>
 
         <div class="w-full flex items-center justify-between mb-7">
             <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
             <x-button bgColor="primary" textColor="white" icon="mdi:arrow-left" size="auto"
-                href="{{ route('admin.categories.index') }}">
+                href="{{ route('admin.brands.index') }}">
                 BACK
             </x-button>
         </div>
     </div>
 
     <div class="bg-[#EFF4FF] p-5 w-full">
-        <h2 class="font-semibold tracking-wider text-texthighlight">ADD NEW CATEGORY</h2>
-        <form action="{{ route('admin.categories.store') }}" method="POST" class="mt-4 w-full flex flex-col gap-4">
+        <h2 class="font-semibold tracking-wider text-texthighlight">EDIT BRAND</h2>
+        <form action="{{ route('admin.brands.update', $brand) }}" method="POST" class="mt-4 w-full flex flex-col gap-4">
             @csrf
+            @method('PUT')
 
             <div class="flex flex-col gap-1">
-                <label for="name" class="text-sm font-medium text-gray-700">Category Name</label>
-                <input type="text" name="name" id="name" value="{{ old('name') }}"
+                <label for="name" class="text-sm font-medium text-gray-700">Brand Name</label>
+                <input type="text" name="name" id="name" value="{{ old('name', $brand->name) }}"
                     class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
                 @error('name')
                     <p class="text-sm text-red-600">{{ $message }}</p>
@@ -34,21 +35,21 @@
             </div>
 
             <div class="flex flex-col gap-1">
-                <label for="description" class="text-sm font-medium text-gray-700">Category Description</label>
+                <label for="description" class="text-sm font-medium text-gray-700">Brand Description</label>
                 <textarea name="description" id="description" rows="4"
-                    class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">{{ old('description') }}</textarea>
+                    class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">{{ old('description', $brand->description) }}</textarea>
                 @error('description')
                     <p class="text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
 
             <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                <input type="checkbox" name="is_active" value="1" class="text-primary" @checked(old('is_active', true))>
+                <input type="checkbox" name="is_active" value="1" class="text-primary" @checked(old('is_active', $brand->is_active))>
                 Active
             </label>
 
             <button type="submit" class="bg-primary text-white py-2 px-4 hover:bg-primary-dark transition w-fit">
-                CREATE CATEGORY
+                UPDATE BRAND
             </button>
         </form>
     </div>
