@@ -1,15 +1,7 @@
 <x-admin-layout>
     <div class="flex flex-col gap-2">
         <div class="text-xs flex items-center gap-1">
-            @for ($i = 0; $i < count($pagePath) - 1; $i++)
-                <p class="tracking-wider">{{ $pagePath[$i] }}</p>
-                <p>></p>
-                <p class="font-bold text-primary tracking-wider">{{ $pagePath[$i++] }}</p>
-                @if ($i == count($pagePath) - 1)
-                    @break
-                @endif
-                <p>></p>
-            @endfor
+            <p class="tracking-wider">{{ implode(' > ', $pagePath) }}</p>
         </div>
         <div class="w-full flex items-center justify-between mb-7">
             <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
@@ -19,12 +11,12 @@
                     ADD PRODUCT
                 </x-button>
 
-                <x-button bgColor="primary" textColor="white" icon="mdi:plus" size="auto"
+                <x-button bgColor="primary" textColor="white" icon="mdi:paper" size="auto"
                     href="{{ route('admin.categories.index') }}">
                     MANAGE CATEGORY
                 </x-button>
 
-                <x-button bgColor="primary" textColor="white" icon="mdi:plus" size="auto"
+                <x-button bgColor="primary" textColor="white" icon="mdi:paper" size="auto"
                     href="{{ route('admin.products.create') }}">
                     MANAGE BRAND
                 </x-button>

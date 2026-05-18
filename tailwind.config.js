@@ -16,6 +16,7 @@ export default {
             },
             colors: {
                 primary: '#1E3A8A',
+                primarydark: '#03349e',
                 text: '#475569',
                 texthighlight: '#0B1C30',
                 background: '#F8F9FF',
