@@ -55,9 +55,17 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100">
+<body class="font-sans antialiased text-[#0c2037]">
+    <div class="min-h-screen bg-[#fff7f8]">
         @include('layouts.pelanggan.navigation')
+
+        @if (session('success') || session('error'))
+            <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show"
+                x-transition
+                class="fixed right-6 top-16 z-[60] max-w-sm border-l-4 bg-white px-4 py-3 shadow-xl {{ session('success') ? 'border-green-500 text-green-700' : 'border-red-500 text-red-700' }}">
+                <p class="text-sm font-semibold">{{ session('success') ?? session('error') }}</p>
+            </div>
+        @endif
 
         <!-- Page Heading -->
         @isset($header)

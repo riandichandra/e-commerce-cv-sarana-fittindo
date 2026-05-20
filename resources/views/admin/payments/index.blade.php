@@ -10,7 +10,7 @@
             <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
         </div>
 
-        <div class="bg-[#EFF4FF] p-5 w-full">
+        <div class="bg-[#FFF1F3] p-5 w-full">
             <h2 class="font-semibold tracking-wider text-texthighlight">PAYMENT LISTS</h2>
             <div class="overflow-x-auto">
                 <table class="mt-3 w-full">
@@ -58,7 +58,7 @@
                                     {{ $payment->transfer_date ? $payment->transfer_date->format('d M Y') : '-' }}</td>
                                 <td class="py-3 px-3">
                                     @if ($payment->proof_image)
-                                        <a class="inline-flex items-center gap-1.5 bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-900 transition"
+                                        <a class="inline-flex items-center gap-1.5 bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition"
                                             href="{{ asset('storage/' . $payment->proof_image) }}" target="_blank">
                                             <iconify-icon icon="mdi:image" class="fs-6"></iconify-icon>
                                             VIEW

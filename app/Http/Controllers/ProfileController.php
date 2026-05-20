@@ -16,8 +16,15 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $wishlistItems = $request->user()
+            ->wishlists()
+            ->with(['product.images', 'product.category'])
+            ->latest()
+            ->get();
+
         return view('profile.edit', [
             'user' => $request->user(),
+            'wishlistItems' => $wishlistItems,
         ]);
     }
 
@@ -33,6 +40,10 @@ class ProfileController extends Controller
         }
 
         $request->user()->save();
+
+        if ($request->filled('redirect_to') && $request->input('redirect_to') === route('admin.settings.index')) {
+            return Redirect::route('admin.settings.index')->with('status', 'profile-updated');
+        }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

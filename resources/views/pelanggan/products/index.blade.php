@@ -21,14 +21,14 @@
                         <h4 class="font-semibold text-gray-900 mb-4">CATEGORY</h4>
                         <div class="space-y-3">
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded"
+                                <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
                                     @if (request('category') === '') checked @endif
                                     onchange="document.location.href = '{{ route('pelanggan.products.index') }}';">
                                 <span class="ml-3 text-sm text-gray-700">All Categories</span>
                             </label>
                             @foreach ($categories as $category)
                                 <label class="flex items-center cursor-pointer">
-                                    <input type="checkbox" class="w-4 h-4 text-blue-600 rounded"
+                                    <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
                                         @if (request('category') === $category->slug) checked @endif
                                         onchange="document.location.href = '{{ route('pelanggan.products.index') }}?category={{ $category->slug }}';">
                                     <span class="ml-3 text-sm text-gray-700">{{ $category->name }}</span>
@@ -42,25 +42,25 @@
                         <h4 class="font-semibold text-gray-900 mb-4">PRICE RANGE</h4>
                         <div class="space-y-3">
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded"
+                                <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
                                     @if (!request('price_range')) checked @endif
                                     onchange="document.location.href = '{{ route('pelanggan.products.index') }}';">
                                 <span class="ml-3 text-sm text-gray-700">All Prices</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded"
+                                <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
                                     @if (request('price_range') === 'under_100k') checked @endif
                                     onchange="document.location.href = '{{ route('pelanggan.products.index') }}?price_range=under_100k';">
                                 <span class="ml-3 text-sm text-gray-700">Under Rp 100K</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded"
+                                <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
                                     @if (request('price_range') === '100k_500k') checked @endif
                                     onchange="document.location.href = '{{ route('pelanggan.products.index') }}?price_range=100k_500k';">
                                 <span class="ml-3 text-sm text-gray-700">Rp 100K - 500K</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded"
+                                <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
                                     @if (request('price_range') === 'above_500k') checked @endif
                                     onchange="document.location.href = '{{ route('pelanggan.products.index') }}?price_range=above_500k';">
                                 <span class="ml-3 text-sm text-gray-700">Above Rp 500K</span>
@@ -76,7 +76,7 @@
                     <p class="text-sm text-gray-600">Showing {{ $products->count() }} of {{ $products->total() }}
                         products</p>
                     <select
-                        class="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 focus:outline-none focus:border-blue-600"
+                        class="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 focus:outline-none focus:border-red-600"
                         onchange="document.location.href = this.value;">
                         <option value="{{ route('pelanggan.products.index') }}">Sort by Latest</option>
                         <option value="{{ route('pelanggan.products.index') }}?sort=price_asc">Price: Low to High
@@ -105,11 +105,22 @@
                                 @endif
 
                                 <!-- Wishlist Button -->
-                                <button
-                                    class="absolute top-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:bg-blue-600 hover:text-white transition duration-300 z-10"
-                                    onclick="event.preventDefault();">
-                                    <iconify-icon icon="mdi:heart-outline"></iconify-icon>
-                                </button>
+                                <form action="{{ Auth::check() ? route('pelanggan.wishlist.toggle', $product) : route('login') }}"
+                                    method="{{ Auth::check() ? 'POST' : 'GET' }}"
+                                    class="absolute top-4 right-4 z-10"
+                                    onclick="event.stopPropagation();">
+                                    @auth
+                                        @csrf
+                                    @endauth
+                                    @php
+                                        $isWishlisted = Auth::check() && Auth::user()->wishlists()->where('product_id', $product->id)->exists();
+                                    @endphp
+                                    <button type="submit"
+                                        class="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition duration-300 {{ $isWishlisted ? 'text-red-600' : 'text-gray-700 hover:bg-red-600 hover:text-white' }}"
+                                        aria-label="Toggle wishlist">
+                                        <iconify-icon icon="{{ $isWishlisted ? 'mdi:heart' : 'mdi:heart-outline' }}"></iconify-icon>
+                                    </button>
+                                </form>
 
                                 <!-- Stock Badge -->
                                 @if ($product->stock > 0)
@@ -134,7 +145,7 @@
 
                                 <!-- Product Name -->
                                 <h3
-                                    class="text-sm font-bold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition">
+                                    class="text-sm font-bold text-gray-900 mb-2 line-clamp-2 hover:text-red-600 transition">
                                     <a href="{{ route('pelanggan.products.show', $product) }}">
                                         {{ $product->name }}
                                     </a>
@@ -151,10 +162,17 @@
                                 </p>
 
                                 <!-- Add to Cart Button -->
-                                <button
-                                    class="w-full bg-blue-900 hover:bg-blue-950 text-white font-bold py-2 px-4 transition duration-300 text-sm rounded mt-auto">
-                                    ADD TO CART
-                                </button>
+                                <form action="{{ Auth::check() ? route('pelanggan.cart.store', $product) : route('login') }}"
+                                    method="{{ Auth::check() ? 'POST' : 'GET' }}" class="mt-auto">
+                                    @auth
+                                        @csrf
+                                        <input type="hidden" name="quantity" value="1">
+                                    @endauth
+                                    <button type="submit"
+                                        class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 transition duration-300 text-sm rounded">
+                                        ADD TO CART
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     @empty

@@ -2,8 +2,8 @@
     <!-- Breadcrumb -->
     <div class="bg-gray-100 px-12 py-4">
         <div class="text-sm text-gray-600">
-            <a href="{{ route('pelanggan.dashboard') }}" class="hover:text-blue-600">Home</a> /
-            <a href="{{ route('pelanggan.products.index') }}" class="hover:text-blue-600">Products</a> /
+            <a href="{{ route('pelanggan.dashboard') }}" class="hover:text-red-600">Home</a> /
+            <a href="{{ route('pelanggan.products.index') }}" class="hover:text-red-600">Products</a> /
             <span>{{ $product->name }}</span>
         </div>
     </div>
@@ -29,7 +29,7 @@
                 @if ($product->images && $product->images->count() > 1)
                     <div class="grid grid-cols-4 gap-4">
                         @foreach ($product->images as $image)
-                            <div class="cursor-pointer border-2 border-gray-300 rounded-lg overflow-hidden hover:border-blue-600 transition"
+                            <div class="cursor-pointer border-2 border-gray-300 rounded-lg overflow-hidden hover:border-red-600 transition"
                                 onclick="document.getElementById('mainImage').src = '{{ asset('storage/' . $image->image_path) }}';">
                                 <img src="{{ asset('storage/' . $image->image_path) }}" alt="{{ $product->name }}"
                                     class="w-full h-20 object-cover">
@@ -69,8 +69,7 @@
                     @if ($product->stock > 0)
                         <div class="inline-flex items-center gap-2">
                             <div class="w-3 h-3 rounded-full bg-green-600"></div>
-                            <span class="text-sm font-semibold text-green-600">IN STOCK ({{ $product->stock }}
-                                available)</span>
+                            <span class="text-sm font-semibold text-green-600">TERSEDIA</span>
                         </div>
                     @else
                         <div class="inline-flex items-center gap-2">
@@ -95,16 +94,23 @@
                     <div class="flex items-center border border-gray-300 rounded-lg">
                         <button class="px-4 py-2 text-gray-600 hover:text-gray-900"
                             onclick="decreaseQuantity()">−</button>
-                        <input type="number" id="quantity" value="1" min="1" max="{{ $product->stock }}"
+                        <input type="number" id="quantity" value="1" min="1"
                             class="w-16 text-center border-l border-r border-gray-300 py-2 focus:outline-none" readonly>
                         <button class="px-4 py-2 text-gray-600 hover:text-gray-900"
                             onclick="increaseQuantity()">+</button>
                     </div>
                     @if ($product->stock > 0)
-                        <button
-                            class="flex-1 bg-blue-900 hover:bg-blue-950 text-white font-bold py-3 px-6 transition duration-300 rounded-lg">
-                            ADD TO CART
-                        </button>
+                        <form action="{{ Auth::check() ? route('pelanggan.cart.store', $product) : route('login') }}"
+                            method="{{ Auth::check() ? 'POST' : 'GET' }}" class="flex-1">
+                            @auth
+                                @csrf
+                            @endauth
+                            <input type="hidden" name="quantity" id="cart_quantity" value="1">
+                            <button type="submit"
+                                class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-6 transition duration-300 rounded-lg">
+                                ADD TO CART
+                            </button>
+                        </form>
                     @else
                         <button class="flex-1 bg-gray-400 text-white font-bold py-3 px-6 rounded-lg cursor-not-allowed"
                             disabled>
@@ -115,11 +121,20 @@
 
                 <!-- Wishlist & Share -->
                 <div class="flex items-center gap-4 border-t border-b border-gray-200 py-4 mb-8">
-                    <button class="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition">
-                        <iconify-icon icon="mdi:heart-outline" width="20"></iconify-icon>
+                    @php
+                        $isWishlisted = Auth::check() && Auth::user()->wishlists()->where('product_id', $product->id)->exists();
+                    @endphp
+                    <form action="{{ Auth::check() ? route('pelanggan.wishlist.toggle', $product) : route('login') }}"
+                        method="{{ Auth::check() ? 'POST' : 'GET' }}">
+                        @auth
+                            @csrf
+                        @endauth
+                    <button type="submit" class="flex items-center gap-2 {{ $isWishlisted ? 'text-red-600' : 'text-gray-700 hover:text-red-600' }} transition">
+                        <iconify-icon icon="{{ $isWishlisted ? 'mdi:heart' : 'mdi:heart-outline' }}" width="20"></iconify-icon>
                         <span class="text-sm font-semibold">WISHLIST</span>
                     </button>
-                    <button class="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition">
+                    </form>
+                    <button class="flex items-center gap-2 text-gray-700 hover:text-red-600 transition">
                         <iconify-icon icon="mdi:share-variant-outline" width="20"></iconify-icon>
                         <span class="text-sm font-semibold">SHARE</span>
                     </button>
@@ -139,7 +154,7 @@
                     @endif
                     <div class="flex justify-between">
                         <span class="text-gray-700 font-semibold">STOCK:</span>
-                        <span class="text-gray-900">{{ $product->stock }} units</span>
+                        <span class="text-gray-900">{{ $product->stock ? 'Tersedia' : 'Tidak Tersedia' }}</span>
                     </div>
                 </div>
             </div>
@@ -151,7 +166,7 @@
         <div class="px-12 py-16 bg-gray-50">
             <div class="mb-12">
                 <h2 class="text-3xl font-bold text-gray-900 mb-2">RELATED PRODUCTS</h2>
-                <div class="w-12 h-1 bg-blue-600"></div>
+                <div class="w-12 h-1 bg-red-600"></div>
             </div>
 
             <div class="grid grid-cols-4 gap-8">
@@ -193,7 +208,7 @@
 
                             <!-- Product Name -->
                             <h3
-                                class="text-sm font-bold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition">
+                                class="text-sm font-bold text-gray-900 mb-2 line-clamp-2 hover:text-red-600 transition">
                                 <a href="{{ route('pelanggan.products.show', $related) }}">
                                     {{ $related->name }}
                                 </a>
@@ -206,7 +221,7 @@
 
                             <!-- Add to Cart Button -->
                             <button
-                                class="w-full bg-blue-900 hover:bg-blue-950 text-white font-bold py-2 px-4 transition duration-300 text-sm rounded">
+                                class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 transition duration-300 text-sm rounded">
                                 ADD TO CART
                             </button>
                         </div>
@@ -219,9 +234,9 @@
     <script>
         function increaseQuantity() {
             const input = document.getElementById('quantity');
-            const max = parseInt(input.max);
-            if (parseInt(input.value) < max) {
-                input.value = parseInt(input.value) + 1;
+            input.value = parseInt(input.value) + 1;
+            if (document.getElementById('cart_quantity')) {
+                document.getElementById('cart_quantity').value = input.value;
             }
         }
 
@@ -229,6 +244,9 @@
             const input = document.getElementById('quantity');
             if (parseInt(input.value) > 1) {
                 input.value = parseInt(input.value) - 1;
+                if (document.getElementById('cart_quantity')) {
+                    document.getElementById('cart_quantity').value = input.value;
+                }
             }
         }
     </script>

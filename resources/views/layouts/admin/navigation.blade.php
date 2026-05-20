@@ -30,6 +30,12 @@
                     <p>PAYMENTS</p>
                 </li>
             </a>
+            <a href="{{ route('admin.payment-methods.index') }}">
+                <li class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.payment-methods.*') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
+                    <iconify-icon icon="mdi:bank" class="nav-small-cap-icon fs-5"></iconify-icon>
+                    <p>PAYMENT METHODS</p>
+                </li>
+            </a>
             <li class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.promotions.index') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
                 <iconify-icon icon="mdi:loudspeaker" class="nav-small-cap-icon fs-5"></iconify-icon>
                 <p>PROMOTIONS</p>
@@ -51,15 +57,10 @@
     <div class="w-full flex flex-col gap-2 border-t border-gray-200 py-3 text-sm font-medium">
         <div class="flex items-center gap-2 p-3 px-5 py-0 w-full">
             <iconify-icon icon="mdi:gear" class="nav-small-cap-icon fs-5"></iconify-icon>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-
-                <x-responsive-nav-link :href="route('logout')"
-                    onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                    {{ __('SETTINGS') }}
-                </x-responsive-nav-link>
-            </form>
+            <a href="{{ route('admin.settings.index') }}"
+                class="{{ request()->routeIs('admin.settings.*') ? 'text-primary font-bold' : 'text-gray-600 hover:text-primary' }}">
+                {{ __('SETTINGS') }}
+            </a>
         </div>
 
         <div class="flex items-center gap-2 p-3 px-5 py-0 w-full">
@@ -76,7 +77,7 @@
         </div>
 
         <div class="flex items-center gap-2 p-3 px-5 py-0 w-full">
-            <div class="w-8 h-8 bg-blue-900 rounded-md"></div>
+            <div class="w-8 h-8 bg-red-700 rounded-md"></div>
             <div>
                 <p class="font-bold"> {{ Auth::user()->name }} </p>
                 <p class="text-xs"> {{ Auth::user()->role_id == '2' ? 'Admin' : 'Marketing' }} </p>

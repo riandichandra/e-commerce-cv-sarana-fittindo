@@ -16,7 +16,7 @@
 
         <div class="flex flex-col gap-5">
             @foreach ($roles as $role)
-                <div class="bg-[#EFF4FF] p-5 w-full">
+                <div class="bg-[#FFF1F3] p-5 w-full">
                     <div class="flex items-center justify-between">
                         <h2 class="font-semibold tracking-wider text-texthighlight">
                             {{ strtoupper(str_replace('_', ' ', $role->name)) }}
@@ -53,7 +53,7 @@
                                         </td>
                                         <td class="py-3 px-3">{{ $user->created_at->format('d M Y') }}</td>
                                         <td class="py-3 px-3">
-                                            <a class="inline-flex items-center gap-1.5 bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-900 transition"
+                                            <a class="inline-flex items-center gap-1.5 bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition"
                                                 href="{{ route('admin.users.edit', $user) }}">
                                                 <iconify-icon icon="mdi:pencil" class="fs-6"></iconify-icon>
                                                 EDIT

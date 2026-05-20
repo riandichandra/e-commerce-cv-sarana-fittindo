@@ -30,6 +30,7 @@ class Product extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'stock' => 'boolean',
         'weight' => 'decimal:2',
         'specifications' => 'array',
         'is_featured' => 'boolean',

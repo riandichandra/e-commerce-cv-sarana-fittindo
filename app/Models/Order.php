@@ -41,11 +41,12 @@ class Order extends Model
     ];
 
     protected $enumStatuses = [
-        'pending_payment', 
-        'payment_confirmed', 
-        'processing', 
+        'pending_payment',
+        'waiting_payment_confirmation',
+        'payment_confirmed',
+        'processing',
         'shipped',
-        'completed', 
+        'completed',
         'cancelled'
     ];
 

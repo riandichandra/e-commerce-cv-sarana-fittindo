@@ -18,18 +18,33 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/login', [AuthenticatedSessionController::class, 'create'])->middleware('guest')->name('login');
 Route::get('/', [Pelanggan\DashboardController::class, 'index'])->name('dashboard');
 
+// Public customer product routes
+Route::prefix('pelanggan')->name('pelanggan.')->group(function () {
+    Route::get('/', [Pelanggan\DashboardController::class, 'index'])->name('dashboard');
+    Route::resource('products', Pelanggan\ProductController::class)->only(['index', 'show']);
+});
+
 // Pelanggan routes
 Route::middleware(['auth', 'role:pelanggan'])->prefix('pelanggan')->name('pelanggan.')->group(function () {
     Route::get('/', [Pelanggan\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::resource('products', Pelanggan\ProductController::class)->only(['index', 'show']);
-    // Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/cart', [Pelanggan\CartController::class, 'index'])->name('cart.index');
+    Route::get('/cart/checkout', [Pelanggan\CartController::class, 'checkoutForm'])->name('cart.checkout');
+    Route::post('/cart/checkout', [Pelanggan\CartController::class, 'checkout'])->name('cart.checkout.process');
+    Route::post('/cart/{product}', [Pelanggan\CartController::class, 'store'])->name('cart.store');
+    Route::patch('/cart/items/{cartItem}', [Pelanggan\CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/items/{cartItem}', [Pelanggan\CartController::class, 'destroy'])->name('cart.destroy');
+    Route::get('/orders', [Pelanggan\OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}/payment-proof', [Pelanggan\OrderController::class, 'paymentProofForm'])->name('orders.payment-proof');
+    Route::post('/orders/{order}/payment-proof', [Pelanggan\OrderController::class, 'uploadPaymentProof'])->name('orders.payment-proof.store');
+    Route::post('/wishlist/{product}', [Pelanggan\WishlistController::class, 'toggle'])->name('wishlist.toggle');
 });
 
 // Admin routes
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/settings', [Admin\SettingController::class, 'index'])->name('settings.index');
     Route::resource('products', Admin\ProductController::class)->except(['show', 'destroy']);
     Route::resource('users', Admin\UserController::class)->except(['show', 'destroy']);
     Route::resource('categories', Admin\ProductCategoryController::class)->except(['show', 'destroy']);
@@ -38,6 +53,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('payments', Admin\PaymentController::class)->only(['index']);
     Route::patch('payments/{payment}/verify', [Admin\PaymentController::class, 'verify'])->name('payments.verify');
     Route::patch('payments/{payment}/reject', [Admin\PaymentController::class, 'reject'])->name('payments.reject');
+    Route::resource('payment-methods', Admin\PaymentMethodController::class)->except(['show', 'destroy']);
 });
 
 // Marketing routes

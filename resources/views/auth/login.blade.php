@@ -1,47 +1,60 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <div class="mb-8">
+        <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8102e]">Welcome Back</p>
+        <h1 class="mt-3 text-3xl font-black tracking-[-.03em] text-[#10233d]">Login ke akun Anda</h1>
+        <p class="mt-3 text-sm leading-6 text-[#657891]">
+            Masuk untuk melihat produk material, mengelola profil, dan melanjutkan kebutuhan proyek Anda.
+        </p>
+    </div>
 
-    <form method="POST" action="{{ route('login') }}">
+    <x-auth-session-status class="mb-5 border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700" :status="session('status')" />
+
+    <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
 
-        <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+            <label for="email" class="text-sm font-bold text-[#10233d]">Email</label>
+            <div class="mt-2 flex items-center border border-[#f2c8d0] bg-[#fff7f8] px-4 focus-within:border-[#c8102e] focus-within:bg-white">
+                <iconify-icon icon="mdi:email-outline" class="mr-3 text-[#6b7c91]"></iconify-icon>
+                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
+                    placeholder="email@example.com"
+                    class="h-12 w-full border-0 bg-transparent p-0 text-sm text-[#10233d] placeholder:text-[#8ea0b8] focus:ring-0">
+            </div>
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
+        <div>
+            <label for="password" class="text-sm font-bold text-[#10233d]">Password</label>
+            <div class="mt-2 flex items-center border border-[#f2c8d0] bg-[#fff7f8] px-4 focus-within:border-[#c8102e] focus-within:bg-white">
+                <iconify-icon icon="mdi:lock-outline" class="mr-3 text-[#6b7c91]"></iconify-icon>
+                <input id="password" type="password" name="password" required autocomplete="current-password"
+                    placeholder="Masukkan password"
+                    class="h-12 w-full border-0 bg-transparent p-0 text-sm text-[#10233d] placeholder:text-[#8ea0b8] focus:ring-0">
+            </div>
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
+        <div class="flex items-center justify-between gap-4">
             <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+                <input id="remember_me" type="checkbox" class="border-[#ef9aaa] text-[#c8102e] focus:ring-[#c8102e]" name="remember">
+                <span class="ms-2 text-sm font-medium text-[#657891]">Remember me</span>
             </label>
-        </div>
 
-        <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                <a class="text-sm font-bold text-[#c8102e] hover:text-[#9f0d24]" href="{{ route('password.request') }}">
+                    Lupa password?
                 </a>
             @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
         </div>
+
+        <button type="submit"
+            class="flex h-12 w-full items-center justify-center bg-[#c8102e] text-sm font-black uppercase tracking-[.18em] text-white transition hover:bg-[#9f0d24]">
+            Log In
+        </button>
+
+        <p class="text-center text-sm text-[#657891]">
+            Belum memiliki akun?
+            <a href="{{ route('register') }}" class="font-black text-[#c8102e] hover:text-[#9f0d24]">Register</a>
+        </p>
     </form>
 </x-guest-layout>

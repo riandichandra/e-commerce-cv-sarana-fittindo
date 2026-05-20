@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <div class="bg-[#EFF4FF] p-5 w-full">
+        <div class="bg-[#FFF1F3] p-5 w-full">
             <h2 class="font-semibold tracking-wider text-texthighlight">PRODUCT LISTS</h2>
             <div class="overflow-x-auto">
                 <table class="mt-3 w-full">
@@ -62,7 +62,7 @@
                                 </td>
                                 <td class="py-3 px-3">
                                     <div class="flex items-center gap-2">
-                                        <a class="inline-flex items-center gap-1.5 bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-900 transition"
+                                        <a class="inline-flex items-center gap-1.5 bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition"
                                             href="{{ route('admin.products.edit', $product) }}">
                                             <iconify-icon icon="mdi:pencil" class="fs-6"></iconify-icon>
                                             EDIT

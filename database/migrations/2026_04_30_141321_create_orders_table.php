@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('order_number', 50)->unique();
             $table->enum('status', [
                 'pending_payment',
+                'waiting_payment_confirmation',
                 'payment_confirmed',
                 'processing',
                 'shipped',

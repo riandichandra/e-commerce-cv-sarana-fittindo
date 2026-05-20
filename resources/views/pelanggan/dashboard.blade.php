@@ -1,310 +1,350 @@
+@php
+    $localImages = [
+        asset('storage/products/dhpkAn0vG4mLZgmK34IkMPhkLMmIDLk5zAIMcp4M.jpg'),
+        asset('storage/products/Oh8Tc0FrTkuw8Z5PotedjCIQa9NdCaxkBGZJ6MSm.jpg'),
+        asset('storage/products/pS6IaqoHnjYGwS1CQhRTQPFSPb7bX6KJIrm6zxne.jpg'),
+        asset('storage/products/WkUfwN4Sgn9TMmmCbIzHu72wVWyrXAC3QqrU8I2w.jpg'),
+    ];
+
+    $categoryCards = [
+        [
+            'title' => 'HPL Solutions',
+            'subtitle' => 'INDUSTRIAL GRADE FINISH',
+            'image' => $localImages[0],
+            'category' => 'hpl',
+        ],
+        [
+            'title' => 'Premium MDF',
+            'subtitle' => 'PRECISION ENGINEERED',
+            'image' => $localImages[1],
+            'category' => 'mdf',
+        ],
+        [
+            'title' => 'Marine Plywood',
+            'subtitle' => 'STRUCTURAL INTEGRITY',
+            'image' => $localImages[2],
+            'category' => 'plywood',
+        ],
+    ];
+
+    $arrivalFallbacks = [
+        [
+            'title' => 'Midnight Slate HPL',
+            'category' => 'ARCHITECTURAL CHOICE',
+            'price' => 450000,
+            'image' => $localImages[3],
+            'description' =>
+                'Introducing the deep texture of slate fused with the durability of premium HPL. Perfect for high-traffic commercial spaces.',
+        ],
+        [
+            'title' => 'Oak Grain Plywood',
+            'category' => 'THICKNESS: 18MM',
+            'price' => 320000,
+            'image' => $localImages[0],
+            'description' => '',
+        ],
+        [
+            'title' => 'Ultra-Bond Adhesive',
+            'category' => 'INDUSTRIAL CAPACITY',
+            'price' => 85000,
+            'image' => $localImages[1],
+            'description' => '',
+        ],
+    ];
+
+    $productFallbacks = [
+        ['title' => 'HPL Wood Grain - Walnut', 'category' => 'HPL', 'price' => 285000, 'image' => $localImages[0]],
+        ['title' => 'MDF Board - 15mm Grade A', 'category' => 'MDF', 'price' => 195000, 'image' => $localImages[1]],
+        ['title' => 'Multiplex Meranti - 18mm', 'category' => 'PLYWOOD', 'price' => 340000, 'image' => $localImages[2]],
+        [
+            'title' => 'Contact Cement - High Heat',
+            'category' => 'ADHESIVES',
+            'price' => 72000,
+            'image' => $localImages[3],
+        ],
+    ];
+@endphp
+
 <x-pelanggan-layout>
-    <!-- Hero Section -->
-    <div class="relative h-96 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 overflow-hidden">
-        <div class="absolute inset-0 opacity-40">
-            <div class="absolute inset-0 bg-repeat"
-                style="background-image: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px);">
+    <section class="relative h-[650px] overflow-hidden bg-[#0c1d38]">
+        <div class="absolute inset-0">
+            <div class="h-full w-full scale-105 bg-cover bg-center"
+                style="background-image: linear-gradient(90deg, rgba(4,17,45,.92) 0%, rgba(7,25,60,.72) 34%, rgba(9,22,45,.18) 68%), url('{{ $localImages[2] }}');">
+            </div>
+            <div class="absolute inset-0 opacity-80"
+                style="background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 2px, transparent 2px 16px), linear-gradient(180deg, transparent 0%, rgba(0,38,108,.82) 100%);">
             </div>
         </div>
 
-        <div class="relative z-10 h-full flex flex-col justify-center px-12 max-w-3xl">
-            <p class="text-sm font-semibold text-gray-300 tracking-widest mb-4">NEW SEASON ARRIVALS</p>
-            <h1 class="text-5xl font-bold text-white mb-6 leading-tight">ARCHITECTURAL<br>PRECISION.</h1>
-            <p class="text-gray-300 text-base leading-relaxed mb-8 max-w-2xl">Discover our curated collection of
-                industrial-grade HPL plywood solutions designed for durability and high-end aesthetics.</p>
-            <div class="flex items-center gap-4">
-                <button
-                    class="bg-blue-900 hover:bg-blue-950 text-white font-bold py-3 px-8 transition duration-300 text-sm tracking-wider">
-                    VIEW COLLECTIONS →
-                </button>
-                <div class="flex gap-2">
-                    <button
-                        class="w-10 h-10 rounded-full border-2 border-white/30 hover:border-white flex items-center justify-center text-white">‹</button>
-                    <button
-                        class="w-10 h-10 rounded-full border-2 border-white/30 hover:border-white flex items-center justify-center text-white">›</button>
-                </div>
+        <div class="relative mx-auto flex h-full max-w-[1365px] items-center px-12">
+            <div class="max-w-[720px] pt-10">
+                <p class="mb-6 text-[12px] font-black uppercase tracking-[.35em] text-white">NEW SEASON ARRIVALS</p>
+                <h1 class="text-[78px] font-black uppercase leading-[.96] tracking-[-.03em] text-white md:text-[92px]">
+                    Architectural<br>Precision.
+                </h1>
+                <p class="mt-8 max-w-[540px] text-[16px] leading-8 text-[#c6d6ef]">
+                    Discover our curated collection of industrial-grade HPL and Plywood solutions designed for
+                    durability and high-end aesthetics.
+                </p>
+                <a href="{{ route('pelanggan.products.index') }}"
+                    class="mt-9 inline-flex h-12 items-center bg-[#c8102e] px-8 text-[12px] font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
+                    View Collections
+                    <iconify-icon icon="mdi:arrow-right" class="ml-2 fs-6"></iconify-icon>
+                </a>
             </div>
         </div>
-    </div>
 
-    <!-- Dashboard Navbar -->
-    <div class="bg-slate-950 px-12 py-6">
-        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-            <a href="#"
-                class="px-4 py-2 text-sm font-semibold text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition">All
-                Product</a>
-            <a href="#" class="px-4 py-2 text-sm font-semibold text-slate-200 hover:text-white transition">HPL</a>
-            <a href="#"
-                class="px-4 py-2 text-sm font-semibold text-slate-200 hover:text-white transition">Plywood</a>
-            <a href="#"
-                class="px-4 py-2 text-sm font-semibold text-slate-200 hover:text-white transition">Laminate</a>
-            <a href="#"
-                class="px-4 py-2 text-sm font-semibold text-slate-200 hover:text-white transition">Adhesives</a>
+        <div class="absolute bottom-10 right-12 flex">
+            <button class="flex h-11 w-11 items-center justify-center bg-white/15 text-white hover:bg-white/25"
+                aria-label="Previous slide">
+                <iconify-icon icon="mdi:chevron-left" class="fs-5"></iconify-icon>
+            </button>
+            <button class="ml-1 flex h-11 w-11 items-center justify-center bg-white/15 text-white hover:bg-white/25"
+                aria-label="Next slide">
+                <iconify-icon icon="mdi:chevron-right" class="fs-5"></iconify-icon>
+            </button>
         </div>
-    </div>
+    </section>
 
-    <!-- Category Cards Section -->
-    <div class="px-12 py-16">
-        <div class="grid grid-cols-3 gap-8">
-            <!-- HPL Solutions -->
-            <div class="relative h-64 bg-gray-900 overflow-hidden group cursor-pointer">
-                <div class="absolute inset-0 bg-gradient-to-br from-amber-900 to-amber-950 opacity-20"></div>
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=400&fit=crop"
-                    alt="HPL Solutions"
-                    class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 class="text-xl font-bold mb-2">HPL Solutions</h3>
-                    <p class="text-xs text-gray-300 mb-4">HIGH-QUALITY SURFACE FINISHES</p>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-blue-400">EXPLORE CATEGORY →</p>
-                </div>
-            </div>
-
-            <!-- Premium MDF -->
-            <div class="relative h-64 bg-gray-900 overflow-hidden group cursor-pointer">
-                <div class="absolute inset-0 bg-gradient-to-br from-yellow-900 to-amber-900 opacity-20"></div>
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=400&fit=crop"
-                    alt="Premium MDF" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 class="text-xl font-bold mb-2">Premium MDF</h3>
-                    <p class="text-xs text-gray-300 mb-4">STRUCTURALLY ENGINEERED</p>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-blue-400">EXPLORE CATEGORY →</p>
-                </div>
-            </div>
-
-            <!-- Marine Plywood -->
-            <div class="relative h-64 bg-gray-900 overflow-hidden group cursor-pointer">
-                <div class="absolute inset-0 bg-gradient-to-br from-orange-900 to-yellow-900 opacity-20"></div>
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=400&fit=crop"
-                    alt="Marine Plywood"
-                    class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 class="text-xl font-bold mb-2">Marine Plywood</h3>
-                    <p class="text-xs text-gray-300 mb-4">STRUCTURAL DURABILITY</p>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-blue-400">EXPLORE CATEGORY →</p>
-                </div>
-            </div>
+    <section class="bg-[#f7faff] px-8 py-[100px]">
+        <div class="mx-auto grid max-w-[1290px] grid-cols-1 gap-8 md:grid-cols-3">
+            @foreach ($categoryCards as $card)
+                <a href="{{ route('pelanggan.products.index', ['category' => $card['category']]) }}"
+                    class="group relative h-[530px] overflow-hidden bg-[#0b1727]">
+                    <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
+                        class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#07101d] via-[#07101d]/35 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
+                        <h2 class="text-[27px] font-black leading-none">{{ $card['title'] }}</h2>
+                        <p class="mt-3 text-[12px] font-bold uppercase tracking-[.16em] text-[#d9e4f8]">
+                            {{ $card['subtitle'] }}</p>
+                        <p class="mt-7 text-[11px] font-black uppercase tracking-[.16em]">Explore Category</p>
+                    </div>
+                </a>
+            @endforeach
         </div>
-    </div>
+    </section>
 
-    <!-- Latest Arrivals Section -->
-    <div class="px-12 py-16 bg-white">
-        <div class="flex justify-between items-center mb-12">
-            <div>
-                <h2 class="text-3xl font-bold text-gray-900">OUR LATEST ARRIVALS</h2>
-                <div class="w-12 h-1 bg-blue-600 mt-4"></div>
-            </div>
-            <a href="#" class="text-sm font-semibold text-gray-900 hover:text-blue-600 transition">VIEW ALL
-                ARRIVALS →</a>
-        </div>
-
-        <div class="grid grid-cols-4 gap-8">
-            <!-- Latest Arrival 1 -->
-            <div class="flex flex-col">
-                <div class="relative h-64 bg-gray-200 rounded-lg overflow-hidden mb-4">
-                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop"
-                        alt="Midnight Slate HPL" class="w-full h-full object-cover">
-                </div>
-                <p class="text-xs text-gray-500 font-semibold mb-2">ARCHITECTURAL HOUSE</p>
-                <h3 class="text-lg font-bold text-gray-900 mb-2">Midnight Slate HPL</h3>
-                <p class="text-sm text-gray-600 mb-4">Introducing the deep texture of slate finish with the durability
-                    of premium HPL. Perfect for high-traffic commercial spaces.</p>
-                <p class="text-lg font-bold text-gray-900 mb-4">Rp 450.000</p>
-                <button
-                    class="bg-blue-900 hover:bg-blue-950 text-white font-bold py-2 px-4 transition duration-300 text-sm">
-                    ADD TO CART
-                </button>
-            </div>
-
-            <!-- Latest Arrival 2 -->
-            <div class="bg-blue-100 rounded-lg p-6 flex flex-col justify-between">
-                <div class="h-40 bg-gradient-to-b from-gray-300 to-gray-200 rounded mb-4"></div>
+    <section class="bg-[#fff1f3] px-8 py-[100px]">
+        <div class="mx-auto max-w-[1290px]">
+            <div class="mb-16 flex items-end justify-between">
                 <div>
-                    <p class="text-xs text-gray-500 font-semibold mb-2">INDUSTRIAL CATEGORY</p>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Oak Grain Plywood</h3>
-                    <p class="text-lg font-bold text-gray-900 mb-4">Rp 325.000</p>
-                    <button class="text-sm text-blue-600 font-semibold hover:text-blue-800 transition">
-                        VIEW DETAILS →
-                    </button>
+                    <h2 class="text-[36px] font-black uppercase tracking-[-.03em] text-[#10233d]">Our Latest Arrivals
+                    </h2>
+                    <div class="mt-3 h-1 w-24 bg-[#c8102e]"></div>
                 </div>
+                <a href="{{ route('pelanggan.products.index') }}"
+                    class="text-[11px] font-black uppercase tracking-[.18em] text-[#c8102e] hover:text-[#9f0d24]">
+                    View All Arrivals
+                </a>
             </div>
 
-            <!-- Latest Arrival 3 -->
-            <div class="bg-blue-100 rounded-lg p-6 flex flex-col justify-between">
-                <div class="h-40 bg-gray-300 rounded mb-4 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop"
-                        alt="Ultra-Bond Adhesive" class="w-full h-full object-cover">
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-semibold mb-2">INDUSTRIAL CATEGORY</p>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Ultra-Bond Adhesive</h3>
-                    <p class="text-lg font-bold text-gray-900 mb-4">Rp 85.000</p>
-                    <button class="text-sm text-blue-600 font-semibold hover:text-blue-800 transition">
-                        VIEW DETAILS →
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Our Products Section -->
-    <div class="px-12 py-16 bg-gray-50">
-        <div class="mb-12 flex justify-between items-center">
-            <div>
-                <h2 class="text-3xl font-bold text-gray-900">OUR PRODUCTS</h2>
-                <p class="text-gray-600 text-sm mt-2">Sourced from global leaders in manufacturing, our product range
-                    ensures excellence for every project.</p>
-            </div>
-            <a href="{{ route('pelanggan.products.index') }}"
-                class="text-sm font-semibold text-gray-900 hover:text-blue-600 transition whitespace-nowrap">VIEW ALL
-                PRODUCTS →</a>
-        </div>
-
-        <div class="grid grid-cols-4 gap-8">
-            <!-- Product 1 -->
-            <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition duration-300">
-                <div class="h-56 bg-amber-900 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop"
-                        alt="HPL Wood Grain - Walnut"
-                        class="w-full h-full object-cover hover:scale-110 transition duration-300">
-                </div>
-                <div class="p-4">
-                    <p class="text-xs text-gray-500 font-semibold mb-2">CATEGORY: HPL</p>
-                    <h3 class="text-sm font-bold text-gray-900 mb-2">HPL Wood Grain - Walnut</h3>
-                    <p class="text-sm font-bold text-gray-900">Rp 250.000</p>
-                </div>
-            </div>
-
-            <!-- Product 2 -->
-            <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition duration-300">
-                <div class="h-56 bg-yellow-700 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop"
-                        alt="MDF Board - Salem Grade A"
-                        class="w-full h-full object-cover hover:scale-110 transition duration-300">
-                </div>
-                <div class="p-4">
-                    <p class="text-xs text-gray-500 font-semibold mb-2">CATEGORY: MDF</p>
-                    <h3 class="text-sm font-bold text-gray-900 mb-2">MDF Board - Salem Grade A</h3>
-                    <p class="text-sm font-bold text-gray-900">Rp 175.000</p>
-                </div>
-            </div>
-
-            <!-- Product 3 -->
-            <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition duration-300">
-                <div class="h-56 bg-orange-600 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop"
-                        alt="Plywood Multiple Maroon - 16mm"
-                        class="w-full h-full object-cover hover:scale-110 transition duration-300">
-                </div>
-                <div class="p-4">
-                    <p class="text-xs text-gray-500 font-semibold mb-2">CATEGORY: PLYWOOD</p>
-                    <h3 class="text-sm font-bold text-gray-900 mb-2">Plywood Multiple Maroon - 16mm</h3>
-                    <p class="text-sm font-bold text-gray-900">Rp 340.000</p>
-                </div>
-            </div>
-
-            <!-- Product 4 -->
-            <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition duration-300">
-                <div class="h-56 bg-gray-900 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=300&fit=crop"
-                        alt="Contact Cement - High Heat"
-                        class="w-full h-full object-cover hover:scale-110 transition duration-300">
-                </div>
-                <div class="p-4">
-                    <p class="text-xs text-gray-500 font-semibold mb-2">CATEGORY: ADHESIVE</p>
-                    <h3 class="text-sm font-bold text-gray-900 mb-2">Contact Cement - High Heat</h3>
-                    <p class="text-sm font-bold text-gray-900">Rp 72.000</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Technical Standards & Certification Section -->
-    <div class="px-12 py-16 bg-gradient-to-r from-slate-900 to-slate-800 text-white">
-        <div class="grid grid-cols-2 gap-12 items-center">
-            <div>
-                <h2 class="text-4xl font-bold mb-6">TECHNICAL STANDARDS &<br>CERTIFICATION</h2>
-                <p class="text-gray-300 mb-8">We provide full technical documentation for contractors and architects,
-                    ensuring every material meets international safety and environmental standards.</p>
-
-                <div class="space-y-6">
-                    <div>
-                        <p class="text-sm font-semibold text-blue-400 mb-2">FIRE RATING</p>
-                        <p class="text-lg font-bold">Class A / ASTM E84</p>
+            <div class="grid min-h-[630px] grid-cols-1 gap-8 lg:grid-cols-4">
+                @php
+                    $mainArrival = $latestProducts->first();
+                    $mainImage = $mainArrival?->images->first()?->image_path
+                        ? asset('storage/' . $mainArrival->images->first()->image_path)
+                        : $arrivalFallbacks[0]['image'];
+                @endphp
+                <article class="relative overflow-hidden bg-white lg:col-span-2">
+                    <div class="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/20"></div>
+                    <img src="{{ $mainImage }}" alt="{{ $mainArrival?->name ?? $arrivalFallbacks[0]['title'] }}"
+                        class="absolute right-0 top-0 h-full w-2/3 object-cover opacity-30">
+                    <div class="relative flex h-full min-h-[560px] max-w-[460px] flex-col p-8">
+                        <p class="text-[11px] font-black uppercase tracking-[.18em] text-[#657891]">
+                            {{ $mainArrival?->category?->name ?? $arrivalFallbacks[0]['category'] }}
+                        </p>
+                        <h3 class="mt-5 text-[34px] font-black leading-tight text-[#10233d]">
+                            {{ $mainArrival?->name ?? $arrivalFallbacks[0]['title'] }}
+                        </h3>
+                        <p class="mt-6 text-[15px] leading-7 text-[#617086]">
+                            {{ $mainArrival?->description ?? $arrivalFallbacks[0]['description'] }}
+                        </p>
+                        <div class="mt-auto flex items-center">
+                            <p class="text-[20px] font-black text-[#c8102e]">
+                                Rp
+                                {{ number_format($mainArrival?->price ?? $arrivalFallbacks[0]['price'], 0, ',', '.') }}
+                            </p>
+                            <a href="{{ $mainArrival ? route('pelanggan.products.show', $mainArrival) : route('pelanggan.products.index') }}"
+                                class="ml-6 flex h-12 w-12 items-center justify-center bg-[#c8102e] text-white hover:bg-[#9f0d24]"
+                                aria-label="Open product">
+                                <iconify-icon icon="mdi:cart-outline" class="fs-5"></iconify-icon>
+                            </a>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-sm font-semibold text-blue-400 mb-2">FORMALDEHYDE EMISSION</p>
-                        <p class="text-lg font-bold">E1 Standard</p>
+                </article>
+
+                @foreach ([1, 2] as $index)
+                    @php
+                        $item = $latestProducts->get($index);
+                        $fallback = $arrivalFallbacks[$index];
+                        $itemImage = $item?->images->first()?->image_path
+                            ? asset('storage/' . $item->images->first()->image_path)
+                            : $fallback['image'];
+                    @endphp
+                    <article class="flex flex-col bg-[#ffe2e7] p-7">
+                        <img src="{{ $itemImage }}" alt="{{ $item?->name ?? $fallback['title'] }}"
+                            class="mb-auto h-[270px] w-full object-cover">
+                        <div class="pt-10">
+                            <h3 class="text-[19px] font-black text-[#10233d]">{{ $item?->name ?? $fallback['title'] }}
+                            </h3>
+                            <p class="mt-3 text-[11px] font-black uppercase tracking-[.13em] text-[#657891]">
+                                {{ $item?->category?->name ?? $fallback['category'] }}
+                            </p>
+                            <div class="mt-7 flex items-center justify-between">
+                                <p class="text-[13px] font-black text-[#10233d]">
+                                    Rp {{ number_format($item?->price ?? $fallback['price'], 0, ',', '.') }}
+                                </p>
+                                <a href="{{ $item ? route('pelanggan.products.show', $item) : route('pelanggan.products.index') }}"
+                                    class="text-[#c8102e]" aria-label="Open product">
+                                    <iconify-icon icon="mdi:arrow-top-right" class="fs-5"></iconify-icon>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-[#f7faff] px-8 py-[100px]">
+        <div class="mx-auto max-w-[1290px]">
+            <div class="mx-auto mb-16 max-w-[560px] text-center">
+                <h2 class="text-[34px] font-black uppercase tracking-[-.03em] text-[#10233d]">Our Products</h2>
+                <p class="mt-4 text-[13px] leading-6 text-[#657891]">
+                    Sourced from global leaders in manufacturing, our product range ensures technical excellence for
+                    every project.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach (range(0, 3) as $index)
+                    @php
+                        $product = $products->get($index);
+                        $fallback = $productFallbacks[$index];
+                        $productImage = $product?->images->first()?->image_path
+                            ? asset('storage/' . $product->images->first()->image_path)
+                            : $fallback['image'];
+                    @endphp
+                    <a href="{{ $product ? route('pelanggan.products.show', $product) : route('pelanggan.products.index') }}"
+                        class="group bg-white">
+                        <div class="relative h-[295px] overflow-hidden bg-[#d9e2ee]">
+                            @if ($index === 0)
+                                <span
+                                    class="absolute left-3 top-3 z-10 bg-white px-3 py-1 text-[10px] font-black uppercase tracking-[.12em] text-[#10233d]">New</span>
+                            @endif
+                            <img src="{{ $productImage }}" alt="{{ $product?->name ?? $fallback['title'] }}"
+                                class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                        </div>
+                        <div class="p-5">
+                            <p class="text-[10px] font-black uppercase tracking-[.16em] text-[#7b8799]">
+                                Category: {{ $product?->category?->name ?? $fallback['category'] }}
+                            </p>
+                            <h3 class="mt-3 min-h-[42px] text-[14px] font-black leading-5 text-[#10233d]">
+                                {{ $product?->name ?? $fallback['title'] }}
+                            </h3>
+                            <p class="mt-3 text-[14px] font-black text-[#c8102e]">
+                                Rp {{ number_format($product?->price ?? $fallback['price'], 0, ',', '.') }}
+                            </p>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-[#071d33] px-8 py-[105px] text-white">
+        <div class="mx-auto grid max-w-[1290px] grid-cols-1 items-center gap-16 lg:grid-cols-2">
+            <div>
+                <h2 class="text-[36px] font-black uppercase leading-tight tracking-[-.03em]">
+                    Technical Standards &<br>Certification
+                </h2>
+                <p class="mt-8 max-w-[520px] text-[14px] leading-7 text-[#b8c7d9]">
+                    We provide full technical documentation for contractors and architects, ensuring every material
+                    meets international safety and environmental standards.
+                </p>
+
+                <div class="mt-10 max-w-[610px] space-y-4">
+                    <div class="flex items-center justify-between bg-white/7 px-6 py-5 text-[13px]">
+                        <span class="font-black uppercase tracking-[.13em] text-[#ffe2e7]">Fire Rating</span>
+                        <span class="font-semibold text-[#c8a77d]">Class A / ASTM E84</span>
                     </div>
-                    <div>
-                        <p class="text-sm font-semibold text-blue-400 mb-2">WATER RESISTANCE</p>
-                        <p class="text-lg font-bold">Boiling Water Proof (BWP)</p>
+                    <div class="flex items-center justify-between bg-white/7 px-6 py-5 text-[13px]">
+                        <span class="font-black uppercase tracking-[.13em] text-[#ffe2e7]">Formaldehyde Emission</span>
+                        <span class="font-semibold text-[#c8a77d]">E1 Standard</span>
+                    </div>
+                    <div class="flex items-center justify-between bg-white/7 px-6 py-5 text-[13px]">
+                        <span class="font-black uppercase tracking-[.13em] text-[#ffe2e7]">Water Resistance</span>
+                        <span class="font-semibold text-[#c8a77d]">Boiling Water Proof (BWP)</span>
                     </div>
                 </div>
             </div>
 
-            <div class="relative h-96">
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=500&fit=crop"
-                    alt="Technical Standards" class="w-full h-full object-cover rounded-lg">
+            <div class="h-[520px] overflow-hidden bg-[#102c4a]">
+                <div class="h-full w-full"
+                    style="background-image: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,0)), repeating-linear-gradient(90deg, rgba(255,255,255,.12) 0 1px, transparent 1px 78px), repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 1px, transparent 1px 78px), url('{{ $localImages[1] }}'); background-size: cover, auto, auto, cover; background-position: center;">
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Footer Section -->
-    <footer class="bg-slate-900 text-gray-300 py-12 px-12">
-        <div class="grid grid-cols-4 gap-8 mb-8 border-b border-gray-700 pb-8">
-            <!-- About -->
+    <footer class="bg-[#fff1f3] px-8 pt-20 text-[#5d7190]">
+        <div class="mx-auto grid max-w-[1290px] grid-cols-1 gap-12 border-b border-[#d9e7f7] pb-16 md:grid-cols-4">
             <div>
-                <h4 class="font-bold text-white mb-4">SAHANA FITTING</h4>
-                <p class="text-sm text-gray-400">© Sahana Fitnco is a leading purveyor of premium woods and materials
-                    selected with the highest standards of quality and service in the region.</p>
+                <h4 class="text-[13px] font-black uppercase tracking-[.08em] text-[#c8102e]">Sarana Fittindo</h4>
+                <p class="mt-8 text-[12px] leading-6">
+                    CV Sarana Fittindo is a leading provider of high-end interior building materials, specializing in
+                    high-pressure laminates and architectural plywood.
+                </p>
             </div>
 
-            <!-- Collections -->
             <div>
-                <h4 class="font-bold text-white mb-4">COLLECTIONS</h4>
-                <ul class="space-y-2 text-sm">
-                    <li><a href="#" class="hover:text-white transition">HPL Products</a></li>
-                    <li><a href="#" class="hover:text-white transition">MDF Boards</a></li>
-                    <li><a href="#" class="hover:text-white transition">Plywood</a></li>
-                    <li><a href="#" class="hover:text-white transition">Adhesives</a></li>
+                <h4 class="text-[12px] font-black uppercase tracking-[.16em] text-[#c8102e]">Collections</h4>
+                <ul class="mt-8 space-y-4 text-[12px]">
+                    <li><a href="{{ route('pelanggan.products.index', ['category' => 'hpl']) }}"
+                            class="hover:text-[#c8102e]">HPL Panels</a></li>
+                    <li><a href="{{ route('pelanggan.products.index', ['category' => 'plywood']) }}"
+                            class="hover:text-[#c8102e]">Marine Plywood</a></li>
+                    <li><a href="{{ route('pelanggan.products.index', ['category' => 'adhesives']) }}"
+                            class="hover:text-[#c8102e]">Contact Adhesives</a></li>
+                    <li><a href="{{ route('pelanggan.products.index', ['category' => 'laminate']) }}"
+                            class="hover:text-[#c8102e]">Edge Banding</a></li>
                 </ul>
             </div>
 
-            <!-- Quick Links -->
             <div>
-                <h4 class="font-bold text-white mb-4">QUICK LINKS</h4>
-                <ul class="space-y-2 text-sm">
-                    <li><a href="#" class="hover:text-white transition">About Us</a></li>
-                    <li><a href="#" class="hover:text-white transition">Products</a></li>
-                    <li><a href="#" class="hover:text-white transition">Contact</a></li>
-                    <li><a href="#" class="hover:text-white transition">FAQ</a></li>
+                <h4 class="text-[12px] font-black uppercase tracking-[.16em] text-[#c8102e]">Quick Links</h4>
+                <ul class="mt-8 space-y-4 text-[12px]">
+                    <li><a href="" class="hover:text-[#c8102e]">About Us</a></li>
+                    <li><a href="{{ route('pelanggan.products.index') }}" class="hover:text-[#c8102e]">Shipping
+                            Policy</a></li>
+                    <li><a href="{{ route('pelanggan.products.index') }}" class="hover:text-[#c8102e]">Privacy
+                            Policy</a></li>
+                    <li><a href="{{ route('pelanggan.products.index') }}" class="hover:text-[#c8102e]">FAQ</a></li>
                 </ul>
             </div>
 
-            <!-- Newsletter -->
             <div>
-                <h4 class="font-bold text-white mb-4">NEWSLETTER</h4>
-                <p class="text-sm text-gray-400 mb-4">Stay updated with our latest material arrivals and exclusive
-                    offers.</p>
-                <form class="flex flex-col gap-2">
-                    <input type="email" placeholder="Enter your email"
-                        class="bg-slate-800 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500">
+                <h4 class="text-[12px] font-black uppercase tracking-[.16em] text-[#c8102e]">Newsletter</h4>
+                <p class="mt-8 text-[12px] leading-6">Stay updated with our latest material arrivals and industrial
+                    news.</p>
+                <form class="mt-5">
+                    <input type="email" placeholder="Email address"
+                        class="h-11 w-full border-0 bg-[#ffe2e7] px-4 text-[12px] text-[#244263] placeholder:text-[#7d91ab] focus:border-[#c8102e] focus:ring-[#c8102e]">
                     <button type="submit"
-                        class="bg-blue-900 hover:bg-blue-950 text-white font-bold py-2 px-4 text-sm transition duration-300">SUBSCRIBE
-                        NOW</button>
+                        class="mt-3 h-11 w-full bg-[#c8102e] text-[11px] font-black uppercase tracking-[.18em] text-white hover:bg-[#9f0d24]">
+                        Subscribe Now
+                    </button>
                 </form>
             </div>
         </div>
 
-        <div class="flex justify-between items-center text-xs text-gray-500">
-            <p>© 2026 by Sahana Fitnco. All rights reserved worldwide.</p>
-            <div class="flex gap-4">
-                <a href="#" class="hover:text-gray-300 transition">Privacy Policy</a>
-                <a href="#" class="hover:text-gray-300 transition">Terms & Conditions</a>
-                <a href="#" class="hover:text-gray-300 transition">Contact</a>
+        <div class="mx-auto flex max-w-[1290px] items-center justify-between py-8 text-[11px]">
+            <p>© 2024 CV Sarana Fittindo. High-End Material Solutions.</p>
+            <div class="flex gap-5 text-[#6c83a6]">
+                <iconify-icon icon="mdi:web"></iconify-icon>
+                <iconify-icon icon="mdi:email-outline"></iconify-icon>
+                <iconify-icon icon="mdi:shield-check-outline"></iconify-icon>
             </div>
         </div>
     </footer>

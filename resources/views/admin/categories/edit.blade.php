@@ -19,7 +19,7 @@
         </div>
     </div>
 
-    <div class="bg-[#EFF4FF] p-5 w-full">
+    <div class="bg-[#FFF1F3] p-5 w-full">
         <h2 class="font-semibold tracking-wider text-texthighlight">EDIT CATEGORY</h2>
         <form action="{{ route('admin.categories.update', $category) }}" method="POST" class="mt-4 w-full flex flex-col gap-4">
             @csrf

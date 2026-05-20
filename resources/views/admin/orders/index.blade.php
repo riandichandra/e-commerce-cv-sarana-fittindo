@@ -10,7 +10,7 @@
             <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
         </div>
 
-        <div class="bg-[#EFF4FF] p-5 w-full">
+        <div class="bg-[#FFF1F3] p-5 w-full">
             <h2 class="font-semibold tracking-wider text-texthighlight">ORDER LISTS</h2>
             <div class="overflow-x-auto">
                 <table class="mt-3 w-full">
@@ -33,7 +33,8 @@
                             @php
                                 $orderStatusClass = match ($order->status) {
                                     'pending_payment' => 'bg-yellow-100 text-yellow-800',
-                                    'payment_confirmed' => 'bg-blue-100 text-blue-800',
+                                    'waiting_payment_confirmation' => 'bg-blue-100 text-blue-800',
+                                    'payment_confirmed' => 'bg-emerald-100 text-emerald-800',
                                     'processing' => 'bg-indigo-100 text-indigo-800',
                                     'shipped' => 'bg-purple-100 text-purple-800',
                                     'completed' => 'bg-green-100 text-green-800',
@@ -107,7 +108,7 @@
                                                     @endforeach
                                                 </select>
                                                 <button type="submit"
-                                                    class="inline-flex items-center justify-center rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-blue-900 transition">OK</button>
+                                                    class="inline-flex items-center justify-center rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-red-700 transition">OK</button>
                                             </div>
                                         </form>
                                     @else

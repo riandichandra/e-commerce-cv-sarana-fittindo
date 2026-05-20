@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('slug', 200)->unique();
             $table->text('description')->nullable();
             $table->decimal('price', 15, 2);
-            $table->integer('stock')->default(0);
+            $table->boolean('stock')->default(true)->comment('1 tersedia, 0 tidak tersedia');
             $table->decimal('weight', 8, 2)->comment('gram');
             $table->string('thickness', 50)->nullable();
             $table->string('dimensions', 100)->nullable();
