@@ -19,6 +19,12 @@
                 </div>
             </div>
 
+            <div id="address-form" class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                <div>
+                    @include('profile.partials.user-addresses-form')
+                </div>
+            </div>
+
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div>
                     <h2 class="text-lg font-medium text-gray-900">

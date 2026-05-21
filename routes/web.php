@@ -1,15 +1,15 @@
 <?php
 
+use App\Http\Controllers\Admin;
+use App\Http\Controllers\Admin\ProductCategoryController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Direktur;
+use App\Http\Controllers\GM;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Marketing;
+use App\Http\Controllers\Pelanggan;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\Admin;
-use App\Http\Controllers\GM;
-use App\Http\Controllers\Marketing;
-use App\Http\Controllers\Direktur;
-use App\Http\Controllers\Pelanggan;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Admin\ProductCategoryController;
 
 // Public Routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -47,7 +47,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/settings', [Admin\SettingController::class, 'index'])->name('settings.index');
     Route::resource('products', Admin\ProductController::class)->except(['show', 'destroy']);
     Route::resource('users', Admin\UserController::class)->except(['show', 'destroy']);
-    Route::resource('categories', Admin\ProductCategoryController::class)->except(['show', 'destroy']);
+    Route::resource('categories', ProductCategoryController::class)->except(['show', 'destroy']);
     Route::resource('brands', Admin\ProductBrandController::class)->except(['show', 'destroy']);
     Route::resource('orders', Admin\OrderController::class)->only(['index', 'show', 'update']);
     Route::resource('payments', Admin\PaymentController::class)->only(['index']);
@@ -77,6 +77,9 @@ Route::middleware(['auth', 'role:direktur'])->prefix('direktur')->name('direktur
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/addresses', [ProfileController::class, 'storeAddress'])->name('profile.addresses.store');
+    Route::patch('/profile/addresses/{address}', [ProfileController::class, 'updateAddress'])->name('profile.addresses.update');
+    Route::delete('/profile/addresses/{address}', [ProfileController::class, 'destroyAddress'])->name('profile.addresses.destroy');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
