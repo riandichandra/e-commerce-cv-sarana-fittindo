@@ -13,8 +13,19 @@ return new class extends Migration
     {
         Schema::create('shipping_costs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('province_id')->constrained()->onDelete('cascade');
-            $table->foreignId('regency_id')->nullable()->constrained()->onDelete('cascade');
+
+            $table->char('province_id', 2);
+            $table->char('regency_id', 4);
+
+// FOREIGN KEY
+            $table->foreign('province_id')
+                ->references('id')
+                ->on('provinces');
+
+            $table->foreign('regency_id')
+                ->references('id')
+                ->on('regencies');
+
             $table->decimal('base_cost', 10, 2);
             $table->decimal('cost_per_kg', 10, 2)->default(0);
             $table->integer('estimated_days')->default(1);

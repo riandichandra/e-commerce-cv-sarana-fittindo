@@ -25,7 +25,13 @@
                                 <h2 class="text-xl font-black uppercase text-[#10233d]">{{ $order->order_number }}</h2>
                                 <p class="mt-1 text-sm text-[#657891]">{{ $order->created_at->format('d M Y H:i') }}</p>
                             </div>
-                            <p class="text-2xl font-black text-[#c8102e]">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</p>
+                            <div class="flex flex-col items-start gap-2 sm:items-end">
+                                <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Order</p>
+                                <span class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
+                                    {{ $order->status_label }}
+                                </span>
+                                <p class="text-2xl font-black text-[#c8102e]">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</p>
+                            </div>
                         </div>
 
                         <div class="mt-5 grid gap-4 text-sm md:grid-cols-2">

@@ -28,6 +28,7 @@ class OrderListTest extends TestCase
 
         $unpaidOrder = $this->makeOrder($customer, $paymentMethod, $product, 'pending');
         $paidOrder = $this->makeOrder($customer, $paymentMethod, $product, 'verified');
+        $shippedOrder = $this->makeOrder($customer, $paymentMethod, $product, 'verified', 'shipped');
         $otherOrder = $this->makeOrder($otherCustomer, $paymentMethod, $product, 'pending');
 
         $response = $this->actingAs($customer)->get(route('pelanggan.orders.index'));
@@ -37,7 +38,82 @@ class OrderListTest extends TestCase
         $response->assertSee('Sudah Dibayar');
         $response->assertSee($unpaidOrder->order_number);
         $response->assertSee($paidOrder->order_number);
+        $response->assertSee('Status Order');
+        $response->assertSee('Belum Dibayar');
+        $response->assertSee('Pembayaran Dikonfirmasi');
+        $response->assertSee($shippedOrder->order_number);
+        $response->assertSee('Dikirim');
+        $response->assertSee('Completed');
+        $response->assertSee('Cancelled');
         $response->assertDontSee($otherOrder->order_number);
+    }
+
+    public function test_customer_can_see_order_detail(): void
+    {
+        $customer = $this->makeCustomer();
+        $paymentMethod = $this->makePaymentMethod();
+        $product = $this->makeProduct();
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'verified', 'shipped');
+
+        $response = $this->actingAs($customer)->get(route('pelanggan.orders.show', $order));
+
+        $response->assertOk();
+        $response->assertSee('Detail Pesanan');
+        $response->assertSee($order->order_number);
+        $response->assertSee('Status Order');
+        $response->assertSee('Dikirim');
+        $response->assertSee('Foto Produk Sudah Sampai');
+        $response->assertSee('Completed');
+        $response->assertSee('Cancelled');
+    }
+
+    public function test_customer_can_mark_shipped_order_as_completed(): void
+    {
+        Storage::fake('public');
+
+        $customer = $this->makeCustomer();
+        $paymentMethod = $this->makePaymentMethod();
+        $product = $this->makeProduct();
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'verified', 'shipped');
+
+        $response = $this->actingAs($customer)->patch(route('pelanggan.orders.complete', $order), [
+            'received_image' => $this->fakePngUpload(),
+        ]);
+
+        $response->assertRedirect(route('pelanggan.orders.index'));
+        $this->assertSame('completed', $order->fresh()->status);
+        Storage::disk('public')->assertExists($order->fresh()->received_image);
+    }
+
+    public function test_customer_can_cancel_shipped_order_for_return(): void
+    {
+        $customer = $this->makeCustomer();
+        $paymentMethod = $this->makePaymentMethod();
+        $product = $this->makeProduct();
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'verified', 'shipped');
+
+        $response = $this->actingAs($customer)->patch(route('pelanggan.orders.cancel', $order));
+
+        $response->assertRedirect(route('pelanggan.orders.index'));
+
+        $order->refresh();
+        $this->assertSame('cancelled', $order->status);
+        $this->assertSame($customer->id, $order->cancelled_by);
+        $this->assertSame('Pengembalian diajukan oleh pelanggan.', $order->cancellation_reason);
+        $this->assertNotNull($order->cancelled_at);
+    }
+
+    public function test_customer_cannot_complete_order_that_has_not_been_shipped(): void
+    {
+        $customer = $this->makeCustomer();
+        $paymentMethod = $this->makePaymentMethod();
+        $product = $this->makeProduct();
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'verified', 'processing');
+
+        $response = $this->actingAs($customer)->patch(route('pelanggan.orders.complete', $order));
+
+        $response->assertRedirect(route('pelanggan.orders.index'));
+        $this->assertSame('processing', $order->fresh()->status);
     }
 
     public function test_customer_can_upload_payment_proof_for_unpaid_order(): void
@@ -52,6 +128,8 @@ class OrderListTest extends TestCase
         $formResponse = $this->actingAs($customer)->get(route('pelanggan.orders.payment-proof', $order));
         $formResponse->assertOk();
         $formResponse->assertSee('Upload Bukti Pembayaran');
+        $formResponse->assertSee('Status Order');
+        $formResponse->assertSee('Belum Dibayar');
 
         $response = $this->actingAs($customer)->post(route('pelanggan.orders.payment-proof.store', $order), [
             'sender_name' => 'Budi Santoso',
@@ -135,12 +213,12 @@ class OrderListTest extends TestCase
         ]);
     }
 
-    private function makeOrder(User $user, PaymentMethod $paymentMethod, Product $product, string $paymentStatus): Order
+    private function makeOrder(User $user, PaymentMethod $paymentMethod, Product $product, string $paymentStatus, ?string $orderStatus = null): Order
     {
         $order = Order::create([
             'user_id' => $user->id,
             'order_number' => 'SF' . now()->format('Ymd') . str_pad((string) (Order::count() + 1), 4, '0', STR_PAD_LEFT),
-            'status' => $paymentStatus === 'verified' ? 'payment_confirmed' : 'pending_payment',
+            'status' => $orderStatus ?? ($paymentStatus === 'verified' ? 'payment_confirmed' : 'pending_payment'),
             'subtotal' => 150000,
             'discount_amount' => 0,
             'shipping_cost' => 0,

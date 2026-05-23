@@ -93,18 +93,29 @@ class CartController extends Controller
             ->orderBy('bank_name')
             ->get();
 
-        return view('pelanggan.cart.checkout', compact('cart', 'paymentMethods'));
+        $addresses = $request->user()
+            ->addresses()
+            ->with(['province', 'regency', 'district', 'village'])
+            ->orderByDesc('is_main')
+            ->latest()
+            ->get();
+
+        return view('pelanggan.cart.checkout', compact('cart', 'paymentMethods', 'addresses'));
     }
 
     public function checkout(Request $request)
     {
         $validated = $request->validate([
-            'shipping_name' => ['required', 'string', 'max:100'],
-            'shipping_phone' => ['required', 'string', 'max:20'],
-            'shipping_address' => ['required', 'string'],
-            'shipping_province' => ['required', 'string', 'max:100'],
-            'shipping_city' => ['required', 'string', 'max:100'],
-            'shipping_district' => ['required', 'string', 'max:100'],
+            'shipping_address_id' => [
+                'nullable',
+                Rule::exists('user_addresses', 'id')->where('user_id', $request->user()->id),
+            ],
+            'shipping_name' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:100'],
+            'shipping_phone' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:20'],
+            'shipping_address' => ['required_without:shipping_address_id', 'nullable', 'string'],
+            'shipping_province' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:100'],
+            'shipping_city' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:100'],
+            'shipping_district' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:100'],
             'shipping_village' => ['nullable', 'string', 'max:100'],
             'shipping_postal_code' => ['nullable', 'string', 'max:10'],
             'payment_method_id' => [
@@ -121,6 +132,25 @@ class CartController extends Controller
             return redirect()
                 ->route('pelanggan.cart.index')
                 ->with('error', 'Keranjang masih kosong.');
+        }
+
+        if (! empty($validated['shipping_address_id'])) {
+            $selectedAddress = $request->user()
+                ->addresses()
+                ->with(['province', 'regency', 'district', 'village'])
+                ->findOrFail($validated['shipping_address_id']);
+
+            $validated = [
+                ...$validated,
+                'shipping_name' => $selectedAddress->receiver_name,
+                'shipping_phone' => $selectedAddress->receiver_phone,
+                'shipping_address' => $selectedAddress->full_address,
+                'shipping_province' => $selectedAddress->province?->name,
+                'shipping_city' => $selectedAddress->regency?->name,
+                'shipping_district' => $selectedAddress->district?->name,
+                'shipping_village' => $selectedAddress->village?->name,
+                'shipping_postal_code' => $selectedAddress->postal_code,
+            ];
         }
 
         try {
@@ -177,8 +207,6 @@ class CartController extends Controller
                         'quantity' => $item->quantity,
                         'subtotal' => $lineSubtotal,
                     ]);
-
-                    $product->update(['stock' => 0]);
                 }
 
                 Payment::create([

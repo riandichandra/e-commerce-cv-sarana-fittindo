@@ -17,16 +17,6 @@
                 </div>
 
                 @forelse ($unpaidOrders as $order)
-                    @php
-                        $unpaidStatusLabel = match ($order->status) {
-                            'waiting_payment_confirmation' => 'Menunggu Verifikasi Admin',
-                            default => $order->payment?->status === 'rejected' ? 'Ditolak' : 'Belum Dibayar',
-                        };
-                        $unpaidStatusClass = match ($order->status) {
-                            'waiting_payment_confirmation' => 'bg-blue-100 text-blue-800',
-                            default => $order->payment?->status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800',
-                        };
-                    @endphp
                     <article class="bg-white p-5 shadow-sm">
                         <div class="flex flex-col gap-3 border-b border-[#e8eef7] pb-4 sm:flex-row sm:items-start sm:justify-between">
                             <div>
@@ -35,9 +25,12 @@
                                     {{ $order->created_at->format('d M Y H:i') }}
                                 </p>
                             </div>
-                            <span class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $unpaidStatusClass }}">
-                                {{ $unpaidStatusLabel }}
-                            </span>
+                            <div class="flex flex-col items-start gap-2 sm:items-end">
+                                <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Order</p>
+                                <span class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
+                                    {{ $order->status_label }}
+                                </span>
+                            </div>
                         </div>
 
                         <div class="mt-4 space-y-3">
@@ -63,11 +56,18 @@
                             </div>
                         </div>
 
-                        <a href="{{ route('pelanggan.orders.payment-proof', $order) }}"
-                            class="mt-5 flex h-11 w-full items-center justify-center gap-2 bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
-                            <iconify-icon icon="mdi:upload-outline"></iconify-icon>
-                            Upload Bukti Pembayaran
-                        </a>
+                        <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                            <a href="{{ route('pelanggan.orders.show', $order) }}"
+                                class="flex h-11 items-center justify-center gap-2 border border-[#d8e2f0] text-xs font-black uppercase tracking-[.16em] text-[#10233d] hover:border-[#c8102e] hover:text-[#c8102e]">
+                                <iconify-icon icon="mdi:eye-outline"></iconify-icon>
+                                Detail
+                            </a>
+                            <a href="{{ route('pelanggan.orders.payment-proof', $order) }}"
+                                class="flex h-11 items-center justify-center gap-2 bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
+                                <iconify-icon icon="mdi:upload-outline"></iconify-icon>
+                                Upload Bukti
+                            </a>
+                        </div>
                     </article>
                 @empty
                     <div class="bg-white px-6 py-12 text-center shadow-sm">
@@ -94,9 +94,12 @@
                                     {{ $order->created_at->format('d M Y H:i') }}
                                 </p>
                             </div>
-                            <span class="w-fit bg-green-100 px-3 py-1 text-xs font-black uppercase tracking-[.12em] text-green-800">
-                                Sudah Dibayar
-                            </span>
+                            <div class="flex flex-col items-start gap-2 sm:items-end">
+                                <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Order</p>
+                                <span class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
+                                    {{ $order->status_label }}
+                                </span>
+                            </div>
                         </div>
 
                         <div class="mt-4 space-y-3">
@@ -120,6 +123,36 @@
                                 <p class="text-[#657891]">Total</p>
                                 <p class="mt-1 text-lg font-black text-[#c8102e]">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</p>
                             </div>
+                        </div>
+
+                        <div class="mt-5 grid gap-3 sm:grid-cols-3">
+                            <a href="{{ route('pelanggan.orders.show', $order) }}"
+                                class="flex h-11 items-center justify-center gap-2 border border-[#d8e2f0] text-xs font-black uppercase tracking-[.16em] text-[#10233d] hover:border-[#c8102e] hover:text-[#c8102e]">
+                                <iconify-icon icon="mdi:eye-outline"></iconify-icon>
+                                Detail
+                            </a>
+
+                            @if ($order->status === 'shipped')
+                                <form action="{{ route('pelanggan.orders.complete', $order) }}" method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                        class="flex h-11 w-full items-center justify-center gap-2 bg-green-600 text-xs font-black uppercase tracking-[.16em] text-white hover:bg-green-700">
+                                        <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
+                                        Completed
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('pelanggan.orders.cancel', $order) }}" method="POST" onsubmit="return confirm('Ajukan pengembalian untuk pesanan ini?')">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                        class="flex h-11 w-full items-center justify-center gap-2 bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
+                                        <iconify-icon icon="mdi:restore"></iconify-icon>
+                                        Cancelled
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </article>
                 @empty

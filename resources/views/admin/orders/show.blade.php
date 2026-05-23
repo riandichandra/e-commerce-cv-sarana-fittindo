@@ -58,7 +58,8 @@
                         <span class="w-fit px-2 py-1 text-xs {{ $orderStatusClass }}">
                             {{ ucwords(str_replace('_', ' ', $order->status)) }}
                         </span>
-                        <p>Total: <span class="font-semibold text-texthighlight">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span></p>
+                        <p>Total: <span class="font-semibold text-texthighlight">Rp
+                                {{ number_format($order->total_amount, 0, ',', '.') }}</span></p>
                         <p>Items: {{ $order->items->sum('quantity') }}</p>
                     </div>
                 </div>
@@ -81,7 +82,8 @@
                     <div class="mt-3 text-sm text-gray-700 space-y-1">
                         <p class="font-medium text-texthighlight">{{ $order->shipping_name }}</p>
                         <p>{{ $order->shipping_address }}</p>
-                        <p>{{ $order->shipping_village ? $order->shipping_village . ', ' : '' }}{{ $order->shipping_district }}</p>
+                        <p>{{ $order->shipping_village ? $order->shipping_village . ', ' : '' }}{{ $order->shipping_district }}
+                        </p>
                         <p>{{ $order->shipping_city }}, {{ $order->shipping_province }}</p>
                         <p>{{ $order->shipping_postal_code ?? '-' }}</p>
                     </div>
@@ -90,13 +92,29 @@
                 <div class="bg-white p-4">
                     <h3 class="font-semibold tracking-wider text-texthighlight">DELIVERY</h3>
                     <div class="mt-3 text-sm text-gray-700 space-y-1">
-                        <p>Status: {{ $order->delivery?->status ? ucwords(str_replace('_', ' ', $order->delivery->status)) : 'Belum Ada' }}</p>
+                        <p>Status:
+                            {{ $order->delivery?->status ? ucwords(str_replace('_', ' ', $order->delivery->status)) : 'Belum Ada' }}
+                        </p>
                         <p>Courier: {{ $order->delivery?->courier ?? '-' }}</p>
                         <p>Tracking: {{ $order->delivery?->tracking_number ?? '-' }}</p>
-                        <p>Estimated Arrival: {{ $order->delivery?->estimated_arrival ? $order->delivery->estimated_arrival->format('d M Y') : '-' }}</p>
+                        <p>Estimated Arrival:
+                            {{ $order->delivery?->estimated_arrival ? $order->delivery->estimated_arrival->format('d M Y') : '-' }}
+                        </p>
                     </div>
                 </div>
             </div>
+
+            @if ($order->received_image)
+                <div class="mt-4 bg-white p-4">
+                    <h3 class="font-semibold tracking-wider text-texthighlight mb-3">BUKTI PENERIMAAN BARANG</h3>
+                    <div class="flex flex-col gap-3">
+                        <img src="{{ asset('storage/' . $order->received_image) }}" alt="Bukti penerimaan barang"
+                            class="w-full max-w-md rounded-lg object-cover shadow-sm border border-gray-300">
+                        <p class="text-sm text-gray-600">Diupload pada: {{ $order->updated_at->format('d M Y H:i') }}
+                        </p>
+                    </div>
+                </div>
+            @endif
 
             <div class="mt-4 bg-white p-4">
                 <h3 class="font-semibold tracking-wider text-texthighlight">ORDER ITEMS</h3>
@@ -116,13 +134,15 @@
                                 <tr class="border-b border-gray-200 text-sm">
                                     <td class="py-3 px-3">{{ $loop->iteration }}</td>
                                     <td class="py-3 px-3 font-medium text-texthighlight">{{ $item->product_name }}</td>
-                                    <td class="py-3 px-3">Rp {{ number_format($item->product_price, 0, ',', '.') }}</td>
+                                    <td class="py-3 px-3">Rp {{ number_format($item->product_price, 0, ',', '.') }}
+                                    </td>
                                     <td class="py-3 px-3">{{ $item->quantity }}</td>
                                     <td class="py-3 px-3">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="py-6 px-3 text-center text-sm text-gray-500">Belum ada item pesanan.</td>
+                                    <td colspan="5" class="py-6 px-3 text-center text-sm text-gray-500">Belum ada
+                                        item pesanan.</td>
                                 </tr>
                             @endforelse
                         </tbody>

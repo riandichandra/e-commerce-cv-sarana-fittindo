@@ -246,6 +246,50 @@ class ProfileTest extends TestCase
         $this->assertTrue($secondAddress->refresh()->is_main);
     }
 
+    public function test_region_dropdown_endpoints_return_only_child_regions(): void
+    {
+        $user = User::factory()->create();
+        $location = $this->createLocation();
+
+        DB::table('provinces')->insert(['id' => 2, 'name' => 'Jawa Barat']);
+        DB::table('regencies')->insert([
+            ['id' => 2, 'province_id' => $location['province_id'], 'name' => 'Jakarta Timur'],
+            ['id' => 3, 'province_id' => 2, 'name' => 'Bandung'],
+        ]);
+        DB::table('districts')->insert([
+            ['id' => 2, 'regency_id' => $location['regency_id'], 'name' => 'Setiabudi'],
+            ['id' => 3, 'regency_id' => 3, 'name' => 'Coblong'],
+        ]);
+        DB::table('villages')->insert([
+            ['id' => 2, 'district_id' => $location['district_id'], 'name' => 'Gandaria Utara'],
+            ['id' => 3, 'district_id' => 3, 'name' => 'Dago'],
+        ]);
+
+        $this->actingAs($user)
+            ->getJson("/regions/provinces/{$location['province_id']}/regencies")
+            ->assertOk()
+            ->assertJsonCount(2)
+            ->assertJsonFragment(['name' => 'Jakarta Selatan'])
+            ->assertJsonFragment(['name' => 'Jakarta Timur'])
+            ->assertJsonMissing(['name' => 'Bandung']);
+
+        $this->actingAs($user)
+            ->getJson("/regions/regencies/{$location['regency_id']}/districts")
+            ->assertOk()
+            ->assertJsonCount(2)
+            ->assertJsonFragment(['name' => 'Kebayoran Baru'])
+            ->assertJsonFragment(['name' => 'Setiabudi'])
+            ->assertJsonMissing(['name' => 'Coblong']);
+
+        $this->actingAs($user)
+            ->getJson("/regions/districts/{$location['district_id']}/villages")
+            ->assertOk()
+            ->assertJsonCount(2)
+            ->assertJsonFragment(['name' => 'Senayan'])
+            ->assertJsonFragment(['name' => 'Gandaria Utara'])
+            ->assertJsonMissing(['name' => 'Dago']);
+    }
+
     private function createLocation(): array
     {
         DB::table('provinces')->insert(['id' => 1, 'name' => 'DKI Jakarta']);

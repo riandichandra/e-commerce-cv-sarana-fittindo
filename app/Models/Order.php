@@ -30,6 +30,7 @@ class Order extends Model
         'cancelled_by',
         'cancellation_reason',
         'cancelled_at',
+        'received_image',
     ];
 
     protected $casts = [
@@ -78,6 +79,36 @@ class Order extends Model
     public function statusHistory() : HasMany
     {
         return $this->hasMany(OrderStatusHistory::class);
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'pending_payment' => 'Belum Dibayar',
+            'waiting_payment_confirmation' => 'Menunggu Verifikasi Admin',
+            'payment_confirmed' => 'Pembayaran Dikonfirmasi',
+            'processing' => 'Diproses',
+            'shipped' => 'Dikirim',
+            'completed' => 'Selesai',
+            'cancelled' => 'Dibatalkan',
+            default => ucwords(str_replace('_', ' ', $this->status)),
+        };
+    }
+
+    public function getStatusBadgeClassAttribute(): string
+    {
+        return match ($this->status) {
+            'pending_payment' => $this->payment?->status === 'rejected'
+                ? 'bg-red-100 text-red-800'
+                : 'bg-yellow-100 text-yellow-800',
+            'waiting_payment_confirmation' => 'bg-blue-100 text-blue-800',
+            'payment_confirmed' => 'bg-green-100 text-green-800',
+            'processing' => 'bg-indigo-100 text-indigo-800',
+            'shipped' => 'bg-sky-100 text-sky-800',
+            'completed' => 'bg-emerald-100 text-emerald-800',
+            'cancelled' => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
     }
 
     public static function generateOrderNumber(): string

@@ -1,3 +1,27 @@
+@php
+    $selectedAddressId = (string) old('shipping_address_id', optional($addresses->firstWhere('is_main', true))->id);
+    $addressOptions = $addresses->map(fn ($address) => [
+        'id' => (string) $address->id,
+        'label' => $address->label,
+        'receiver_name' => $address->receiver_name,
+        'receiver_phone' => $address->receiver_phone,
+        'full_address' => $address->full_address,
+        'province' => $address->province?->name,
+        'city' => $address->regency?->name,
+        'district' => $address->district?->name,
+        'village' => $address->village?->name,
+        'postal_code' => $address->postal_code,
+        'is_main' => $address->is_main,
+        'summary' => collect([
+            $address->village?->name,
+            $address->district?->name,
+            $address->regency?->name,
+            $address->province?->name,
+            $address->postal_code,
+        ])->filter()->join(', '),
+    ])->values();
+@endphp
+
 <x-pelanggan-layout>
     <section class="bg-[#071d33] px-8 py-14 text-white">
         <div class="mx-auto max-w-[1290px]">
@@ -20,7 +44,49 @@
                 </div>
             @endif
 
-            <form action="{{ route('pelanggan.cart.checkout.process') }}" method="POST" class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
+            <form
+                action="{{ route('pelanggan.cart.checkout.process') }}"
+                method="POST"
+                class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]"
+                x-data="{
+                    addresses: @js($addressOptions),
+                    selectedAddressId: @js($selectedAddressId),
+                    shippingName: @js(old('shipping_name', auth()->user()->name)),
+                    shippingPhone: @js(old('shipping_phone', auth()->user()->phone)),
+                    shippingAddress: @js(old('shipping_address')),
+                    shippingProvince: @js(old('shipping_province')),
+                    shippingCity: @js(old('shipping_city')),
+                    shippingDistrict: @js(old('shipping_district')),
+                    shippingVillage: @js(old('shipping_village')),
+                    shippingPostalCode: @js(old('shipping_postal_code')),
+                    selectedAddress() {
+                        return this.addresses.find((address) => address.id === this.selectedAddressId);
+                    },
+                    hasManualShipping() {
+                        return Boolean(this.shippingAddress || this.shippingProvince || this.shippingCity || this.shippingDistrict || this.shippingVillage || this.shippingPostalCode);
+                    },
+                    applySelectedAddress(force = true) {
+                        const address = this.selectedAddress();
+
+                        if (! address || (! force && this.hasManualShipping())) {
+                            return;
+                        }
+
+                        this.shippingName = address.receiver_name || '';
+                        this.shippingPhone = address.receiver_phone || '';
+                        this.shippingAddress = address.full_address || '';
+                        this.shippingProvince = address.province || '';
+                        this.shippingCity = address.city || '';
+                        this.shippingDistrict = address.district || '';
+                        this.shippingVillage = address.village || '';
+                        this.shippingPostalCode = address.postal_code || '';
+                    },
+                    clearSelectedAddress() {
+                        this.selectedAddressId = '';
+                    },
+                }"
+                x-init="applySelectedAddress(false)"
+            >
                 @csrf
 
                 <div class="space-y-6">
@@ -28,59 +94,74 @@
                         <h2 class="text-xl font-black uppercase text-[#10233d]">Detail Pengiriman</h2>
 
                         <div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+                            <div class="md:col-span-2">
+                                <label for="shipping_address_id" class="text-sm font-bold text-[#10233d]">Pilih alamat tersimpan</label>
+                                <select id="shipping_address_id" name="shipping_address_id" x-model="selectedAddressId" x-on:change="applySelectedAddress(true)"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
+                                    <option value="">Isi alamat manual</option>
+                                    <template x-for="address in addresses" :key="address.id">
+                                        <option :value="address.id" x-text="`${address.label}${address.is_main ? ' (Utama)' : ''} - ${address.summary}`"></option>
+                                    </template>
+                                </select>
+                                <x-input-error :messages="$errors->get('shipping_address_id')" class="mt-2" />
+                                @if ($addresses->isEmpty())
+                                    <p class="mt-2 text-xs font-semibold text-[#657891]">Belum ada alamat tersimpan di profil. Anda tetap bisa mengisi alamat secara manual.</p>
+                                @endif
+                            </div>
+
                             <div>
                                 <label for="shipping_name" class="text-sm font-bold text-[#10233d]">Nama penerima</label>
-                                <input id="shipping_name" name="shipping_name" type="text" value="{{ old('shipping_name', auth()->user()->name) }}"
-                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
+                                <input id="shipping_name" name="shipping_name" type="text" x-model="shippingName" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
                                 <x-input-error :messages="$errors->get('shipping_name')" class="mt-2" />
                             </div>
 
                             <div>
                                 <label for="shipping_phone" class="text-sm font-bold text-[#10233d]">Nomor telepon</label>
-                                <input id="shipping_phone" name="shipping_phone" type="text" value="{{ old('shipping_phone', auth()->user()->phone) }}"
-                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
+                                <input id="shipping_phone" name="shipping_phone" type="text" x-model="shippingPhone" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
                                 <x-input-error :messages="$errors->get('shipping_phone')" class="mt-2" />
                             </div>
 
                             <div class="md:col-span-2">
                                 <label for="shipping_address" class="text-sm font-bold text-[#10233d]">Alamat lengkap</label>
-                                <textarea id="shipping_address" name="shipping_address" rows="4"
-                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">{{ old('shipping_address') }}</textarea>
+                                <textarea id="shipping_address" name="shipping_address" rows="4" x-model="shippingAddress" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]"></textarea>
                                 <x-input-error :messages="$errors->get('shipping_address')" class="mt-2" />
                             </div>
 
                             <div>
                                 <label for="shipping_province" class="text-sm font-bold text-[#10233d]">Provinsi</label>
-                                <input id="shipping_province" name="shipping_province" type="text" value="{{ old('shipping_province') }}"
-                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
+                                <input id="shipping_province" name="shipping_province" type="text" x-model="shippingProvince" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
                                 <x-input-error :messages="$errors->get('shipping_province')" class="mt-2" />
                             </div>
 
                             <div>
                                 <label for="shipping_city" class="text-sm font-bold text-[#10233d]">Kota/Kabupaten</label>
-                                <input id="shipping_city" name="shipping_city" type="text" value="{{ old('shipping_city') }}"
-                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
+                                <input id="shipping_city" name="shipping_city" type="text" x-model="shippingCity" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
                                 <x-input-error :messages="$errors->get('shipping_city')" class="mt-2" />
                             </div>
 
                             <div>
                                 <label for="shipping_district" class="text-sm font-bold text-[#10233d]">Kecamatan</label>
-                                <input id="shipping_district" name="shipping_district" type="text" value="{{ old('shipping_district') }}"
-                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
+                                <input id="shipping_district" name="shipping_district" type="text" x-model="shippingDistrict" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
                                 <x-input-error :messages="$errors->get('shipping_district')" class="mt-2" />
                             </div>
 
                             <div>
                                 <label for="shipping_village" class="text-sm font-bold text-[#10233d]">Desa/Kelurahan</label>
-                                <input id="shipping_village" name="shipping_village" type="text" value="{{ old('shipping_village') }}"
-                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
+                                <input id="shipping_village" name="shipping_village" type="text" x-model="shippingVillage" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
                                 <x-input-error :messages="$errors->get('shipping_village')" class="mt-2" />
                             </div>
 
                             <div>
                                 <label for="shipping_postal_code" class="text-sm font-bold text-[#10233d]">Kode pos</label>
-                                <input id="shipping_postal_code" name="shipping_postal_code" type="text" value="{{ old('shipping_postal_code') }}"
-                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
+                                <input id="shipping_postal_code" name="shipping_postal_code" type="text" x-model="shippingPostalCode" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
                                 <x-input-error :messages="$errors->get('shipping_postal_code')" class="mt-2" />
                             </div>
 

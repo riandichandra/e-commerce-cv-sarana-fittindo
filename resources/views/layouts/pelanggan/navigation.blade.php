@@ -70,6 +70,11 @@
                             <iconify-icon icon="mdi:receipt-text-outline"></iconify-icon>
                             Pesanan Saya
                         </a>
+                        <a href="{{ route('pelanggan.orders.history') }}"
+                            class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#244263] hover:bg-[#fff1f3]">
+                            <iconify-icon icon="mdi:history"></iconify-icon>
+                            Riwayat Pesanan
+                        </a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit"
@@ -108,7 +113,10 @@
             <a href="{{ route('pelanggan.products.index', ['category' => 'adhesives']) }}">Adhesives</a>
             @auth
                 <a href="{{ route('pelanggan.orders.index') }}"
-                    class="{{ request()->routeIs('pelanggan.orders.*') ? 'text-[#c8102e]' : '' }}">Pesanan Saya</a>
+                    class="{{ request()->routeIs('pelanggan.orders.index') ? 'text-[#c8102e]' : '' }}">Pesanan Saya</a>
+                <a href="{{ route('pelanggan.orders.history') }}"
+                    class="{{ request()->routeIs('pelanggan.orders.history') ? 'text-[#c8102e]' : '' }}">Riwayat
+                    Pesanan</a>
             @endauth
         </div>
     </div>

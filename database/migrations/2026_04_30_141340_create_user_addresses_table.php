@@ -18,10 +18,29 @@ return new class extends Migration
             $table->string('receiver_name', 100);
             $table->string('receiver_phone', 20);
             $table->text('full_address');
-            $table->foreignId('province_id')->constrained();
-            $table->foreignId('regency_id')->constrained();
-            $table->foreignId('district_id')->constrained();
-            $table->foreignId('village_id')->constrained();
+
+            $table->char('province_id', 2);
+            $table->char('regency_id', 4);
+            $table->char('district_id', 7);
+            $table->char('village_id', 10);
+
+            // FOREIGN KEY
+            $table->foreign('province_id')
+                ->references('id')
+                ->on('provinces');
+
+            $table->foreign('regency_id')
+                ->references('id')
+                ->on('regencies');
+
+            $table->foreign('district_id')
+                ->references('id')
+                ->on('districts');
+
+            $table->foreign('village_id')
+                ->references('id')
+                ->on('villages');
+
             $table->string('postal_code', 10);
             $table->boolean('is_main')->default(false);
             $table->timestamps();

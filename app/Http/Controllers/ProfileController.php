@@ -8,6 +8,7 @@ use App\Models\Province;
 use App\Models\Regency;
 use App\Models\UserAddress;
 use App\Models\Village;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -45,16 +46,54 @@ class ProfileController extends Controller
                 ->first();
         }
 
+        $selectedProvince = $request->old('province_id', $editingAddress?->province_id);
+        $selectedRegency = $request->old('regency_id', $editingAddress?->regency_id);
+        $selectedDistrict = $request->old('district_id', $editingAddress?->district_id);
+
         return view('profile.edit', [
             'user' => $request->user(),
             'wishlistItems' => $wishlistItems,
             'addresses' => $addresses,
             'editingAddress' => $editingAddress,
             'provinces' => Province::orderBy('name')->get(),
-            'regencies' => Regency::orderBy('name')->get(),
-            'districts' => District::orderBy('name')->get(),
-            'villages' => Village::orderBy('name')->get(),
+            'regencies' => $selectedProvince
+                ? Regency::where('province_id', $selectedProvince)->orderBy('name')->get()
+                : collect(),
+            'districts' => $selectedRegency
+                ? District::where('regency_id', $selectedRegency)->orderBy('name')->get()
+                : collect(),
+            'villages' => $selectedDistrict
+                ? Village::where('district_id', $selectedDistrict)->orderBy('name')->get()
+                : collect(),
+            'hasRegionData' => Province::exists() && Regency::exists() && District::exists() && Village::exists(),
         ]);
+    }
+
+    public function regenciesByProvince(Province $province): JsonResponse
+    {
+        return response()->json(
+            $province->regencies()
+                ->orderBy('name')
+                ->get(['id', 'name'])
+        );
+    }
+
+    public function districtsByRegency(Regency $regency): JsonResponse
+    {
+        return response()->json(
+            $regency->districts()
+                ->orderBy('name')
+                ->get(['id', 'name'])
+        );
+    }
+
+    public function villagesByDistrict(District $district): JsonResponse
+    {
+        return response()->json(
+            $district->villages()
+                ->orderBy('name')
+                ->get(['id', 'name'])
+        );
     }
 
     /**

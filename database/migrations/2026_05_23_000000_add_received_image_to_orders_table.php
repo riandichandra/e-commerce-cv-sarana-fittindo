@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('regencies', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('province_id')->constrained()->onDelete('cascade');
-            $table->string('name', 100);
+        Schema::table('orders', function (Blueprint $table) {
+            $table->string('received_image', 255)->nullable()->after('cancelled_at');
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('regencies');
+        Schema::table('orders', function (Blueprint $table) {
+            $table->dropColumn('received_image');
+        });
     }
 };

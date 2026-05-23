@@ -1,9 +1,8 @@
 @php
-    $selectedProvince = (int) old('province_id', $editingAddress?->province_id);
-    $selectedRegency = (int) old('regency_id', $editingAddress?->regency_id);
-    $selectedDistrict = (int) old('district_id', $editingAddress?->district_id);
-    $selectedVillage = (int) old('village_id', $editingAddress?->village_id);
-    $hasRegionData = $provinces->isNotEmpty() && $regencies->isNotEmpty() && $districts->isNotEmpty() && $villages->isNotEmpty();
+    $selectedProvince = (string) old('province_id', $editingAddress?->province_id);
+    $selectedRegency = (string) old('regency_id', $editingAddress?->regency_id);
+    $selectedDistrict = (string) old('district_id', $editingAddress?->district_id);
+    $selectedVillage = (string) old('village_id', $editingAddress?->village_id);
 @endphp
 
 <section>
@@ -33,44 +32,82 @@
 
     <form
         method="post"
+        id="address-form"
         action="{{ $editingAddress ? route('profile.addresses.update', $editingAddress) : route('profile.addresses.store') }}"
         class="mt-6 space-y-6"
         x-data="{
             provinces: @js($provinces->map(fn ($province) => ['id' => $province->id, 'name' => $province->name])->values()),
-            regencies: @js($regencies->map(fn ($regency) => ['id' => $regency->id, 'province_id' => $regency->province_id, 'name' => $regency->name])->values()),
-            districts: @js($districts->map(fn ($district) => ['id' => $district->id, 'regency_id' => $district->regency_id, 'name' => $district->name])->values()),
-            villages: @js($villages->map(fn ($village) => ['id' => $village->id, 'district_id' => $village->district_id, 'name' => $village->name])->values()),
-            provinceId: '{{ $selectedProvince ?: '' }}',
-            regencyId: '{{ $selectedRegency ?: '' }}',
-            districtId: '{{ $selectedDistrict ?: '' }}',
-            villageId: '{{ $selectedVillage ?: '' }}',
-            filteredRegencies() {
-                return this.regencies.filter((regency) => regency.province_id === Number(this.provinceId));
+            regencies: @js($regencies->map(fn ($regency) => ['id' => $regency->id, 'name' => $regency->name])->values()),
+            districts: @js($districts->map(fn ($district) => ['id' => $district->id, 'name' => $district->name])->values()),
+            villages: @js($villages->map(fn ($village) => ['id' => $village->id, 'name' => $village->name])->values()),
+            provinceId: @js($selectedProvince),
+            regencyId: @js($selectedRegency),
+            districtId: @js($selectedDistrict),
+            villageId: @js($selectedVillage),
+            loadingRegencies: false,
+            loadingDistricts: false,
+            loadingVillages: false,
+            regionUrls: {
+                regencies: @js(route('regions.regencies.index', ['province' => '__province__'])),
+                districts: @js(route('regions.districts.index', ['regency' => '__regency__'])),
+                villages: @js(route('regions.villages.index', ['district' => '__district__'])),
             },
-            filteredDistricts() {
-                return this.districts.filter((district) => district.regency_id === Number(this.regencyId));
-            },
-            filteredVillages() {
-                return this.villages.filter((village) => village.district_id === Number(this.districtId));
-            },
-            provinceChanged() {
-                if (! this.filteredRegencies().some((regency) => regency.id === Number(this.regencyId))) {
-                    this.regencyId = '';
-                    this.districtId = '';
-                    this.villageId = '';
+            async fetchRegions(url) {
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                if (! response.ok) {
+                    return [];
                 }
+
+                return await response.json();
             },
-            regencyChanged() {
-                if (! this.filteredDistricts().some((district) => district.id === Number(this.districtId))) {
-                    this.districtId = '';
-                    this.villageId = '';
+            async provinceChanged() {
+                this.regencyId = '';
+                this.districtId = '';
+                this.villageId = '';
+                this.regencies = [];
+                this.districts = [];
+                this.villages = [];
+
+                if (! this.provinceId) {
+                    return;
                 }
+
+                this.loadingRegencies = true;
+                this.regencies = await this.fetchRegions(this.regionUrls.regencies.replace('__province__', this.provinceId));
+                this.loadingRegencies = false;
             },
-            districtChanged() {
-                if (! this.filteredVillages().some((village) => village.id === Number(this.villageId))) {
-                    this.villageId = '';
+            async regencyChanged() {
+                this.districtId = '';
+                this.villageId = '';
+                this.districts = [];
+                this.villages = [];
+
+                if (! this.regencyId) {
+                    return;
                 }
-            }
+
+                this.loadingDistricts = true;
+                this.districts = await this.fetchRegions(this.regionUrls.districts.replace('__regency__', this.regencyId));
+                this.loadingDistricts = false;
+            },
+            async districtChanged() {
+                this.villageId = '';
+                this.villages = [];
+
+                if (! this.districtId) {
+                    return;
+                }
+
+                this.loadingVillages = true;
+                this.villages = await this.fetchRegions(this.regionUrls.villages.replace('__district__', this.districtId));
+                this.loadingVillages = false;
+            },
         }"
     >
         @csrf
@@ -124,9 +161,9 @@
 
             <div>
                 <x-input-label for="regency_id" value="Kabupaten/Kota" />
-                <select id="regency_id" name="regency_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="regencyId" x-on:change="regencyChanged" required>
-                    <option value="">Pilih kabupaten/kota</option>
-                    <template x-for="regency in filteredRegencies()" :key="regency.id">
+                <select id="regency_id" name="regency_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="regencyId" x-on:change="regencyChanged" x-bind:disabled="! provinceId || loadingRegencies" required>
+                    <option value="" x-text="loadingRegencies ? 'Memuat kabupaten/kota...' : 'Pilih kabupaten/kota'"></option>
+                    <template x-for="regency in regencies" :key="regency.id">
                         <option :value="regency.id" x-text="regency.name"></option>
                     </template>
                 </select>
@@ -135,9 +172,9 @@
 
             <div>
                 <x-input-label for="district_id" value="Kecamatan" />
-                <select id="district_id" name="district_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="districtId" x-on:change="districtChanged" required>
-                    <option value="">Pilih kecamatan</option>
-                    <template x-for="district in filteredDistricts()" :key="district.id">
+                <select id="district_id" name="district_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="districtId" x-on:change="districtChanged" x-bind:disabled="! regencyId || loadingDistricts" required>
+                    <option value="" x-text="loadingDistricts ? 'Memuat kecamatan...' : 'Pilih kecamatan'"></option>
+                    <template x-for="district in districts" :key="district.id">
                         <option :value="district.id" x-text="district.name"></option>
                     </template>
                 </select>
@@ -146,9 +183,9 @@
 
             <div>
                 <x-input-label for="village_id" value="Desa/Kelurahan" />
-                <select id="village_id" name="village_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="villageId" required>
-                    <option value="">Pilih desa/kelurahan</option>
-                    <template x-for="village in filteredVillages()" :key="village.id">
+                <select id="village_id" name="village_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="villageId" x-bind:disabled="! districtId || loadingVillages" required>
+                    <option value="" x-text="loadingVillages ? 'Memuat desa/kelurahan...' : 'Pilih desa/kelurahan'"></option>
+                    <template x-for="village in villages" :key="village.id">
                         <option :value="village.id" x-text="village.name"></option>
                     </template>
                 </select>

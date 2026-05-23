@@ -1,26 +1,58 @@
 <?php
 
+/*
+ * This file is part of the IndoRegion package.
+ *
+ * (c) Azis Hapidin <azishapidin.com | azishapidin@gmail.com>
+ *
+ */
+
 namespace App\Models;
 
+use AzisHapidin\IndoRegion\Traits\DistrictTrait;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Regency;
+use App\Models\Village;
 
+/**
+ * District Model.
+ */
 class District extends Model
 {
-    public $timestamps = false;
+    use DistrictTrait;
 
-    protected $fillable = [
-        'regency_id',
-        'name',
+    /**
+     * Table name.
+     *
+     * @var string
+     */
+    protected $table = 'districts';
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'regency_id'
     ];
 
-    public function regency(): BelongsTo
+    /**
+     * District belongs to Regency.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function regency()
     {
         return $this->belongsTo(Regency::class);
     }
 
-    public function villages(): HasMany
+    /**
+     * District has many villages.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function villages()
     {
         return $this->hasMany(Village::class);
     }

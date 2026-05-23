@@ -36,8 +36,12 @@ Route::middleware(['auth', 'role:pelanggan'])->prefix('pelanggan')->name('pelang
     Route::patch('/cart/items/{cartItem}', [Pelanggan\CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/items/{cartItem}', [Pelanggan\CartController::class, 'destroy'])->name('cart.destroy');
     Route::get('/orders', [Pelanggan\OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/history', [Pelanggan\OrderController::class, 'history'])->name('orders.history');
     Route::get('/orders/{order}/payment-proof', [Pelanggan\OrderController::class, 'paymentProofForm'])->name('orders.payment-proof');
     Route::post('/orders/{order}/payment-proof', [Pelanggan\OrderController::class, 'uploadPaymentProof'])->name('orders.payment-proof.store');
+    Route::patch('/orders/{order}/complete', [Pelanggan\OrderController::class, 'complete'])->name('orders.complete');
+    Route::patch('/orders/{order}/cancel', [Pelanggan\OrderController::class, 'cancel'])->name('orders.cancel');
+    Route::get('/orders/{order}', [Pelanggan\OrderController::class, 'show'])->name('orders.show');
     Route::post('/wishlist/{product}', [Pelanggan\WishlistController::class, 'toggle'])->name('wishlist.toggle');
 });
 
@@ -80,6 +84,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/addresses', [ProfileController::class, 'storeAddress'])->name('profile.addresses.store');
     Route::patch('/profile/addresses/{address}', [ProfileController::class, 'updateAddress'])->name('profile.addresses.update');
     Route::delete('/profile/addresses/{address}', [ProfileController::class, 'destroyAddress'])->name('profile.addresses.destroy');
+    Route::get('/regions/provinces/{province}/regencies', [ProfileController::class, 'regenciesByProvince'])->name('regions.regencies.index');
+    Route::get('/regions/regencies/{regency}/districts', [ProfileController::class, 'districtsByRegency'])->name('regions.districts.index');
+    Route::get('/regions/districts/{district}/villages', [ProfileController::class, 'villagesByDistrict'])->name('regions.villages.index');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
