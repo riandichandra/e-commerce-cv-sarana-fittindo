@@ -28,10 +28,21 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Redirect berdasarkan role
-        $redirectUrl = $request->user()->redirectBasedOnRole();
+        $user = auth()->user();
 
-        return redirect()->intended($redirectUrl);
+        if($user->hasRole('admin')) {
+            return redirect()->route('admin.dashboard');
+        } else if ($user->hasRole('pelanggan')) {
+            return redirect()->route('pelanggan.dashboard');
+        } else if ($user->hasRole('marketing')) {
+            return redirect()->route('marketing.dashboard');
+        } else if ($user->hasRole('gm')) {
+            return redirect()->route('gm.dashboard');
+        } else if ($user->hasRole('direktur')) {
+            return redirect()->route('direktur.dashboard');
+        }
+
+        return redirect()->route('dashboard');
     }
 
     /**

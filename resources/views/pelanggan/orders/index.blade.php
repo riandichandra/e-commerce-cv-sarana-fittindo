@@ -18,7 +18,8 @@
 
                 @forelse ($unpaidOrders as $order)
                     <article class="bg-white p-5 shadow-sm">
-                        <div class="flex flex-col gap-3 border-b border-[#e8eef7] pb-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div
+                            class="flex flex-col gap-3 border-b border-[#e8eef7] pb-4 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <p class="text-lg font-black text-[#10233d]">{{ $order->order_number }}</p>
                                 <p class="mt-1 text-xs font-semibold uppercase tracking-[.12em] text-[#7b8799]">
@@ -27,7 +28,8 @@
                             </div>
                             <div class="flex flex-col items-start gap-2 sm:items-end">
                                 <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Order</p>
-                                <span class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
+                                <span
+                                    class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
                                     {{ $order->status_label }}
                                 </span>
                             </div>
@@ -38,9 +40,11 @@
                                 <div class="flex items-start justify-between gap-4 text-sm">
                                     <div>
                                         <p class="font-bold text-[#10233d]">{{ $item->product_name }}</p>
-                                        <p class="mt-1 text-[#657891]">{{ $item->quantity }} x Rp {{ number_format($item->product_price, 0, ',', '.') }}</p>
+                                        <p class="mt-1 text-[#657891]">{{ $item->quantity }} x Rp
+                                            {{ number_format($item->product_price, 0, ',', '.') }}</p>
                                     </div>
-                                    <p class="shrink-0 font-black text-[#c8102e]">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</p>
+                                    <p class="shrink-0 font-black text-[#c8102e]">Rp
+                                        {{ number_format($item->subtotal, 0, ',', '.') }}</p>
                                 </div>
                             @endforeach
                         </div>
@@ -52,7 +56,8 @@
                             </div>
                             <div class="sm:text-right">
                                 <p class="text-[#657891]">Total</p>
-                                <p class="mt-1 text-lg font-black text-[#c8102e]">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</p>
+                                <p class="mt-1 text-lg font-black text-[#c8102e]">Rp
+                                    {{ number_format($order->total_amount, 0, ',', '.') }}</p>
                             </div>
                         </div>
 
@@ -71,8 +76,10 @@
                     </article>
                 @empty
                     <div class="bg-white px-6 py-12 text-center shadow-sm">
-                        <iconify-icon icon="mdi:receipt-text-check-outline" class="text-5xl text-[#9db2cf]"></iconify-icon>
-                        <p class="mt-4 text-sm font-semibold text-[#657891]">Tidak ada pesanan yang menunggu pembayaran.</p>
+                        <iconify-icon icon="mdi:receipt-text-check-outline"
+                            class="text-5xl text-[#9db2cf]"></iconify-icon>
+                        <p class="mt-4 text-sm font-semibold text-[#657891]">Tidak ada pesanan yang menunggu pembayaran.
+                        </p>
                     </div>
                 @endforelse
             </div>
@@ -87,7 +94,8 @@
 
                 @forelse ($paidOrders as $order)
                     <article class="bg-white p-5 shadow-sm">
-                        <div class="flex flex-col gap-3 border-b border-[#e8eef7] pb-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div
+                            class="flex flex-col gap-3 border-b border-[#e8eef7] pb-4 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <p class="text-lg font-black text-[#10233d]">{{ $order->order_number }}</p>
                                 <p class="mt-1 text-xs font-semibold uppercase tracking-[.12em] text-[#7b8799]">
@@ -96,7 +104,8 @@
                             </div>
                             <div class="flex flex-col items-start gap-2 sm:items-end">
                                 <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Order</p>
-                                <span class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
+                                <span
+                                    class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
                                     {{ $order->status_label }}
                                 </span>
                             </div>
@@ -107,9 +116,11 @@
                                 <div class="flex items-start justify-between gap-4 text-sm">
                                     <div>
                                         <p class="font-bold text-[#10233d]">{{ $item->product_name }}</p>
-                                        <p class="mt-1 text-[#657891]">{{ $item->quantity }} x Rp {{ number_format($item->product_price, 0, ',', '.') }}</p>
+                                        <p class="mt-1 text-[#657891]">{{ $item->quantity }} x Rp
+                                            {{ number_format($item->product_price, 0, ',', '.') }}</p>
                                     </div>
-                                    <p class="shrink-0 font-black text-[#c8102e]">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</p>
+                                    <p class="shrink-0 font-black text-[#c8102e]">Rp
+                                        {{ number_format($item->subtotal, 0, ',', '.') }}</p>
                                 </div>
                             @endforeach
                         </div>
@@ -121,7 +132,8 @@
                             </div>
                             <div class="sm:text-right">
                                 <p class="text-[#657891]">Total</p>
-                                <p class="mt-1 text-lg font-black text-[#c8102e]">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</p>
+                                <p class="mt-1 text-lg font-black text-[#c8102e]">Rp
+                                    {{ number_format($order->total_amount, 0, ',', '.') }}</p>
                             </div>
                         </div>
 
@@ -131,28 +143,6 @@
                                 <iconify-icon icon="mdi:eye-outline"></iconify-icon>
                                 Detail
                             </a>
-
-                            @if ($order->status === 'shipped')
-                                <form action="{{ route('pelanggan.orders.complete', $order) }}" method="POST">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit"
-                                        class="flex h-11 w-full items-center justify-center gap-2 bg-green-600 text-xs font-black uppercase tracking-[.16em] text-white hover:bg-green-700">
-                                        <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
-                                        Completed
-                                    </button>
-                                </form>
-
-                                <form action="{{ route('pelanggan.orders.cancel', $order) }}" method="POST" onsubmit="return confirm('Ajukan pengembalian untuk pesanan ini?')">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit"
-                                        class="flex h-11 w-full items-center justify-center gap-2 bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
-                                        <iconify-icon icon="mdi:restore"></iconify-icon>
-                                        Cancelled
-                                    </button>
-                                </form>
-                            @endif
                         </div>
                     </article>
                 @empty

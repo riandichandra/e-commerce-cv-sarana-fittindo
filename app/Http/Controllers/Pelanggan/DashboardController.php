@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pelanggan;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Promotion;
 
 class DashboardController extends Controller
 {
@@ -21,7 +22,14 @@ class DashboardController extends Controller
             ->latest()
             ->limit(4)
             ->get();
+        $heroPromotions = Promotion::where('is_active', true)
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->whereNotNull('banner_image')
+            ->latest()
+            ->limit(5)
+            ->get();
 
-        return view('pelanggan.dashboard', compact('categories', 'latestProducts', 'products'));
+        return view('pelanggan.dashboard', compact('categories', 'latestProducts', 'products', 'heroPromotions'));
     }
 }

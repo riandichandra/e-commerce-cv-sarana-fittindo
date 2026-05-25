@@ -19,8 +19,8 @@ class UserController extends Controller
         $pageName = 'Users';
 
         $roles = Role::with(['users' => fn ($query) => $query->latest()])
-            ->orderBy('id')
-            ->get();
+    ->orderBy('id')
+    ->get();
 
         return view('admin.users.index', compact('pagePath', 'pageName', 'roles'));
     }
@@ -46,10 +46,14 @@ class UserController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
+        $roleId = $validated['role_id'];
+        unset($validated['role_id']);
+
         $validated['password'] = Hash::make($validated['password']);
         $validated['is_active'] = $request->boolean('is_active');
 
-        User::create($validated);
+        $user = User::create($validated);
+        $user->assignRole(Role::findOrFail($roleId)->name);
 
         return redirect()
             ->route('admin.users.index')
@@ -83,6 +87,9 @@ class UserController extends Controller
                 ->with('error', 'Akun yang sedang digunakan tidak boleh dinonaktifkan.');
         }
 
+        $roleId = $validated['role_id'];
+        unset($validated['role_id']);
+
         $validated['is_active'] = $request->boolean('is_active');
 
         if (!empty($validated['password'])) {
@@ -92,6 +99,7 @@ class UserController extends Controller
         }
 
         $user->update($validated);
+        $user->syncRoles(Role::findOrFail($roleId)->name);
 
         return redirect()
             ->route('admin.users.index')

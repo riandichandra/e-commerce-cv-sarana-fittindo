@@ -63,14 +63,66 @@
             'image' => $localImages[3],
         ],
     ];
+
+    $heroSlides = $heroPromotions
+        ->map(
+            fn($promotion) => [
+                'title' => $promotion->name,
+                'subtitle' => $promotion->type === 'percent' ? 'PROMO DISKON PERSEN' : 'PROMO POTONGAN HARGA',
+                'description' =>
+                    $promotion->description ?:
+                    'Nikmati penawaran khusus CV Sarana Fittindo selama periode promosi berlangsung.',
+                'image' => asset('storage/' . $promotion->banner_image),
+                'url' => $promotion->banner_url ?: route('pelanggan.products.index'),
+                'period' => $promotion->start_date->format('d M Y') . ' - ' . $promotion->end_date->format('d M Y'),
+            ],
+        )
+        ->values();
+
+    if ($heroSlides->isEmpty()) {
+        $heroSlides = collect([
+            [
+                'title' => 'Architectural Precision.',
+                'subtitle' => 'NEW SEASON ARRIVALS',
+                'description' =>
+                    'Discover our curated collection of industrial-grade HPL and Plywood solutions designed for durability and high-end aesthetics.',
+                'image' => $localImages[2],
+                'url' => route('pelanggan.products.index'),
+                'period' => 'Featured Collection',
+            ],
+        ]);
+    }
 @endphp
 
 <x-pelanggan-layout>
-    <section class="relative h-[650px] overflow-hidden bg-[#0c1d38]">
+    <section x-data="{
+        active: 0,
+        slides: @js($heroSlides),
+        timer: null,
+        next() {
+            this.active = (this.active + 1) % this.slides.length;
+        },
+        prev() {
+            this.active = (this.active - 1 + this.slides.length) % this.slides.length;
+        },
+        go(index) {
+            this.active = index;
+        },
+        start() {
+            this.timer = setInterval(() => this.next(), 5500);
+        },
+        reset() {
+            clearInterval(this.timer);
+            this.start();
+        },
+    }" x-init="start()" class="relative h-[650px] overflow-hidden bg-[#0c1d38]">
         <div class="absolute inset-0">
-            <div class="h-full w-full scale-105 bg-cover bg-center"
-                style="background-image: linear-gradient(90deg, rgba(4,17,45,.92) 0%, rgba(7,25,60,.72) 34%, rgba(9,22,45,.18) 68%), url('{{ $localImages[2] }}');">
-            </div>
+            <template x-for="(slide, index) in slides" :key="slide.image + index">
+                <div x-show="active === index" x-transition.opacity.duration.700ms
+                    class="absolute inset-0 h-full w-full scale-105 bg-cover bg-center"
+                    :style="`background-image: linear-gradient(90deg, rgba(4,17,45,.92) 0%, rgba(7,25,60,.72) 34%, rgba(9,22,45,.18) 68%), url('${slide.image}');`">
+                </div>
+            </template>
             <div class="absolute inset-0 opacity-80"
                 style="background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 2px, transparent 2px 16px), linear-gradient(180deg, transparent 0%, rgba(0,38,108,.82) 100%);">
             </div>
@@ -78,31 +130,42 @@
 
         <div class="relative mx-auto flex h-full max-w-[1365px] items-center px-12">
             <div class="max-w-[720px] pt-10">
-                <p class="mb-6 text-[12px] font-black uppercase tracking-[.35em] text-white">NEW SEASON ARRIVALS</p>
-                <h1 class="text-[78px] font-black uppercase leading-[.96] tracking-[-.03em] text-white md:text-[92px]">
-                    Architectural<br>Precision.
+                <p class="mb-6 text-[12px] font-black uppercase tracking-[.35em] text-white" x-text="slides[active].subtitle"></p>
+                <h1 class="text-[58px] font-black uppercase leading-[.96] text-white md:text-[76px]">
+                    <span x-text="slides[active].title"></span>
                 </h1>
+                <p class="mt-5 text-[12px] font-black uppercase tracking-[.18em] text-[#ffe2e7]" x-text="slides[active].period"></p>
                 <p class="mt-8 max-w-[540px] text-[16px] leading-8 text-[#c6d6ef]">
-                    Discover our curated collection of industrial-grade HPL and Plywood solutions designed for
-                    durability and high-end aesthetics.
+                    <span x-text="slides[active].description"></span>
                 </p>
-                <a href="{{ route('pelanggan.products.index') }}"
+                <a :href="slides[active].url"
                     class="mt-9 inline-flex h-12 items-center bg-[#c8102e] px-8 text-[12px] font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
-                    View Collections
+                    View Promotion
                     <iconify-icon icon="mdi:arrow-right" class="ml-2 fs-6"></iconify-icon>
                 </a>
             </div>
         </div>
 
         <div class="absolute bottom-10 right-12 flex">
-            <button class="flex h-11 w-11 items-center justify-center bg-white/15 text-white hover:bg-white/25"
+            <button type="button" x-on:click="prev(); reset()"
+                class="flex h-11 w-11 items-center justify-center bg-white/15 text-white hover:bg-white/25"
                 aria-label="Previous slide">
                 <iconify-icon icon="mdi:chevron-left" class="fs-5"></iconify-icon>
             </button>
-            <button class="ml-1 flex h-11 w-11 items-center justify-center bg-white/15 text-white hover:bg-white/25"
+            <button type="button" x-on:click="next(); reset()"
+                class="ml-1 flex h-11 w-11 items-center justify-center bg-white/15 text-white hover:bg-white/25"
                 aria-label="Next slide">
                 <iconify-icon icon="mdi:chevron-right" class="fs-5"></iconify-icon>
             </button>
+        </div>
+
+        <div class="absolute bottom-12 left-12 flex gap-2">
+            <template x-for="(slide, index) in slides" :key="index">
+                <button type="button" x-on:click="go(index); reset()"
+                    class="h-2.5 transition-all"
+                    :class="active === index ? 'w-9 bg-white' : 'w-2.5 bg-white/40 hover:bg-white/70'"
+                    aria-label="Go to promotion slide"></button>
+            </template>
         </div>
     </section>
 

@@ -18,9 +18,8 @@ class DashboardTest extends TestCase
             'guard_name' => 'web',
         ]);
 
-        $admin = User::factory()->create([
-            'role_id' => $role->id,
-        ]);
+        $admin = User::factory()->create();
+        $admin->assignRole($role->name);
 
         $response = $this->actingAs($admin)->get(route('admin.dashboard'));
 

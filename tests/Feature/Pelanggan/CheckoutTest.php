@@ -144,9 +144,10 @@ class CheckoutTest extends TestCase
         ]);
 
         $user = User::factory()->create([
-            'role_id' => $role->id,
             'phone' => '081111111111',
         ]);
+
+        $user->assignRole($role->name);
 
         $category = ProductCategory::create([
             'name' => 'Material',

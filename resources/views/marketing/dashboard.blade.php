@@ -1,0 +1,182 @@
+<x-marketing-layout>
+    @php
+        $summaryCards = [
+            [
+                'label' => 'Total Customers',
+                'value' => $totalCustomers,
+                'icon' => 'mdi:account-group',
+                'tone' => 'bg-rose-50 text-primary',
+                'meta' => $activeCustomers . ' pelanggan aktif',
+            ],
+            [
+                'label' => 'Active Promotions',
+                'value' => $activePromotions . ' / ' . $totalPromotions,
+                'icon' => 'mdi:loudspeaker',
+                'tone' => 'bg-emerald-50 text-emerald-700',
+                'meta' => $upcomingPromotions . ' promosi terjadwal',
+            ],
+            [
+                'label' => 'Completed Orders',
+                'value' => $completedOrders,
+                'icon' => 'mdi:shopping-outline',
+                'tone' => 'bg-blue-50 text-blue-700',
+                'meta' => 'Order selesai',
+            ],
+            [
+                'label' => 'Discount Given',
+                'value' => 'Rp ' . number_format($totalDiscountGiven, 0, ',', '.'),
+                'icon' => 'mdi:ticket-percent',
+                'tone' => 'bg-yellow-50 text-yellow-700',
+                'meta' => 'Total diskon dari order',
+            ],
+        ];
+    @endphp
+
+    <div class="space-y-7">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+                <div class="flex items-center gap-1 text-xs uppercase tracking-[.18em] text-gray-500">
+                    <span>{{ $pagePath[0] }}</span>
+                    <span>/</span>
+                    <span class="font-black text-primary">{{ $pagePath[1] }}</span>
+                </div>
+                <h1 class="mt-3 text-4xl font-black tracking-tight text-texthighlight">{{ $pageName }}</h1>
+                <p class="mt-2 max-w-2xl text-sm font-medium text-gray-600">
+                    Ringkasan pelanggan, performa promosi, dan pertumbuhan customer terbaru.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-sm lg:min-w-[360px]">
+                <a href="{{ route('marketing.promotions.create') }}" class="flex items-center justify-between bg-white px-4 py-3 font-bold text-texthighlight shadow-sm hover:text-primary">
+                    <span>New Promo</span>
+                    <iconify-icon icon="mdi:plus"></iconify-icon>
+                </a>
+                <a href="{{ route('marketing.users.index') }}" class="flex items-center justify-between bg-white px-4 py-3 font-bold text-texthighlight shadow-sm hover:text-primary">
+                    <span>Customers</span>
+                    <iconify-icon icon="mdi:arrow-right"></iconify-icon>
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            @foreach ($summaryCards as $card)
+                <div class="bg-white p-5 shadow-sm">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-xs font-black uppercase tracking-[.16em] text-gray-500">{{ $card['label'] }}</p>
+                            <p class="mt-3 text-3xl font-black text-texthighlight">{{ $card['value'] }}</p>
+                            <p class="mt-2 text-sm font-semibold text-gray-500">{{ $card['meta'] }}</p>
+                        </div>
+                        <div class="flex h-12 w-12 items-center justify-center {{ $card['tone'] }}">
+                            <iconify-icon icon="{{ $card['icon'] }}" class="fs-4"></iconify-icon>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_380px]">
+            <section class="bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-black uppercase text-texthighlight">Customer Growth</h2>
+                        <p class="mt-1 text-sm font-medium text-gray-500">Pelanggan baru dalam 6 bulan terakhir.</p>
+                    </div>
+                    <p class="text-sm font-black text-primary">{{ $totalCustomers }} customers</p>
+                </div>
+
+                <div class="mt-8 flex h-64 items-end gap-4 border-b border-gray-200">
+                    @foreach ($monthlyCustomers as $month)
+                        @php
+                            $height = max(8, ((int) $month['count'] / $maxMonthlyCustomers) * 100);
+                        @endphp
+                        <div class="flex h-full flex-1 flex-col justify-end gap-3">
+                            <div class="relative flex flex-1 items-end">
+                                <div class="w-full bg-primary" style="height: {{ $height }}%"></div>
+                            </div>
+                            <div class="pb-3 text-center">
+                                <p class="text-xs font-black uppercase text-gray-500">{{ $month['label'] }}</p>
+                                <p class="mt-1 text-xs font-semibold text-texthighlight">{{ $month['count'] }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+
+            <section class="bg-[#10233d] p-6 text-white shadow-sm">
+                <h2 class="text-xl font-black uppercase">Promotion Health</h2>
+                <p class="mt-1 text-sm font-medium text-blue-100">Status kampanye marketing saat ini.</p>
+
+                <div class="mt-6 space-y-5">
+                    <div class="flex items-center justify-between border-b border-white/15 pb-4">
+                        <span class="text-sm text-blue-100">Total promotions</span>
+                        <span class="text-lg font-black">{{ $totalPromotions }}</span>
+                    </div>
+                    <div class="flex items-center justify-between border-b border-white/15 pb-4">
+                        <span class="text-sm text-blue-100">Active now</span>
+                        <span class="text-lg font-black">{{ $activePromotions }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-blue-100">Upcoming</span>
+                        <span class="text-lg font-black">{{ $upcomingPromotions }}</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <section class="bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-black uppercase text-texthighlight">Recent Promotions</h2>
+                        <p class="mt-1 text-sm font-medium text-gray-500">Promosi terbaru yang dibuat.</p>
+                    </div>
+                    <a href="{{ route('marketing.promotions.index') }}" class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">View All</a>
+                </div>
+
+                <div class="mt-5 space-y-4">
+                    @forelse ($recentPromotions as $promotion)
+                        <div class="flex items-start justify-between border-b border-gray-100 pb-4">
+                            <div>
+                                <p class="font-black text-texthighlight">{{ $promotion->name }}</p>
+                                <p class="text-xs text-gray-500">{{ $promotion->start_date->format('d M Y') }} - {{ $promotion->end_date->format('d M Y') }}</p>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-bold {{ $promotion->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
+                                {{ $promotion->is_active ? 'Active' : 'Inactive' }}
+                            </span>
+                        </div>
+                    @empty
+                        <div class="py-10 text-center text-sm font-semibold text-gray-500">Belum ada promosi.</div>
+                    @endforelse
+                </div>
+            </section>
+
+            <section class="bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-black uppercase text-texthighlight">Recent Customers</h2>
+                        <p class="mt-1 text-sm font-medium text-gray-500">Pelanggan terbaru dari role pelanggan.</p>
+                    </div>
+                    <a href="{{ route('marketing.users.index') }}" class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">View All</a>
+                </div>
+
+                <div class="mt-5 space-y-4">
+                    @forelse ($recentCustomers as $customer)
+                        <div class="flex items-start justify-between border-b border-gray-100 pb-4">
+                            <div>
+                                <p class="font-black text-texthighlight">{{ $customer->name }}</p>
+                                <p class="mt-1 text-sm font-semibold text-gray-600">{{ $customer->email }}</p>
+                                <p class="text-xs text-gray-500">{{ $customer->created_at->format('d M Y') }}</p>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-bold {{ $customer->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
+                                {{ $customer->is_active ? 'Active' : 'Inactive' }}
+                            </span>
+                        </div>
+                    @empty
+                        <div class="py-10 text-center text-sm font-semibold text-gray-500">Belum ada pelanggan.</div>
+                    @endforelse
+                </div>
+            </section>
+        </div>
+    </div>
+</x-marketing-layout>

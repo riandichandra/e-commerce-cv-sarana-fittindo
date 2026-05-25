@@ -23,7 +23,6 @@
                             <th class="py-3 px-3">Total</th>
                             <th class="py-3 px-3">Payment</th>
                             <th class="py-3 px-3">Order Status</th>
-                            <th class="py-3 px-3">Delivery</th>
                             <th class="py-3 px-3">Date</th>
                             <th class="py-3 px-3">Actions</th>
                         </tr>

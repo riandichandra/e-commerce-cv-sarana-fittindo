@@ -22,7 +22,7 @@ class DashboardController extends Controller
         $waitingConfirmation = Order::where('status', 'waiting_payment_confirmation')->count();
         $pendingPayment = Order::where('status', 'pending_payment')->count();
         $processingOrders = Order::whereIn('status', ['payment_confirmed', 'processing', 'shipped'])->count();
-        $totalCustomers = User::whereHas('role', fn ($query) => $query->where('name', 'pelanggan'))->count();
+        $totalCustomers = User::role('pelanggan')->count();
         $verifiedRevenue = Payment::where('status', 'verified')->sum('amount');
         $pendingPaymentAmount = Payment::where('status', 'pending')->sum('amount');
 

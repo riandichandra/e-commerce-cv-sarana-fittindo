@@ -19,9 +19,10 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
-        'role_id',
         'is_active',
     ];
+
+    protected $guard_name = 'web';
 
     protected $hidden = [
         'password',
@@ -33,12 +34,6 @@ class User extends Authenticatable
         'password' => 'hashed',
         'is_active' => 'boolean',
     ];
-
-    // Relasi ke Role
-    public function role()
-    {
-        return $this->belongsTo(Role::class);
-    }
 
     public function cart(): HasOne
     {
@@ -55,26 +50,35 @@ class User extends Authenticatable
         return $this->hasMany(UserAddress::class);
     }
 
-    public function hasRole($role)
-    {
-        return $this->role && $this->role->name === $role;
-    }
-
     // Cek apakah user adalah admin
-    public function isAdmin()
+    public function isAdmin(): bool
     {
-        return $this->role?->name === 'admin';
+        return $this->hasRole('admin');
     }
 
     // Redirect berdasarkan role setelah login
-    public function redirectBasedOnRole()
+    public function redirectBasedOnRole(): string
     {
-        return match ($this->role?->name) {
-            'admin' => '/admin/dashboard',
-            'marketing' => '/marketing/dashboard',
-            'gm' => '/gm/dashboard',
-            'direktur' => '/direktur/dashboard',
-            default => '/',
-        };
+        if ($this->hasRole('admin')) {
+            return '/admin/dashboard';
+        }
+
+        if ($this->hasRole('marketing')) {
+            return '/marketing/dashboard';
+        }
+
+        if ($this->hasRole('gm')) {
+            return '/gm/dashboard';
+        }
+
+        if ($this->hasRole('direktur')) {
+            return '/direktur/dashboard';
+        }
+
+        if ($this->hasRole('pelanggan')) {
+            return '/pelanggan/dashboard';
+        }
+
+        return '/';
     }
 }

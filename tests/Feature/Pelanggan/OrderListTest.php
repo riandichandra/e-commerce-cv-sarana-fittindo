@@ -175,10 +175,13 @@ class OrderListTest extends TestCase
             ['guard_name' => 'web']
         );
 
-        return User::factory()->create([
-            'role_id' => $role->id,
+        $user = User::factory()->create([
             'phone' => '081111111111',
         ]);
+
+        $user->assignRole($role->name);
+
+        return $user;
     }
 
     private function makePaymentMethod(): PaymentMethod

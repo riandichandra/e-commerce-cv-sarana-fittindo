@@ -15,11 +15,11 @@ export default {
                 sans: ['Inter', ...defaultTheme.fontFamily.sans],
             },
             colors: {
-                primary: '#C8102E',
+                'primary': '#C8102E',
                 'primary-dark': '#9F0D24',
-                text: '#475569',
-                texthighlight: '#8A1022',
-                background: '#FFF7F8',
+                'text': '#475569',
+                'texthighlight': '#8A1022',
+                'background': '#FFF7F8',
             }
         },
     },

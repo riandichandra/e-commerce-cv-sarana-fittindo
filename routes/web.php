@@ -63,13 +63,15 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 // Marketing routes
 Route::middleware(['auth', 'role:marketing'])->prefix('marketing')->name('marketing.')->group(function () {
     Route::get('/dashboard', [Marketing\DashboardController::class, 'index'])->name('dashboard');
-    Route::resource('promotions', Marketing\PromotionController::class);
+    Route::resource('promotions', Marketing\PromotionController::class)->except(['show', 'destroy']);
+    Route::get('/users', [Marketing\UserController::class, 'index'])->name('users.index');
 });
 
 // GM routes
 Route::middleware(['auth', 'role:gm'])->prefix('gm')->name('gm.')->group(function () {
     Route::get('/dashboard', [GM\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/reports', [GM\ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/download', [GM\ReportController::class, 'download'])->name('reports.download');
 });
 
 // Direktur routes

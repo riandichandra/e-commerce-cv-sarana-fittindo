@@ -32,7 +32,7 @@
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
             <option value="">Choose role</option>
             @foreach ($roles as $role)
-                <option value="{{ $role->id }}" @selected((string) old('role_id', $user?->role_id) === (string) $role->id)>
+                <option value="{{ $role->id }}" @selected((string) old('role_id', optional($user?->roles->first())->id) === (string) $role->id)>
                     {{ ucwords(str_replace('_', ' ', $role->name)) }}
                 </option>
             @endforeach
