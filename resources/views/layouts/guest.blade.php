@@ -15,47 +15,26 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans text-[#10233d] antialiased">
-    <main class="min-h-screen bg-[#fff1f3]">
-        <div class="grid min-h-screen grid-cols-1 lg:grid-cols-[1.05fr_.95fr]">
-            <section class="relative hidden overflow-hidden bg-[#071d33] lg:block">
-                <div class="absolute inset-0 bg-cover bg-center opacity-70"
-                    style="background-image: linear-gradient(90deg, rgba(4,17,45,.92), rgba(4,17,45,.38)), url('{{ asset('storage/products/dhpkAn0vG4mLZgmK34IkMPhkLMmIDLk5zAIMcp4M.jpg') }}');">
-                </div>
-                <div class="absolute inset-0"
-                    style="background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 1px, transparent 1px 18px);">
-                </div>
-
-                <div class="relative flex h-full flex-col justify-between p-14 text-white">
-                    <a href="{{ route('dashboard') }}" class="text-sm font-black uppercase tracking-[.18em]">
-                        Sarana Fittindo
-                    </a>
-
-                    <div class="max-w-[620px] pb-10">
-                        <p class="mb-5 text-xs font-black uppercase tracking-[.35em] text-[#c8d8ee]">Customer Portal</p>
-                        <h1 class="text-[64px] font-black uppercase leading-[.95] tracking-[-.04em]">
-                            Architectural<br>Precision.
-                        </h1>
-                        <p class="mt-7 max-w-[500px] text-base leading-8 text-[#c6d6ef]">
-                            Akses koleksi material interior premium, kelola profil akun, dan temukan produk terbaik
-                            untuk kebutuhan proyek Anda.
-                        </p>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-4 text-xs font-bold uppercase tracking-[.14em] text-[#d6e6fb]">
-                        <div class="border-t border-white/20 pt-4">HPL Panels</div>
-                        <div class="border-t border-white/20 pt-4">Plywood</div>
-                        <div class="border-t border-white/20 pt-4">Adhesives</div>
-                    </div>
-                </div>
+<body class="font-sans text-[#0b1735] antialiased">
+    <main class="min-h-screen overflow-hidden bg-[#fff2f5]">
+        <div class="grid min-h-screen grid-cols-1 lg:grid-cols-[1.52fr_1fr]">
+            <section class="relative hidden min-h-screen overflow-hidden bg-[#061b3c] lg:block">
+                <img src="{{ asset('images/auth/sarana-auth-hero.png') }}" alt="CV Sarana Fittindo"
+                    class="absolute inset-0 h-full w-full object-cover object-left">
+                <div class="absolute inset-0 bg-gradient-to-r from-[#031231]/10 via-transparent to-[#031231]/15"></div>
             </section>
 
-            <section class="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8">
-                <div class="w-full max-w-[480px]">
-                    <div class="mb-8 flex items-center justify-between lg:hidden">
+            <section class="relative flex min-h-screen items-center justify-center px-5 py-10 sm:px-8">
+                <div class="absolute inset-0 bg-[#fff2f5]"></div>
+                <div class="absolute inset-0 opacity-70"
+                    style="background-image: radial-gradient(circle at 20% 10%, rgba(200,16,46,.14), transparent 28%), radial-gradient(circle at 80% 80%, rgba(255,255,255,.9), transparent 32%), repeating-linear-gradient(42deg, rgba(200,16,46,.08) 0 1px, transparent 1px 18px);">
+                </div>
+
+                <div class="relative w-full max-w-[560px]">
+                    <div class="mb-6 flex items-center justify-between lg:hidden">
                         <a href="{{ route('dashboard') }}"
                             class="text-sm font-black uppercase tracking-[.16em] text-[#c8102e]">
-                            Sarana Fittindo
+                            CV. Sarana Fittindo
                         </a>
                         <a href="{{ route('dashboard') }}"
                             class="text-xs font-bold uppercase tracking-[.14em] text-[#5d7190]">
@@ -63,7 +42,7 @@
                         </a>
                     </div>
 
-                    <div class="border border-[#f2c8d0] bg-white p-7 shadow-[0_24px_70px_rgba(9,33,68,.12)] sm:p-10">
+                    <div class="rounded-[28px] border border-white/80 bg-white/95 p-7 shadow-[0_30px_90px_rgba(10,28,64,.16)] backdrop-blur sm:p-10 lg:p-12">
                         {{ $slot }}
                     </div>
                 </div>

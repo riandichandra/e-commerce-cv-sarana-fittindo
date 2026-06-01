@@ -24,23 +24,30 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        $wishlistItems = $request->user()
-            ->wishlists()
-            ->with(['product.images', 'product.category'])
-            ->latest()
-            ->get();
+        $user = $request->user();
+        $isCustomer = $user->hasRole('pelanggan');
 
-        $addresses = $request->user()
-            ->addresses()
-            ->with(['province', 'regency', 'district', 'village'])
-            ->orderByDesc('is_main')
-            ->latest()
-            ->get();
+        $wishlistItems = $isCustomer
+            ? $user
+                ->wishlists()
+                ->with(['product.images', 'product.category'])
+                ->latest()
+                ->get()
+            : collect();
+
+        $addresses = $isCustomer
+            ? $user
+                ->addresses()
+                ->with(['province', 'regency', 'district', 'village'])
+                ->orderByDesc('is_main')
+                ->latest()
+                ->get()
+            : collect();
 
         $editingAddress = null;
 
-        if ($request->filled('address')) {
-            $editingAddress = $request->user()
+        if ($isCustomer && $request->filled('address')) {
+            $editingAddress = $user
                 ->addresses()
                 ->whereKey($request->integer('address'))
                 ->first();
@@ -51,7 +58,10 @@ class ProfileController extends Controller
         $selectedDistrict = $request->old('district_id', $editingAddress?->district_id);
 
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'isCustomer' => $isCustomer,
+            'dashboardUrl' => url($user->redirectBasedOnRole()),
+            'roleName' => ucwords(str_replace('_', ' ', $user->getRoleNames()->first() ?? '-')),
             'wishlistItems' => $wishlistItems,
             'addresses' => $addresses,
             'editingAddress' => $editingAddress,
