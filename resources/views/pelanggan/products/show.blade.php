@@ -71,6 +71,7 @@
                             <div class="w-3 h-3 rounded-full bg-green-600"></div>
                             <span class="text-sm font-semibold text-green-600">TERSEDIA</span>
                         </div>
+                        <p class="mt-2 text-sm text-gray-600">Stok: {{ $product->stock }}</p>
                     @else
                         <div class="inline-flex items-center gap-2">
                             <div class="w-3 h-3 rounded-full bg-red-600"></div>
@@ -105,7 +106,8 @@
                             @auth
                                 @csrf
                             @endauth
-                            <input type="hidden" name="quantity" id="cart_quantity" value="1">
+                            <input type="hidden" name="quantity" id="cart_quantity" value="1"
+                                data-max="{{ $product->stock }}">
                             <button type="submit"
                                 class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-6 transition duration-300 rounded-lg">
                                 ADD TO CART
@@ -122,17 +124,20 @@
                 <!-- Wishlist & Share -->
                 <div class="flex items-center gap-4 border-t border-b border-gray-200 py-4 mb-8">
                     @php
-                        $isWishlisted = Auth::check() && Auth::user()->wishlists()->where('product_id', $product->id)->exists();
+                        $isWishlisted =
+                            Auth::check() && Auth::user()->wishlists()->where('product_id', $product->id)->exists();
                     @endphp
                     <form action="{{ Auth::check() ? route('pelanggan.wishlist.toggle', $product) : route('login') }}"
                         method="{{ Auth::check() ? 'POST' : 'GET' }}">
                         @auth
                             @csrf
                         @endauth
-                    <button type="submit" class="flex items-center gap-2 {{ $isWishlisted ? 'text-red-600' : 'text-gray-700 hover:text-red-600' }} transition">
-                        <iconify-icon icon="{{ $isWishlisted ? 'mdi:heart' : 'mdi:heart-outline' }}" width="20"></iconify-icon>
-                        <span class="text-sm font-semibold">WISHLIST</span>
-                    </button>
+                        <button type="submit"
+                            class="flex items-center gap-2 {{ $isWishlisted ? 'text-red-600' : 'text-gray-700 hover:text-red-600' }} transition">
+                            <iconify-icon icon="{{ $isWishlisted ? 'mdi:heart' : 'mdi:heart-outline' }}"
+                                width="20"></iconify-icon>
+                            <span class="text-sm font-semibold">WISHLIST</span>
+                        </button>
                     </form>
                     <button class="flex items-center gap-2 text-gray-700 hover:text-red-600 transition">
                         <iconify-icon icon="mdi:share-variant-outline" width="20"></iconify-icon>
@@ -154,7 +159,7 @@
                     @endif
                     <div class="flex justify-between">
                         <span class="text-gray-700 font-semibold">STOCK:</span>
-                        <span class="text-gray-900">{{ $product->stock ? 'Tersedia' : 'Tidak Tersedia' }}</span>
+                        <span class="text-gray-900">{{ $product->stock }}</span>
                     </div>
                 </div>
             </div>
@@ -234,18 +239,27 @@
     <script>
         function increaseQuantity() {
             const input = document.getElementById('quantity');
-            input.value = parseInt(input.value) + 1;
-            if (document.getElementById('cart_quantity')) {
-                document.getElementById('cart_quantity').value = input.value;
+            const cartQuantity = document.getElementById('cart_quantity');
+            const maxStock = cartQuantity ? parseInt(cartQuantity.dataset.max, 10) : 1;
+            const nextValue = parseInt(input.value, 10) + 1;
+
+            if (nextValue <= maxStock) {
+                input.value = nextValue;
+                if (cartQuantity) {
+                    cartQuantity.value = input.value;
+                }
             }
         }
 
         function decreaseQuantity() {
             const input = document.getElementById('quantity');
-            if (parseInt(input.value) > 1) {
-                input.value = parseInt(input.value) - 1;
-                if (document.getElementById('cart_quantity')) {
-                    document.getElementById('cart_quantity').value = input.value;
+            const cartQuantity = document.getElementById('cart_quantity');
+            const nextValue = parseInt(input.value, 10) - 1;
+
+            if (nextValue >= 1) {
+                input.value = nextValue;
+                if (cartQuantity) {
+                    cartQuantity.value = input.value;
                 }
             }
         }

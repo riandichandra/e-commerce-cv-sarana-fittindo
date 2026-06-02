@@ -105,20 +105,23 @@
                                 @endif
 
                                 <!-- Wishlist Button -->
-                                <form action="{{ Auth::check() ? route('pelanggan.wishlist.toggle', $product) : route('login') }}"
-                                    method="{{ Auth::check() ? 'POST' : 'GET' }}"
-                                    class="absolute top-4 right-4 z-10"
+                                <form
+                                    action="{{ Auth::check() ? route('pelanggan.wishlist.toggle', $product) : route('login') }}"
+                                    method="{{ Auth::check() ? 'POST' : 'GET' }}" class="absolute top-4 right-4 z-10"
                                     onclick="event.stopPropagation();">
                                     @auth
                                         @csrf
                                     @endauth
                                     @php
-                                        $isWishlisted = Auth::check() && Auth::user()->wishlists()->where('product_id', $product->id)->exists();
+                                        $isWishlisted =
+                                            Auth::check() &&
+                                            Auth::user()->wishlists()->where('product_id', $product->id)->exists();
                                     @endphp
                                     <button type="submit"
                                         class="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition duration-300 {{ $isWishlisted ? 'text-red-600' : 'text-gray-700 hover:bg-red-600 hover:text-white' }}"
                                         aria-label="Toggle wishlist">
-                                        <iconify-icon icon="{{ $isWishlisted ? 'mdi:heart' : 'mdi:heart-outline' }}"></iconify-icon>
+                                        <iconify-icon
+                                            icon="{{ $isWishlisted ? 'mdi:heart' : 'mdi:heart-outline' }}"></iconify-icon>
                                     </button>
                                 </form>
 
@@ -162,17 +165,26 @@
                                 </p>
 
                                 <!-- Add to Cart Button -->
-                                <form action="{{ Auth::check() ? route('pelanggan.cart.store', $product) : route('login') }}"
-                                    method="{{ Auth::check() ? 'POST' : 'GET' }}" class="mt-auto">
-                                    @auth
-                                        @csrf
-                                        <input type="hidden" name="quantity" value="1">
-                                    @endauth
-                                    <button type="submit"
-                                        class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 transition duration-300 text-sm rounded">
-                                        ADD TO CART
+                                @if ($product->stock > 0)
+                                    <form
+                                        action="{{ Auth::check() ? route('pelanggan.cart.store', $product) : route('login') }}"
+                                        method="{{ Auth::check() ? 'POST' : 'GET' }}" class="mt-auto">
+                                        @auth
+                                            @csrf
+                                            <input type="hidden" name="quantity" value="1">
+                                        @endauth
+                                        <button type="submit"
+                                            class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 transition duration-300 text-sm rounded">
+                                            ADD TO CART
+                                        </button>
+                                    </form>
+                                @else
+                                    <button type="button"
+                                        class="w-full bg-gray-400 text-white font-bold py-2 px-4 transition duration-300 text-sm rounded cursor-not-allowed"
+                                        disabled>
+                                        OUT OF STOCK
                                     </button>
-                                </form>
+                                @endif
                             </div>
                         </div>
                     @empty

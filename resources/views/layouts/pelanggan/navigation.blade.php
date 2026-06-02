@@ -2,7 +2,7 @@
     <div class="mx-auto flex h-full max-w-[1365px] items-center px-8">
         <a href="{{ route('dashboard') }}"
             class="mr-20 text-[13px] font-extrabold uppercase tracking-wide text-[#163f8f]">
-            SARANA FITTINDO
+            SARANA FITTINDO PALEMBANG
         </a>
 
         <div class="hidden h-full flex-1 items-center justify-center gap-10 md:flex">

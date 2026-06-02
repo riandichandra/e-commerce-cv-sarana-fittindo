@@ -130,11 +130,13 @@
 
         <div class="relative mx-auto flex h-full max-w-[1365px] items-center px-12">
             <div class="max-w-[720px] pt-10">
-                <p class="mb-6 text-[12px] font-black uppercase tracking-[.35em] text-white" x-text="slides[active].subtitle"></p>
+                <p class="mb-6 text-[12px] font-black uppercase tracking-[.35em] text-white"
+                    x-text="slides[active].subtitle"></p>
                 <h1 class="text-[58px] font-black uppercase leading-[.96] text-white md:text-[76px]">
                     <span x-text="slides[active].title"></span>
                 </h1>
-                <p class="mt-5 text-[12px] font-black uppercase tracking-[.18em] text-[#ffe2e7]" x-text="slides[active].period"></p>
+                <p class="mt-5 text-[12px] font-black uppercase tracking-[.18em] text-[#ffe2e7]"
+                    x-text="slides[active].period"></p>
                 <p class="mt-8 max-w-[540px] text-[16px] leading-8 text-[#c6d6ef]">
                     <span x-text="slides[active].description"></span>
                 </p>
@@ -161,8 +163,7 @@
 
         <div class="absolute bottom-12 left-12 flex gap-2">
             <template x-for="(slide, index) in slides" :key="index">
-                <button type="button" x-on:click="go(index); reset()"
-                    class="h-2.5 transition-all"
+                <button type="button" x-on:click="go(index); reset()" class="h-2.5 transition-all"
                     :class="active === index ? 'w-9 bg-white' : 'w-2.5 bg-white/40 hover:bg-white/70'"
                     aria-label="Go to promotion slide"></button>
             </template>
@@ -354,7 +355,8 @@
     <footer class="bg-[#fff1f3] px-8 pt-20 text-[#5d7190]">
         <div class="mx-auto grid max-w-[1290px] grid-cols-1 gap-12 border-b border-[#d9e7f7] pb-16 md:grid-cols-4">
             <div>
-                <h4 class="text-[13px] font-black uppercase tracking-[.08em] text-[#c8102e]">Sarana Fittindo</h4>
+                <h4 class="text-[13px] font-black uppercase tracking-[.08em] text-[#c8102e]">Sarana Fittindo Palembang
+                </h4>
                 <p class="mt-8 text-[12px] leading-6">
                     CV Sarana Fittindo is a leading provider of high-end interior building materials, specializing in
                     high-pressure laminates and architectural plywood.

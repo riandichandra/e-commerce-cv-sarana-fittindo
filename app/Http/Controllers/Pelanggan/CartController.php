@@ -29,17 +29,25 @@ class CartController extends Controller
             'quantity' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        if ((int) $product->stock !== 1) {
+        if (! $product->isAvailable()) {
             return back()->with('error', 'Produk sedang tidak tersedia.');
         }
 
         $quantity = (int) ($validated['quantity'] ?? 1);
-        $cart = Cart::getForUser($request->user());
 
+        if ($quantity > $product->stock) {
+            return back()->with('error', 'Jumlah melebihi stok tersedia.');
+        }
+
+        $cart = Cart::getForUser($request->user());
         $item = CartItem::firstOrNew([
             'cart_id' => $cart->id,
             'product_id' => $product->id,
         ]);
+
+        if ($item->exists && $item->quantity + $quantity > $product->stock) {
+            return back()->with('error', 'Jumlah melebihi stok tersedia.');
+        }
 
         $item->quantity = ($item->exists ? $item->quantity : 0) + $quantity;
         $item->save();
@@ -57,13 +65,17 @@ class CartController extends Controller
 
         $cartItem->load('product');
 
-        if ((int) $cartItem->product->stock !== 1) {
+        if (! $cartItem->product?->isAvailable()) {
             return back()->with('error', 'Produk sedang tidak tersedia.');
         }
 
-        $cartItem->update([
-            'quantity' => (int) $validated['quantity'],
-        ]);
+        $quantity = (int) $validated['quantity'];
+
+        if ($quantity > $cartItem->product->stock) {
+            return back()->with('error', 'Jumlah melebihi stok tersedia.');
+        }
+
+        $cartItem->update(['quantity' => $quantity]);
 
         return back()->with('success', 'Keranjang berhasil diperbarui.');
     }
@@ -164,7 +176,7 @@ class CartController extends Controller
                 foreach ($items as $item) {
                     $product = $products->get($item->product_id);
 
-                    if (! $product || ! $product->is_active || (int) $product->stock !== 1) {
+                    if (! $product || ! $product->isAvailable() || $product->stock < $item->quantity) {
                         throw new \RuntimeException('Produk ' . ($product?->name ?? 'tidak tersedia') . ' sedang tidak tersedia.');
                     }
                 }
@@ -207,6 +219,9 @@ class CartController extends Controller
                         'quantity' => $item->quantity,
                         'subtotal' => $lineSubtotal,
                     ]);
+
+                    $product->reduceStock($item->quantity);
+                    $product->save();
                 }
 
                 Payment::create([

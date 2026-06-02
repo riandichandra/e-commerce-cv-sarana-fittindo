@@ -12,6 +12,9 @@ class Product extends Model
 {
     use SoftDeletes;
 
+    public const STATUS_AVAILABLE = 'tersedia';
+    public const STATUS_UNAVAILABLE = 'tidak tersedia';
+
     protected $fillable = [
         'category_id',
         'brand_id',
@@ -20,6 +23,7 @@ class Product extends Model
         'description',
         'price',
         'stock',
+        'status',
         'weight',
         'thickness',
         'dimensions',
@@ -30,7 +34,7 @@ class Product extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
-        'stock' => 'boolean',
+        'stock' => 'integer',
         'weight' => 'decimal:2',
         'specifications' => 'array',
         'is_featured' => 'boolean',
@@ -38,19 +42,19 @@ class Product extends Model
     ];
 
     // Relasi ke Category
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(ProductCategory::class, 'category_id');
     }
 
     // Relasi ke Brand
-    public function brand()
+    public function brand(): BelongsTo
     {
         return $this->belongsTo(ProductBrand::class, 'brand_id');
     }
 
     // Relasi ke Images
-    public function images()
+    public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
@@ -74,17 +78,45 @@ class Product extends Model
         return $query->where('is_featured', true);
     }
 
-    // Generate slug otomatis
+    // Scope: Available products
+    public function scopeAvailable($query)
+    {
+        return $query
+            ->where('is_active', true)
+            ->where('status', self::STATUS_AVAILABLE)
+            ->where('stock', '>', 0);
+    }
+
+    public function isAvailable(): bool
+    {
+        return $this->is_active && $this->stock > 0 && $this->status === self::STATUS_AVAILABLE;
+    }
+
+    public function syncStatusFromStock(): void
+    {
+        $this->stock = max(0, (int) $this->stock);
+        $this->status = $this->stock > 0 ? self::STATUS_AVAILABLE : self::STATUS_UNAVAILABLE;
+    }
+
+    public function reduceStock(int $quantity): void
+    {
+        if ($quantity <= 0) {
+            return;
+        }
+
+        $this->stock = max(0, $this->stock - $quantity);
+        $this->syncStatusFromStock();
+    }
+
+    // Generate slug and keep status in sync
     protected static function boot()
     {
         parent::boot();
 
-        static::creating(function ($product) {
+        static::saving(function (Product $product) {
+            $product->stock = max(0, (int) $product->stock);
             $product->slug = Str::slug($product->name);
-        });
-
-        static::updating(function ($product) {
-            $product->slug = Str::slug($product->name);
+            $product->syncStatusFromStock();
         });
     }
 }

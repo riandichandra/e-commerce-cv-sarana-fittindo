@@ -49,7 +49,8 @@
 
     <div class="flex flex-col gap-1">
         <label for="price" class="text-sm font-medium text-gray-700">Price</label>
-        <input type="number" name="price" id="price" min="0" step="0.01" value="{{ old('price', $product?->price) }}"
+        <input type="number" name="price" id="price" min="0" step="0.01"
+            value="{{ old('price', $product?->price) }}"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
         @error('price')
             <p class="text-sm text-red-600">{{ $message }}</p>
@@ -57,20 +58,29 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="stock" class="text-sm font-medium text-gray-700">Stock</label>
-        <select name="stock" id="stock"
+        <label for="stock" class="text-sm font-medium text-gray-700">Stock Quantity</label>
+        <input type="number" name="stock" id="stock" min="0" step="1"
+            value="{{ old('stock', $product?->stock ?? 0) }}"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
-            <option value="1" @selected((string) old('stock', $product?->stock ?? 1) === '1')>Tersedia</option>
-            <option value="0" @selected((string) old('stock', $product?->stock ?? 1) === '0')>Tidak Tersedia</option>
-        </select>
         @error('stock')
             <p class="text-sm text-red-600">{{ $message }}</p>
         @enderror
     </div>
 
+    @if ($product?->exists)
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium text-gray-700">Current Status</label>
+            <span
+                class="inline-flex items-center rounded px-2 py-1 text-xs font-semibold {{ $product->status === 'tersedia' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                {{ ucfirst($product->status) }}
+            </span>
+        </div>
+    @endif
+
     <div class="flex flex-col gap-1">
         <label for="weight" class="text-sm font-medium text-gray-700">Weight</label>
-        <input type="number" name="weight" id="weight" min="0" step="0.01" value="{{ old('weight', $product?->weight) }}"
+        <input type="number" name="weight" id="weight" min="0" step="0.01"
+            value="{{ old('weight', $product?->weight) }}"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
         @error('weight')
             <p class="text-sm text-red-600">{{ $message }}</p>
@@ -129,7 +139,8 @@
 
     <div class="flex flex-col gap-1">
         <label for="primary_image" class="text-sm font-medium text-gray-700">Primary Image Index</label>
-        <input type="number" name="primary_image" id="primary_image" min="0" value="{{ old('primary_image', 0) }}"
+        <input type="number" name="primary_image" id="primary_image" min="0"
+            value="{{ old('primary_image', 0) }}"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
         @error('primary_image')
             <p class="text-sm text-red-600">{{ $message }}</p>

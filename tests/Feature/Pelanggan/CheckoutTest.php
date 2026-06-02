@@ -89,9 +89,77 @@ class CheckoutTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $this->assertSame(0, (int) $product->fresh()->stock);
+        $this->assertSame(1, (int) $product->fresh()->stock);
         $this->assertSame(0, CartItem::count());
         $this->assertSame(1, Payment::count());
+    }
+
+    public function test_checkout_reduces_stock_to_zero_and_sets_status_unavailable(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+        $product = $user->cart()->first()->items()->first()->product;
+
+        $product->update(['stock' => 2]);
+        $user->cart()->first()->items()->first()->update(['quantity' => 2]);
+
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), [
+            'shipping_name' => 'Budi Santoso',
+            'shipping_phone' => '081234567890',
+            'shipping_address' => 'Jl. Merdeka No. 10',
+            'shipping_province' => 'Jawa Barat',
+            'shipping_city' => 'Bandung',
+            'shipping_district' => 'Coblong',
+            'shipping_village' => 'Dago',
+            'shipping_postal_code' => '40135',
+            'payment_method_id' => $paymentMethod->id,
+        ]);
+
+        $response->assertRedirect(route('pelanggan.products.index'));
+        $this->assertSame(0, (int) $product->fresh()->stock);
+        $this->assertSame('tidak tersedia', $product->fresh()->status);
+    }
+
+    public function test_customer_cannot_checkout_when_cart_quantity_exceeds_stock(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+        $product = $user->cart()->first()->items()->first()->product;
+
+        $product->update(['stock' => 1]);
+        $user->cart()->first()->items()->first()->update(['quantity' => 2]);
+
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), [
+            'shipping_name' => 'Budi Santoso',
+            'shipping_phone' => '081234567890',
+            'shipping_address' => 'Jl. Merdeka No. 10',
+            'shipping_province' => 'Jawa Barat',
+            'shipping_city' => 'Bandung',
+            'shipping_district' => 'Coblong',
+            'shipping_village' => 'Dago',
+            'shipping_postal_code' => '40135',
+            'payment_method_id' => $paymentMethod->id,
+        ]);
+
+        $response->assertSessionHas('error');
+        $this->assertSame(0, Order::count());
+        $this->assertSame(0, Payment::count());
+    }
+
+    public function test_customer_cannot_add_more_than_stock_to_cart(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $product = $user->cart()->first()->items()->first()->product;
+        $product->update(['stock' => 1]);
+        $user->cart()->first()->items()->first()->update(['quantity' => 1]);
+
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.store', $product), [
+            'quantity' => 1,
+        ]);
+
+        $response->assertSessionHas('error');
+        $this->assertSame(1, CartItem::count());
+        $this->assertSame(1, CartItem::first()->quantity);
     }
 
     public function test_customer_can_checkout_using_saved_address(): void
@@ -160,7 +228,7 @@ class CheckoutTest extends TestCase
             'name' => 'Besi Hollow',
             'description' => 'Produk pengujian',
             'price' => 150000,
-            'stock' => 1,
+            'stock' => 3,
             'weight' => 1000,
             'is_active' => true,
         ]);

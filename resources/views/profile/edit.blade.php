@@ -7,7 +7,8 @@
                     {{ __('Profile') }}
                 </h2>
             </div>
-            <a href="{{ $dashboardUrl }}" class="inline-flex items-center gap-2 bg-[#C8102E] px-4 py-2 text-xs font-black uppercase tracking-[.14em] text-white hover:bg-[#9F0D24]">
+            <a href="{{ route('pelanggan.dashboard') }}"
+                class="inline-flex items-center gap-2 bg-[#C8102E] px-4 py-2 text-xs font-black uppercase tracking-[.14em] text-white hover:bg-[#9F0D24]">
                 <iconify-icon icon="mdi:view-dashboard-outline" class="fs-6"></iconify-icon>
                 Dashboard
             </a>
@@ -73,7 +74,8 @@
                         </div>
                         <div>
                             <h3 class="text-xl font-black uppercase text-[#8A1022]">Alamat Pengiriman</h3>
-                            <p class="mt-1 text-sm font-medium text-gray-500">Kelola alamat untuk checkout pelanggan.</p>
+                            <p class="mt-1 text-sm font-medium text-gray-500">Kelola alamat untuk checkout pelanggan.
+                            </p>
                         </div>
                     </div>
                     @include('profile.partials.user-addresses-form')
@@ -86,7 +88,8 @@
                         </div>
                         <div>
                             <h3 class="text-xl font-black uppercase text-[#8A1022]">Wishlist Produk</h3>
-                            <p class="mt-1 text-sm font-medium text-gray-500">Produk yang Anda tandai dengan love akan muncul di sini.</p>
+                            <p class="mt-1 text-sm font-medium text-gray-500">Produk yang Anda tandai dengan love akan
+                                muncul di sini.</p>
                         </div>
                     </div>
 
@@ -94,7 +97,8 @@
                         @forelse ($wishlistItems as $wishlist)
                             @if ($wishlist->product)
                                 <div class="border border-gray-200 bg-white">
-                                    <a href="{{ route('pelanggan.products.show', $wishlist->product) }}" class="block h-40 overflow-hidden bg-gray-100">
+                                    <a href="{{ route('pelanggan.products.show', $wishlist->product) }}"
+                                        class="block h-40 overflow-hidden bg-gray-100">
                                         @if ($wishlist->product->images->first())
                                             <img src="{{ asset('storage/' . $wishlist->product->images->first()->image_path) }}"
                                                 alt="{{ $wishlist->product->name }}" class="h-full w-full object-cover">
@@ -111,9 +115,11 @@
                                         <p class="mt-2 text-sm font-bold text-red-700">
                                             Rp {{ number_format($wishlist->product->price, 0, ',', '.') }}
                                         </p>
-                                        <form action="{{ route('pelanggan.wishlist.toggle', $wishlist->product) }}" method="POST" class="mt-4">
+                                        <form action="{{ route('pelanggan.wishlist.toggle', $wishlist->product) }}"
+                                            method="POST" class="mt-4">
                                             @csrf
-                                            <button type="submit" class="text-xs font-bold uppercase tracking-wide text-red-600 hover:text-red-800">
+                                            <button type="submit"
+                                                class="text-xs font-bold uppercase tracking-wide text-red-600 hover:text-red-800">
                                                 Remove Wishlist
                                             </button>
                                         </form>
@@ -121,7 +127,8 @@
                                 </div>
                             @endif
                         @empty
-                            <div class="col-span-full border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500">
+                            <div
+                                class="col-span-full border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500">
                                 Belum ada produk wishlist.
                             </div>
                         @endforelse

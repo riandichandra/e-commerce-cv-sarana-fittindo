@@ -50,14 +50,11 @@
                                 <td class="py-3 px-3">{{ $product->category?->name ?? '-' }}</td>
                                 <td class="py-3 px-3">{{ $product->brand?->name ?? '-' }}</td>
                                 <td class="py-3 px-3">Rp {{ number_format($product->price, 0, ',', '.') }}</td>
+                                <td class="py-3 px-3">{{ $product->stock }}</td>
                                 <td class="py-3 px-3">
-                                    <span class="px-2 py-1 text-xs {{ $product->stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                        {{ $product->stock > 0 ? 'Tersedia' : 'Tidak Tersedia' }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-3">
-                                    <span class="px-2 py-1 text-xs {{ $product->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
-                                        {{ $product->is_active ? 'Active' : 'Inactive' }}
+                                    <span
+                                        class="px-2 py-1 text-xs {{ $product->status === 'tersedia' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                        {{ ucfirst($product->status) }}
                                     </span>
                                 </td>
                                 <td class="py-3 px-3">
@@ -72,7 +69,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="py-6 px-3 text-center text-sm text-gray-500">Belum ada produk.</td>
+                                <td colspan="8" class="py-6 px-3 text-center text-sm text-gray-500">Belum ada produk.
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
