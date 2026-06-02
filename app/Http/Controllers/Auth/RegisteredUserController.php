@@ -50,6 +50,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('verification.notice', absolute: false))
+                    ->with('message', 'Registration successful! A verification link has been sent to your email.');
     }
 }

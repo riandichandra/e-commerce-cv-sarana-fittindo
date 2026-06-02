@@ -25,7 +25,7 @@ Route::prefix('pelanggan')->name('pelanggan.')->group(function () {
 });
 
 // Pelanggan routes
-Route::middleware(['auth', 'role:pelanggan'])->prefix('pelanggan')->name('pelanggan.')->group(function () {
+Route::middleware(['auth', 'role:pelanggan', 'verified'])->prefix('pelanggan')->name('pelanggan.')->group(function () {
     Route::get('/', [Pelanggan\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -46,7 +46,7 @@ Route::middleware(['auth', 'role:pelanggan'])->prefix('pelanggan')->name('pelang
 });
 
 // Admin routes
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/settings', [Admin\SettingController::class, 'index'])->name('settings.index');
     Route::resource('products', Admin\ProductController::class)->except(['show', 'destroy']);
@@ -61,26 +61,26 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 });
 
 // Marketing routes
-Route::middleware(['auth', 'role:marketing'])->prefix('marketing')->name('marketing.')->group(function () {
+Route::middleware(['auth', 'role:marketing', 'verified'])->prefix('marketing')->name('marketing.')->group(function () {
     Route::get('/dashboard', [Marketing\DashboardController::class, 'index'])->name('dashboard');
     Route::resource('promotions', Marketing\PromotionController::class)->except(['show', 'destroy']);
     Route::get('/users', [Marketing\UserController::class, 'index'])->name('users.index');
 });
 
 // GM routes
-Route::middleware(['auth', 'role:gm'])->prefix('gm')->name('gm.')->group(function () {
+Route::middleware(['auth', 'role:gm', 'verified'])->prefix('gm')->name('gm.')->group(function () {
     Route::get('/dashboard', [GM\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/reports', [GM\ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/download', [GM\ReportController::class, 'download'])->name('reports.download');
 });
 
 // Direktur routes
-Route::middleware(['auth', 'role:direktur'])->prefix('direktur')->name('direktur.')->group(function () {
+Route::middleware(['auth', 'role:direktur', 'verified'])->prefix('direktur')->name('direktur.')->group(function () {
     Route::get('/dashboard', [Direktur\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/strategic-reports', [Direktur\ReportController::class, 'strategic'])->name('reports.strategic');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/addresses', [ProfileController::class, 'storeAddress'])->name('profile.addresses.store');
