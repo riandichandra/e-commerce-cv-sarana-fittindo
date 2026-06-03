@@ -236,12 +236,54 @@
             </section>
         </div>
 
+        <section class="bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-black uppercase text-texthighlight">Top Customers</h2>
+                    <p class="mt-1 text-sm font-medium text-gray-500">Pelanggan dengan jumlah order terbanyak pada
+                        {{ $monthNames[$selectedMonth] ?? $selectedMonth }} {{ $selectedYear }}.</p>
+                </div>
+            </div>
+
+            <div class="mt-6 overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-200 text-xs uppercase tracking-[.12em] text-gray-500">
+                            <th class="py-3 pr-4">Customer</th>
+                            <th class="py-3 pr-4">Orders</th>
+                            <th class="py-3 pr-4">Total Spent</th>
+                            <th class="py-3 pr-4">Avg Order</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($topCustomers as $customer)
+                            <tr class="border-b border-gray-100 text-sm">
+                                <td class="py-4 pr-4 font-bold text-texthighlight">
+                                    {{ $customer->user?->name ?? 'Unknown' }}</td>
+                                <td class="py-4 pr-4">{{ $customer->order_count }}</td>
+                                <td class="py-4 pr-4 font-bold">Rp
+                                    {{ number_format($customer->total_spent, 0, ',', '.') }}</td>
+                                <td class="py-4 pr-4">Rp
+                                    {{ number_format((float) $customer->avg_order_value, 0, ',', '.') }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="py-6 px-4 text-center text-sm text-gray-500">Belum ada data
+                                    pelanggan untuk periode ini.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_420px]">
             <section class="bg-white p-6 shadow-sm">
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-xl font-black uppercase text-texthighlight">Recent Orders</h2>
-                        <p class="mt-1 text-sm font-medium text-gray-500">{{ $totalOrders }} total order tercatat.</p>
+                        <p class="mt-1 text-sm font-medium text-gray-500">{{ $totalOrders }} total order tercatat.
+                        </p>
                     </div>
                     <a href="{{ route('gm.reports.index') }}"
                         class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">View

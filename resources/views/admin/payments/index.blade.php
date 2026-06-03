@@ -12,6 +12,28 @@
 
         <div class="bg-[#FFF1F3] p-5 w-full">
             <h2 class="font-semibold tracking-wider text-texthighlight">PAYMENT LISTS</h2>
+            <form method="GET" class="mt-4 mb-4 flex items-center gap-3">
+                <input type="text" name="q" placeholder="Search order number or customer"
+                    value="{{ request('q') }}"
+                    class="w-1/3 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary focus:outline-none">
+
+                <select name="status"
+                    class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary focus:outline-none">
+                    <option value="">All statuses</option>
+                    @foreach ($statuses as $s)
+                        <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
+                            {{ ucwords($s) }}</option>
+                    @endforeach
+                </select>
+
+                <div class="flex gap-2">
+                    <button type="submit"
+                        class="inline-flex items-center justify-center rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-red-700 transition">Search</button>
+                    <a href="{{ route('admin.payments.index') }}"
+                        class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition">Reset</a>
+                </div>
+            </form>
+
             <div class="overflow-x-auto">
                 <table class="mt-3 w-full">
                     <thead>

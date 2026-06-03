@@ -45,11 +45,6 @@
                 <iconify-icon icon="mdi:loudspeaker" class="nav-small-cap-icon fs-5"></iconify-icon>
                 <p>PROMOTIONS</p>
             </li>
-            <li
-                class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.reports.index') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
-                <iconify-icon icon="mdi:paper" class="nav-small-cap-icon fs-5"></iconify-icon>
-                <p>REPORTS</p>
-            </li>
             <a href="{{ route('admin.users.index') }}">
                 <li
                     class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.users.*') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">

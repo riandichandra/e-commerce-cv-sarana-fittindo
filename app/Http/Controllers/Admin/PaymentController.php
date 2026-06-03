@@ -8,17 +8,28 @@ use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
-    public function index()
+    public function index(\App\Http\Requests\Admin\PaymentSearchRequest $request)
     {
         $pagePath = 'ADMIN/PAYMENTS';
         $pagePath = explode('/', $pagePath);
         $pageName = 'Payments';
 
-        $payments = Payment::with(['order.user', 'paymentMethod', 'verifiedBy'])
-            ->latest()
-            ->paginate(10);
+        $statuses = ['pending', 'verified', 'rejected'];
 
-        return view('admin.payments.index', compact('pagePath', 'pageName', 'payments'));
+        $payments = Payment::with(['order.user', 'paymentMethod', 'verifiedBy'])
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->q, function ($q) use ($request) {
+                $kw = $request->q;
+                $q->where(function ($sub) use ($kw) {
+                    $sub->whereHas('order', fn($o) => $o->where('order_number', 'like', "%{$kw}%"))
+                        ->orWhereHas('order.user', fn($u) => $u->where('name', 'like', "%{$kw}%"));
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.payments.index', compact('pagePath', 'pageName', 'payments', 'statuses'));
     }
 
     public function verify(Payment $payment)

@@ -102,6 +102,20 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $topCustomers = Order::query()
+            ->when($selectedYear, fn($q) => $q->whereYear('created_at', $selectedYear))
+            ->when($selectedMonth, fn($q) => $q->whereMonth('created_at', $selectedMonth))
+            ->select('user_id')
+            ->selectRaw('COUNT(*) as order_count')
+            ->selectRaw('SUM(total_amount) as total_spent')
+            ->selectRaw('AVG(total_amount) as avg_order_value')
+            ->groupBy('user_id')
+            ->orderByDesc('order_count')
+            ->orderByDesc('total_spent')
+            ->limit(5)
+            ->with('user')
+            ->get();
+
         $recentOrders = Order::with(['user', 'payment'])
             ->withCount('items')
             ->latest()
@@ -127,6 +141,7 @@ class DashboardController extends Controller
             'maxMonthlySales',
             'orderStatusCounts',
             'topProducts',
+            'topCustomers',
             'recentOrders'
         ));
     }

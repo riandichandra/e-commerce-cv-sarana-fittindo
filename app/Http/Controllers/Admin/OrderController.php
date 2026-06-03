@@ -9,18 +9,37 @@ use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(\App\Http\Requests\Admin\OrderSearchRequest $request)
     {
         $pagePath = 'ADMIN/ORDERS';
         $pagePath = explode('/', $pagePath);
         $pageName = 'Orders';
 
+        $statuses = [
+            'pending_payment',
+            'waiting_payment_confirmation',
+            'payment_confirmed',
+            'processing',
+            'shipped',
+            'completed',
+            'cancelled',
+        ];
+
         $orders = Order::with(['user', 'paymentMethod', 'payment', 'delivery'])
             ->withCount('items')
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->q, function ($q) use ($request) {
+                $keyword = $request->q;
+                $q->where(function ($sq) use ($keyword) {
+                    $sq->where('order_number', 'like', "%{$keyword}%")
+                        ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$keyword}%"));
+                });
+            })
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
-        return view('admin.orders.index', compact('pagePath', 'pageName', 'orders'));
+        return view('admin.orders.index', compact('pagePath', 'pageName', 'orders', 'statuses'));
     }
 
     public function show(Order $order)
