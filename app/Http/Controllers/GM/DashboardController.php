@@ -17,11 +17,56 @@ class DashboardController extends Controller
         $pagePath = explode('/', 'GM/DASHBOARD');
         $pageName = 'Dashboard';
 
-        $totalRevenue = Payment::where('status', 'verified')->sum('amount');
-        $monthlyRevenue = Payment::where('status', 'verified')
-            ->whereMonth('verified_at', now()->month)
-            ->whereYear('verified_at', now()->year)
+        $availableYears = Payment::where('status', 'verified')
+            ->whereNotNull('verified_at')
+            ->selectRaw('YEAR(verified_at) as year')
+            ->distinct()
+            ->orderByDesc('year')
+            ->pluck('year')
+            ->map(fn ($year) => (int) $year);
+
+        if ($availableYears->isEmpty()) {
+            $availableYears = collect([now()->year]);
+        }
+
+        $selectedYear = (int) request('year', now()->year);
+        if (! $availableYears->contains($selectedYear)) {
+            $selectedYear = $availableYears->first();
+        }
+
+        $availableMonths = Payment::where('status', 'verified')
+            ->whereYear('verified_at', $selectedYear)
+            ->whereNotNull('verified_at')
+            ->selectRaw('MONTH(verified_at) as month')
+            ->distinct()
+            ->orderBy('month')
+            ->pluck('month')
+            ->map(fn ($month) => (int) $month);
+
+        if ($availableMonths->isEmpty()) {
+            $availableMonths = collect(range(1, 12));
+        }
+
+        $selectedMonth = (int) request('month', $selectedYear === now()->year ? now()->month : $availableMonths->last());
+        if (! $availableMonths->contains($selectedMonth)) {
+            if ($selectedYear === now()->year) {
+                $selectedMonth = now()->month;
+            } elseif ($availableMonths->isNotEmpty()) {
+                $selectedMonth = $availableMonths->last();
+            } else {
+                $selectedMonth = 1;
+            }
+        }
+
+        $totalRevenue = Payment::where('status', 'verified')
+            ->whereYear('verified_at', $selectedYear)
             ->sum('amount');
+
+        $monthlyRevenue = Payment::where('status', 'verified')
+            ->whereYear('verified_at', $selectedYear)
+            ->whereMonth('verified_at', $selectedMonth)
+            ->sum('amount');
+
         $totalOrders = Order::count();
         $completedOrders = Order::where('status', 'completed')->count();
         $processingOrders = Order::whereIn('status', ['payment_confirmed', 'processing', 'shipped'])->count();
@@ -47,7 +92,9 @@ class DashboardController extends Controller
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        $topProducts = OrderItem::select('product_name')
+        $topProducts = OrderItem::query()
+            ->whereHas('order', fn($q) => $q->whereYear('created_at', $selectedYear))
+            ->select('product_name')
             ->selectRaw('SUM(quantity) as total_quantity')
             ->selectRaw('SUM(subtotal) as total_sales')
             ->groupBy('product_name')
@@ -66,6 +113,10 @@ class DashboardController extends Controller
             'pageName',
             'totalRevenue',
             'monthlyRevenue',
+            'availableYears',
+            'selectedYear',
+            'availableMonths',
+            'selectedMonth',
             'totalOrders',
             'completedOrders',
             'processingOrders',

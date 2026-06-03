@@ -50,7 +50,10 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if (! Auth::user()?->hasVerifiedEmail()) {
+        $user = Auth::user();
+
+        // Email verification check HANYA untuk pelanggan
+        if ($user?->hasRole('pelanggan') && ! $user->hasVerifiedEmail()) {
             Auth::guard()->logout();
 
             throw ValidationException::withMessages([
