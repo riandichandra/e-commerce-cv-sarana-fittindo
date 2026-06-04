@@ -20,7 +20,7 @@ return new class extends Migration
             
             $table->string('courier', 100)->nullable()->comment('Internal driver/team');
             $table->string('tracking_number', 100)->nullable();
-            $table->enum('status', ['packed', 'shipped', 'in_transit', 'delivered'])->default('packed');
+            $table->enum('status', ['dikemas', 'dikirim', 'dalam_perjalanan', 'terkirim'])->default('dikemas');
             $table->date('estimated_arrival')->nullable();
             $table->timestamp('shipped_at')->nullable();
             $table->timestamp('delivered_at')->nullable();

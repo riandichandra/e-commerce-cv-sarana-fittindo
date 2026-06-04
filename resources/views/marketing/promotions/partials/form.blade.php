@@ -2,7 +2,7 @@
 
 <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
     <div>
-        <label for="name" class="text-sm font-bold text-texthighlight">Name</label>
+        <label for="name" class="text-sm font-bold text-texthighlight">Nama</label>
         <input id="name" name="name" type="text" value="{{ old('name', $promotion->name) }}"
             class="mt-2 w-full border-gray-300 text-sm shadow-sm focus:border-primary focus:ring-primary" required>
         <x-input-error :messages="$errors->get('name')" class="mt-2" />
@@ -39,14 +39,14 @@
     </div>
 
     <div>
-        <label for="start_date" class="text-sm font-bold text-texthighlight">Start Date</label>
+        <label for="start_date" class="text-sm font-bold text-texthighlight">Tanggal Mulai</label>
         <input id="start_date" name="start_date" type="date" value="{{ old('start_date', optional($promotion->start_date)->format('Y-m-d')) }}"
             class="mt-2 w-full border-gray-300 text-sm shadow-sm focus:border-primary focus:ring-primary" required>
         <x-input-error :messages="$errors->get('start_date')" class="mt-2" />
     </div>
 
     <div>
-        <label for="end_date" class="text-sm font-bold text-texthighlight">End Date</label>
+        <label for="end_date" class="text-sm font-bold text-texthighlight">Tanggal Selesai</label>
         <input id="end_date" name="end_date" type="date" value="{{ old('end_date', optional($promotion->end_date)->format('Y-m-d')) }}"
             class="mt-2 w-full border-gray-300 text-sm shadow-sm focus:border-primary focus:ring-primary" required>
         <x-input-error :messages="$errors->get('end_date')" class="mt-2" />
@@ -60,7 +60,7 @@
     </div>
 
     <div>
-        <label for="banner_image" class="text-sm font-bold text-texthighlight">Banner Image</label>
+        <label for="banner_image" class="text-sm font-bold text-texthighlight">Gambar Banner</label>
         <input id="banner_image" name="banner_image" type="file" accept="image/*"
             class="mt-2 w-full border border-gray-300 bg-white p-2 text-sm shadow-sm focus:border-primary focus:ring-primary">
         <x-input-error :messages="$errors->get('banner_image')" class="mt-2" />
@@ -68,7 +68,7 @@
 </div>
 
 <div class="mt-5">
-    <label for="description" class="text-sm font-bold text-texthighlight">Description</label>
+    <label for="description" class="text-sm font-bold text-texthighlight">Deskripsi</label>
     <textarea id="description" name="description" rows="4"
         class="mt-2 w-full border-gray-300 text-sm shadow-sm focus:border-primary focus:ring-primary">{{ old('description', $promotion->description) }}</textarea>
     <x-input-error :messages="$errors->get('description')" class="mt-2" />
@@ -77,7 +77,7 @@
 <label class="mt-5 flex items-center gap-3 text-sm font-bold text-texthighlight">
     <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $promotion->is_active))
         class="border-gray-300 text-primary shadow-sm focus:ring-primary">
-    Active promotion
+    Aktif promotion
 </label>
 
 <div class="mt-7 flex items-center justify-end gap-3">

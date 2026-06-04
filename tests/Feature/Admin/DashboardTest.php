@@ -24,8 +24,8 @@ class DashboardTest extends TestCase
         $response = $this->actingAs($admin)->get(route('admin.dashboard'));
 
         $response->assertOk();
-        $response->assertSee('Revenue Verified');
-        $response->assertSee('Recent Orders');
-        $response->assertSee('Payment Health');
+        $response->assertSee('Pendapatan Terverifikasi');
+        $response->assertSee('Pesanan Terbaru');
+        $response->assertSee('Kondisi Pembayaran');
     }
 }

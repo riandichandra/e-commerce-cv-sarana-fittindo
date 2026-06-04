@@ -17,12 +17,12 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="$dashboardUrl" :active="request()->routeIs('dashboard') || request()->routeIs('admin.dashboard') || request()->routeIs('marketing.dashboard') || request()->routeIs('gm.dashboard') || request()->routeIs('direktur.dashboard') || request()->routeIs('pelanggan.dashboard')">
-                        {{ __('Dashboard') }}
+                        {{ __('Dasbor') }}
                     </x-nav-link>
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
+            <!-- Dropdown Pengaturan -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
@@ -39,7 +39,7 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('Profil') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -72,11 +72,11 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="$dashboardUrl" :active="request()->routeIs('dashboard') || request()->routeIs('admin.dashboard') || request()->routeIs('marketing.dashboard') || request()->routeIs('gm.dashboard') || request()->routeIs('direktur.dashboard') || request()->routeIs('pelanggan.dashboard')">
-                {{ __('Dashboard') }}
+                {{ __('Dasbor') }}
             </x-responsive-nav-link>
         </div>
 
-        <!-- Responsive Settings Options -->
+        <!-- Opsi Pengaturan Responsif -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
@@ -85,7 +85,7 @@
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+                    {{ __('Profil') }}
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->

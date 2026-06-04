@@ -25,7 +25,7 @@
             @csrf
 
             <div class="flex flex-col gap-1">
-                <label for="name" class="text-sm font-medium text-gray-700">Brand Name</label>
+                <label for="name" class="text-sm font-medium text-gray-700">Nama Merek</label>
                 <input type="text" name="name" id="name" value="{{ old('name') }}"
                     class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
                 @error('name')
@@ -34,7 +34,7 @@
             </div>
 
             <div class="flex flex-col gap-1">
-                <label for="description" class="text-sm font-medium text-gray-700">Brand Description</label>
+                <label for="description" class="text-sm font-medium text-gray-700">Merek Deskripsi</label>
                 <textarea name="description" id="description" rows="4"
                     class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">{{ old('description') }}</textarea>
                 @error('description')
@@ -44,7 +44,7 @@
 
             <label class="inline-flex items-center gap-2 text-sm text-gray-700">
                 <input type="checkbox" name="is_active" value="1" class="text-primary" @checked(old('is_active', true))>
-                Active
+                Aktif
             </label>
 
             <button type="submit" class="bg-primary text-white py-2 px-4 hover:bg-primary-dark transition w-fit">

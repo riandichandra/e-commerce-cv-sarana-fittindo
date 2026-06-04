@@ -33,13 +33,13 @@
                     <thead>
                         <tr class="text-left text-sm text-gray-600 font-medium border-b border-gray-300">
                             <th class="py-3 px-3">#</th>
-                            <th class="py-3 px-3">Name</th>
-                            <th class="py-3 px-3">Category</th>
-                            <th class="py-3 px-3">Brand</th>
-                            <th class="py-3 px-3">Price</th>
-                            <th class="py-3 px-3">Stock</th>
+                            <th class="py-3 px-3">Nama</th>
+                            <th class="py-3 px-3">Kategori</th>
+                            <th class="py-3 px-3">Merek</th>
+                            <th class="py-3 px-3">Harga</th>
+                            <th class="py-3 px-3">Stok</th>
                             <th class="py-3 px-3">Status</th>
-                            <th class="py-3 px-3">Actions</th>
+                            <th class="py-3 px-3">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>

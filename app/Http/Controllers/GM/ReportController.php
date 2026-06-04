@@ -26,7 +26,7 @@ class ReportController extends Controller
             'total_orders' => (clone $ordersQuery)->count(),
             'total_revenue' => (clone $ordersQuery)->sum('total_amount'),
             'total_discount' => (clone $ordersQuery)->sum('discount_amount'),
-            'verified_revenue' => Payment::where('status', 'verified')
+            'verified_revenue' => Payment::where('status', 'terverifikasi')
                 ->when($filters['start_date'], fn ($query, $date) => $query->whereDate('verified_at', '>=', $date))
                 ->when($filters['end_date'], fn ($query, $date) => $query->whereDate('verified_at', '<=', $date))
                 ->sum('amount'),

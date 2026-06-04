@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('proof_image', 255)->nullable();
             $table->date('transfer_date')->nullable();
             $table->string('sender_name', 100)->nullable();
-            $table->enum('status', ['pending', 'verified', 'rejected'])->default('pending');
+            $table->enum('status', ['menunggu', 'terverifikasi', 'ditolak'])->default('menunggu');
             $table->foreignId('verified_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('verified_at')->nullable();
             $table->text('rejection_reason')->nullable();

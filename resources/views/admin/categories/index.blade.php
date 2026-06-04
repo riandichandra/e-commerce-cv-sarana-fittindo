@@ -29,10 +29,10 @@
                     <thead>
                         <tr class="text-left text-sm text-gray-600 font-medium border-b border-gray-300">
                             <th class="py-3 px-3">#</th>
-                            <th class="py-3 px-3">Name</th>
+                            <th class="py-3 px-3">Nama</th>
                             <th class="py-3 px-3">Jumlah Produk</th>
                             <th class="py-3 px-3">Status</th>
-                            <th class="py-3 px-3">Actions</th>
+                            <th class="py-3 px-3">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,7 +43,7 @@
                                 <td class="py-3 px-3">{{ $category->products_count }}</td>
                                 <td class="py-3 px-3">
                                     <span class="px-2 py-1 text-xs {{ $category->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
-                                        {{ $category->is_active ? 'Active' : 'Inactive' }}
+                                        {{ $category->is_active ? 'Aktif' : 'Nonaktif' }}
                                     </span>
                                 </td>
                                 <td class="py-3 px-3">

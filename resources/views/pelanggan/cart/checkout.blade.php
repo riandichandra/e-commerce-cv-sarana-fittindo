@@ -25,7 +25,7 @@
 <x-pelanggan-layout>
     <section class="bg-[#071d33] px-8 py-14 text-white">
         <div class="mx-auto max-w-[1290px]">
-            <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8d8ee]">Order Detail</p>
+            <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8d8ee]">Pesanan Detail</p>
             <h1 class="mt-4 text-4xl font-black uppercase tracking-[-.03em]">Detail Pemesanan</h1>
         </div>
     </section>
@@ -51,8 +51,8 @@
                 x-data="{
                     addresses: @js($addressOptions),
                     selectedAddressId: @js($selectedAddressId),
-                    shippingName: @js(old('shipping_name', auth()->user()->name)),
-                    shippingPhone: @js(old('shipping_phone', auth()->user()->phone)),
+                    shippingNama: @js(old('shipping_name', auth()->user()->name)),
+                    shippingTelepon: @js(old('shipping_phone', auth()->user()->phone)),
                     shippingAddress: @js(old('shipping_address')),
                     shippingProvince: @js(old('shipping_province')),
                     shippingCity: @js(old('shipping_city')),
@@ -72,8 +72,8 @@
                             return;
                         }
 
-                        this.shippingName = address.receiver_name || '';
-                        this.shippingPhone = address.receiver_phone || '';
+                        this.shippingNama = address.receiver_name || '';
+                        this.shippingTelepon = address.receiver_phone || '';
                         this.shippingAddress = address.full_address || '';
                         this.shippingProvince = address.province || '';
                         this.shippingCity = address.city || '';
@@ -83,6 +83,18 @@
                     },
                     clearSelectedAddress() {
                         this.selectedAddressId = '';
+                    },
+                    isPalembangCity() {
+                        const city = (this.shippingCity || '').toLowerCase().replace('kota ', '').replace('kabupaten ', '').trim();
+
+                        return city === 'palembang';
+                    },
+                    shippingCostLabel() {
+                        if (! this.shippingCity) {
+                            return 'Pilih atau isi kota pengiriman';
+                        }
+
+                        return this.isPalembangCity() ? 'Rp 20.000' : 'Menunggu konfirmasi admin';
                     },
                 }"
                 x-init="applySelectedAddress(false)"
@@ -111,14 +123,14 @@
 
                             <div>
                                 <label for="shipping_name" class="text-sm font-bold text-[#10233d]">Nama penerima</label>
-                                <input id="shipping_name" name="shipping_name" type="text" x-model="shippingName" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
+                                <input id="shipping_name" name="shipping_name" type="text" x-model="shippingNama" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
                                     class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
                                 <x-input-error :messages="$errors->get('shipping_name')" class="mt-2" />
                             </div>
 
                             <div>
                                 <label for="shipping_phone" class="text-sm font-bold text-[#10233d]">Nomor telepon</label>
-                                <input id="shipping_phone" name="shipping_phone" type="text" x-model="shippingPhone" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
+                                <input id="shipping_phone" name="shipping_phone" type="text" x-model="shippingTelepon" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
                                     class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
                                 <x-input-error :messages="$errors->get('shipping_phone')" class="mt-2" />
                             </div>
@@ -232,6 +244,16 @@
                         <div class="flex justify-between border-t border-[#f2c8d0] pt-4">
                             <span class="text-[#657891]">Subtotal</span>
                             <span class="font-black text-[#c8102e]">Rp {{ number_format($cart->subtotal, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex items-start justify-between gap-4">
+                            <span class="text-[#657891]">Ongkos kirim</span>
+                            <span class="text-right font-black text-[#10233d]" x-text="shippingCostLabel()"></span>
+                        </div>
+                        <div class="border-l-4 border-orange-400 bg-orange-50 px-4 py-3 text-xs font-semibold leading-5 text-orange-800" x-show="shippingCity && ! isPalembangCity()">
+                            Ongkos kirim untuk alamat di luar Kota Palembang akan dikonfirmasi oleh admin. Anda dapat membayar setelah total pembayaran final.
+                        </div>
+                        <div class="border-l-4 border-green-400 bg-green-50 px-4 py-3 text-xs font-semibold leading-5 text-green-800" x-show="shippingCity && isPalembangCity()">
+                            Ongkos kirim Kota Palembang otomatis Rp 20.000.
                         </div>
                     </div>
 

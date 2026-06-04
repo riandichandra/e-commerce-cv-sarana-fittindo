@@ -1,20 +1,21 @@
 <x-admin-layout>
     @php
         $orderStatusClass = match ($order->status) {
-            'pending_payment' => 'bg-yellow-100 text-yellow-800',
-            'waiting_payment_confirmation' => 'bg-blue-100 text-blue-800',
-            'payment_confirmed' => 'bg-emerald-100 text-emerald-800',
-            'processing' => 'bg-indigo-100 text-indigo-800',
-            'shipped' => 'bg-purple-100 text-purple-800',
-            'completed' => 'bg-green-100 text-green-800',
-            'cancelled' => 'bg-red-100 text-red-800',
+            'menunggu_konfirmasi_ongkir' => 'bg-orange-100 text-orange-800',
+            'belum_dibayar' => 'bg-yellow-100 text-yellow-800',
+            'menunggu_verifikasi_pembayaran' => 'bg-blue-100 text-blue-800',
+            'pembayaran_dikonfirmasi' => 'bg-emerald-100 text-emerald-800',
+            'diproses' => 'bg-indigo-100 text-indigo-800',
+            'dikirim' => 'bg-purple-100 text-purple-800',
+            'selesai' => 'bg-green-100 text-green-800',
+            'dibatalkan' => 'bg-red-100 text-red-800',
             default => 'bg-gray-100 text-gray-700',
         };
 
         $paymentStatusClass = match ($order->payment?->status) {
-            'verified' => 'bg-green-100 text-green-800',
-            'rejected' => 'bg-red-100 text-red-800',
-            'pending' => 'bg-yellow-100 text-yellow-800',
+            'terverifikasi' => 'bg-green-100 text-green-800',
+            'ditolak' => 'bg-red-100 text-red-800',
+            'menunggu' => 'bg-yellow-100 text-yellow-800',
             default => 'bg-gray-100 text-gray-700',
         };
     @endphp
@@ -36,6 +37,12 @@
             </x-button>
         </div>
 
+        @if (session('success') || session('error'))
+            <div class="mb-4 border-l-4 {{ session('success') ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-500 bg-red-50 text-red-700' }} px-4 py-3 text-sm font-semibold">
+                {{ session('success') ?? session('error') }}
+            </div>
+        @endif
+
         <div class="bg-[#FFF1F3] p-5 w-full">
             <div class="flex flex-col gap-1">
                 <h2 class="text-2xl font-bold text-texthighlight">{{ $order->order_number }}</h2>
@@ -56,11 +63,14 @@
                     <h3 class="font-semibold tracking-wider text-texthighlight">ORDER STATUS</h3>
                     <div class="mt-3 flex flex-col gap-2 text-sm">
                         <span class="w-fit px-2 py-1 text-xs {{ $orderStatusClass }}">
-                            {{ ucwords(str_replace('_', ' ', $order->status)) }}
+                            {{ $order->status_label }}
                         </span>
                         <p>Total: <span class="font-semibold text-texthighlight">Rp
                                 {{ number_format($order->total_amount, 0, ',', '.') }}</span></p>
-                        <p>Items: {{ $order->items->sum('quantity') }}</p>
+                        @if ($order->isWaitingForShippingCost())
+                            <p class="font-semibold text-orange-700">Ongkos kirim belum dikonfirmasi.</p>
+                        @endif
+                        <p>Item: {{ $order->items->sum('quantity') }}</p>
                     </div>
                 </div>
 
@@ -69,7 +79,7 @@
                     <div class="mt-3 flex flex-col gap-2 text-sm">
                         <p>{{ $order->paymentMethod?->name ?? '-' }}</p>
                         <span class="w-fit px-2 py-1 text-xs {{ $paymentStatusClass }}">
-                            {{ $order->payment?->status ? ucwords(str_replace('_', ' ', $order->payment->status)) : 'Belum Ada' }}
+                            {{ $order->payment?->status_label ?? 'Belum Ada' }}
                         </span>
                         <p>Amount: Rp {{ number_format($order->payment?->amount ?? 0, 0, ',', '.') }}</p>
                     </div>
@@ -87,6 +97,53 @@
                         <p>{{ $order->shipping_city }}, {{ $order->shipping_province }}</p>
                         <p>{{ $order->shipping_postal_code ?? '-' }}</p>
                     </div>
+                </div>
+
+                <div class="bg-white p-4">
+                    <h3 class="font-semibold tracking-wider text-texthighlight">SHIPPING COST</h3>
+                    <div class="mt-3 space-y-2 text-sm text-gray-700">
+                        <div class="flex justify-between gap-4">
+                            <span>Subtotal</span>
+                            <span class="font-semibold text-texthighlight">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between gap-4">
+                            <span>Ongkos kirim</span>
+                            @if ($order->isWaitingForShippingCost())
+                                <span class="font-semibold text-orange-700">Menunggu input admin</span>
+                            @else
+                                <span class="font-semibold text-texthighlight">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
+                            @endif
+                        </div>
+                        <div class="flex justify-between gap-4 border-t border-gray-200 pt-2">
+                            <span>Total pembayaran</span>
+                            <span class="font-semibold text-primary">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+
+                    @if ($order->isWaitingForShippingCost())
+                        <form action="{{ route('admin.orders.shipping-cost.update', $order) }}" method="POST" class="mt-4 space-y-3">
+                            @csrf
+                            @method('PATCH')
+
+                            <div>
+                                <label for="shipping_cost" class="text-sm font-semibold text-texthighlight">Input Ongkos Kirim</label>
+                                <input id="shipping_cost" name="shipping_cost" type="number" min="0" step="1000"
+                                    value="{{ old('shipping_cost') }}"
+                                    class="mt-2 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary focus:outline-none"
+                                    required>
+                                <x-input-error :messages="$errors->get('shipping_cost')" class="mt-2" />
+                            </div>
+
+                            <button type="submit"
+                                class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 transition">
+                                KONFIRMASI ONGKIR
+                            </button>
+                        </form>
+                    @elseif ($order->shipping_cost_confirmed_at)
+                        <p class="mt-3 text-xs font-semibold text-gray-500">
+                            Dikonfirmasi pada {{ $order->shipping_cost_confirmed_at->format('d M Y H:i') }}.
+                        </p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -110,8 +167,8 @@
                     <thead>
                         <tr class="text-left text-sm text-gray-600 font-medium border-b border-gray-300">
                             <th class="py-3 px-3">#</th>
-                            <th class="py-3 px-3">Product</th>
-                            <th class="py-3 px-3">Price</th>
+                            <th class="py-3 px-3">Produk</th>
+                            <th class="py-3 px-3">Harga</th>
                             <th class="py-3 px-3">Qty</th>
                             <th class="py-3 px-3">Subtotal</th>
                         </tr>

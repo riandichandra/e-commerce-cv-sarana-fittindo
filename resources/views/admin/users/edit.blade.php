@@ -3,7 +3,7 @@
         <div class="text-xs flex items-center gap-1">
             <p class="tracking-wider">ADMIN</p>
             <p>></p>
-            <p class="tracking-wider">USERS</p>
+            <p class="tracking-wider">PENGGUNAS</p>
             <p>></p>
             <p class="font-bold text-primary tracking-wider">EDIT</p>
         </div>
@@ -18,7 +18,7 @@
     </div>
 
     <div class="bg-[#FFF1F3] p-5 w-full">
-        <h2 class="font-semibold tracking-wider text-texthighlight">EDIT USER</h2>
+        <h2 class="font-semibold tracking-wider text-texthighlight">EDIT PENGGUNA</h2>
         <form action="{{ route('admin.users.update', $user) }}" method="POST" class="mt-4 w-full flex flex-col gap-4">
             @csrf
             @method('PUT')
@@ -26,7 +26,7 @@
             @include('admin.users.partials.form', ['user' => $user])
 
             <button type="submit" class="bg-primary text-white py-2 px-4 hover:bg-primary-dark transition w-fit">
-                UPDATE USER
+                UPDATE PENGGUNA
             </button>
         </form>
     </div>

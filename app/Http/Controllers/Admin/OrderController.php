@@ -13,16 +13,17 @@ class OrderController extends Controller
     {
         $pagePath = 'ADMIN/ORDERS';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Orders';
+        $pageName = 'Pesanan';
 
         $statuses = [
-            'pending_payment',
-            'waiting_payment_confirmation',
-            'payment_confirmed',
-            'processing',
-            'shipped',
-            'completed',
-            'cancelled',
+            'menunggu_konfirmasi_ongkir',
+            'belum_dibayar',
+            'menunggu_verifikasi_pembayaran',
+            'pembayaran_dikonfirmasi',
+            'diproses',
+            'dikirim',
+            'selesai',
+            'dibatalkan',
         ];
 
         $orders = Order::with(['user', 'paymentMethod', 'payment', 'delivery'])
@@ -46,7 +47,7 @@ class OrderController extends Controller
     {
         $pagePath = 'ADMIN/ORDERS/DETAIL';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Order Detail';
+        $pageName = 'Detail Pesanan';
 
         $order->load(['user', 'paymentMethod', 'payment', 'delivery', 'items.product']);
 
@@ -55,16 +56,70 @@ class OrderController extends Controller
 
     public function update(Request $request, Order $order)
     {
-        if (! in_array($order->status, ['payment_confirmed', 'processing'])) {
+        if (! in_array($order->status, ['pembayaran_dikonfirmasi', 'diproses'])) {
             return redirect()->route('admin.orders.index')->with('error', 'Status order tidak dapat diubah dari status saat ini.');
         }
 
         $validated = $request->validate([
-            'status' => ['required', Rule::in(['processing', 'shipped'])],
+            'status' => ['required', Rule::in(['diproses', 'dikirim'])],
         ]);
 
         $order->update(['status' => $validated['status']]);
 
         return redirect()->route('admin.orders.index')->with('success', 'Status order berhasil diperbarui menjadi ' . ucwords(str_replace('_', ' ', $validated['status'])) . '.');
+    }
+
+    public function pendingShippingCosts()
+    {
+        $pagePath = 'ADMIN/PENDING-SHIPPING';
+        $pagePath = explode('/', $pagePath);
+        $pageName = 'Pesanan Menunggu Konfirmasi Ongkir';
+
+        $orders = Order::with(['user', 'paymentMethod', 'items'])
+            ->withCount('items')
+            ->where(function ($q) {
+                $q->where('status', 'menunggu_konfirmasi_ongkir')
+                    ->orWhere('shipping_cost_status', 'waiting_admin');
+            })
+            ->latest()
+            ->paginate(15);
+
+        return view('admin.pending-shipping-costs.index', compact('pagePath', 'pageName', 'orders'));
+    }
+
+    public function updateShippingCost(Request $request, Order $order)
+    {
+        if (! $order->isWaitingForShippingCost()) {
+            return redirect()
+                ->route('admin.orders.show', $order)
+                ->with('error', 'Ongkos kirim pesanan ini sudah final.');
+        }
+
+        $validated = $request->validate([
+            'shipping_cost' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $shippingCost = (float) $validated['shipping_cost'];
+        $totalAmount = (float) $order->subtotal - (float) $order->discount_amount + $shippingCost;
+
+        $order->update([
+            'shipping_cost' => $shippingCost,
+            'shipping_cost_status' => 'confirmed',
+            'shipping_cost_confirmed_at' => now(),
+            'shipping_cost_confirmed_by' => auth()->id(),
+            'total_amount' => $totalAmount,
+            'status' => 'belum_dibayar',
+        ]);
+
+        if ($order->payment) {
+            $order->payment->update([
+                'amount' => $totalAmount,
+                'notes' => 'Menunggu pembayaran pelanggan setelah ongkos kirim dikonfirmasi.',
+            ]);
+        }
+
+        return redirect()
+            ->route('admin.orders.show', $order)
+            ->with('success', 'Ongkos kirim berhasil dikonfirmasi.');
     }
 }

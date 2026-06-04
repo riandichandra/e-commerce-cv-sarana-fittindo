@@ -13,7 +13,7 @@ class PaymentMethodController extends Controller
     {
         $pagePath = 'ADMIN/PAYMENTS/PAYMENT METHODS';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Payment Methods';
+        $pageName = 'Metode Pembayaran';
         $paymentMethods = PaymentMethod::orderBy('sort_order')->orderBy('bank_name')->paginate(10);
 
         return view('admin.payment-methods.index', compact('pagePath', 'pageName', 'paymentMethods'));
@@ -23,7 +23,7 @@ class PaymentMethodController extends Controller
     {
         $pagePath = 'ADMIN/PAYMENTS/PAYMENT METHODS/CREATE';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Create Payment Method';
+        $pageName = 'Tambah Metode Pembayaran';
         $paymentMethod = new PaymentMethod([
             'account_name' => 'CV Sarana Fittindo',
             'is_active' => true,
@@ -51,7 +51,7 @@ class PaymentMethodController extends Controller
     {
         $pagePath = 'ADMIN/PAYMENTS/PAYMENT METHODS/EDIT';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Edit Payment Method';
+        $pageName = 'Edit Metode Pembayaran';
 
         return view('admin.payment-methods.edit', compact('pagePath', 'pageName', 'paymentMethod'));
     }

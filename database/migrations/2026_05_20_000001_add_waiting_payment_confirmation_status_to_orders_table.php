@@ -12,7 +12,7 @@ return new class extends Migration
             return;
         }
 
-        DB::statement("ALTER TABLE orders MODIFY status ENUM('pending_payment', 'waiting_payment_confirmation', 'payment_confirmed', 'processing', 'shipped', 'completed', 'cancelled') NOT NULL DEFAULT 'pending_payment'");
+        DB::statement("ALTER TABLE orders MODIFY status ENUM('belum_dibayar', 'menunggu_verifikasi_pembayaran', 'pembayaran_dikonfirmasi', 'diproses', 'dikirim', 'selesai', 'dibatalkan') NOT NULL DEFAULT 'belum_dibayar'");
     }
 
     public function down(): void
@@ -22,9 +22,9 @@ return new class extends Migration
         }
 
         DB::table('orders')
-            ->where('status', 'waiting_payment_confirmation')
-            ->update(['status' => 'pending_payment']);
+            ->where('status', 'menunggu_verifikasi_pembayaran')
+            ->update(['status' => 'belum_dibayar']);
 
-        DB::statement("ALTER TABLE orders MODIFY status ENUM('pending_payment', 'payment_confirmed', 'processing', 'shipped', 'completed', 'cancelled') NOT NULL DEFAULT 'pending_payment'");
+        DB::statement("ALTER TABLE orders MODIFY status ENUM('belum_dibayar', 'pembayaran_dikonfirmasi', 'diproses', 'dikirim', 'selesai', 'dibatalkan') NOT NULL DEFAULT 'belum_dibayar'");
     }
 };

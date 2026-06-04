@@ -14,17 +14,17 @@ class DashboardController extends Controller
     {
         $pagePath = 'Admin/Dashboard';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Dashboard';
+        $pageName = 'Dasbor';
 
         $totalProducts = Product::count();
         $availableProducts = Product::where('stock', true)->count();
         $totalOrders = Order::count();
-        $waitingConfirmation = Order::where('status', 'waiting_payment_confirmation')->count();
-        $pendingPayment = Order::where('status', 'pending_payment')->count();
-        $processingOrders = Order::whereIn('status', ['payment_confirmed', 'processing', 'shipped'])->count();
-        $totalCustomers = User::role('pelanggan')->count();
-        $verifiedRevenue = Payment::where('status', 'verified')->sum('amount');
-        $pendingPaymentAmount = Payment::where('status', 'pending')->sum('amount');
+        $waitingConfirmation = Order::where('status', 'menunggu_verifikasi_pembayaran')->count();
+        $pendingPayment = Order::where('status', 'belum_dibayar')->count();
+        $diprosesOrders = Order::whereIn('status', ['pembayaran_dikonfirmasi', 'diproses', 'dikirim'])->count();
+        $totalCustomers = User::whereHas('roles', fn ($query) => $query->where('name', 'pelanggan'))->count();
+        $verifiedRevenue = Payment::where('status', 'terverifikasi')->sum('amount');
+        $pendingPaymentAmount = Payment::where('status', 'menunggu')->sum('amount');
 
         $recentOrders = Order::with(['user', 'payment', 'paymentMethod'])
             ->withCount('items')
@@ -38,9 +38,9 @@ class DashboardController extends Controller
             ->get();
 
         $paymentStatusCounts = [
-            'pending' => Payment::where('status', 'pending')->count(),
-            'verified' => Payment::where('status', 'verified')->count(),
-            'rejected' => Payment::where('status', 'rejected')->count(),
+            'menunggu' => Payment::where('status', 'menunggu')->count(),
+            'terverifikasi' => Payment::where('status', 'terverifikasi')->count(),
+            'ditolak' => Payment::where('status', 'ditolak')->count(),
         ];
 
         $monthlyRevenue = collect(range(5, 0))->map(function (int $monthsAgo) {
@@ -48,7 +48,7 @@ class DashboardController extends Controller
 
             return [
                 'label' => $date->format('M'),
-                'amount' => Payment::where('status', 'verified')
+                'amount' => Payment::where('status', 'terverifikasi')
                     ->whereYear('verified_at', $date->year)
                     ->whereMonth('verified_at', $date->month)
                     ->sum('amount'),
@@ -65,7 +65,7 @@ class DashboardController extends Controller
             'totalOrders',
             'waitingConfirmation',
             'pendingPayment',
-            'processingOrders',
+            'diprosesOrders',
             'totalCustomers',
             'verifiedRevenue',
             'pendingPaymentAmount',

@@ -1527,7 +1527,7 @@
                 @auth
                     <a href="{{ url('/dashboard') }}"
                         class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                        Dashboard
+                        Dasbor
                     </a>
                 @else
                     <a href="{{ route('login') }}"
@@ -1538,7 +1538,7 @@
                     @if (Route::has('register'))
                         <a href="{{ route('register') }}"
                             class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                            Register
+                            Daftar
                         </a>
                     @endif
                 @endauth
@@ -1549,7 +1549,7 @@
     <nav
         class="w-full lg:max-w-4xl max-w-[335px] mb-6 flex flex-wrap items-center justify-center gap-2 rounded-full border border-[#e3e3e0] bg-white/90 px-4 py-3 shadow-[0px_0px_1px_0px_rgba(0,0,0,0.03),0px_1px_2px_0px_rgba(0,0,0,0.06)] backdrop-blur-sm">
         <a href="#all-products"
-            class="px-4 py-2 text-sm font-semibold text-[#1b1b18] hover:text-[#f53003] transition">All Product</a>
+            class="px-4 py-2 text-sm font-semibold text-[#1b1b18] hover:text-[#f53003] transition">Semua Produk</a>
         <a href="#hpl" class="px-4 py-2 text-sm font-semibold text-[#1b1b18] hover:text-[#f53003] transition">HPL</a>
         <a href="#plywood"
             class="px-4 py-2 text-sm font-semibold text-[#1b1b18] hover:text-[#f53003] transition">Plywood</a>
@@ -1566,7 +1566,7 @@
     @if (Route::has('register'))
         <a href="{{ route('register') }}"
             class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-            Register
+            Daftar
         </a>
     @endif
 @endauth

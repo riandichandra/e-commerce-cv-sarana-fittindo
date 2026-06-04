@@ -15,7 +15,7 @@ class ProductController extends Controller
     {
         $pagePath = 'ADMIN/PRODUCTS';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Products';
+        $pageName = 'Produk';
 
         $products = Product::with(['category', 'brand'])
             ->latest()
@@ -28,7 +28,7 @@ class ProductController extends Controller
     {
         $pagePath = 'ADMIN/PRODUCTS/CREATE';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Create Product';
+        $pageName = 'Tambah Produk';
         $categories = ProductCategory::active()->get();
         $brands = ProductBrand::active()->get();
 
@@ -83,7 +83,7 @@ class ProductController extends Controller
     {
         $pagePath = 'ADMIN/PRODUCTS/EDIT';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Edit Product';
+        $pageName = 'Edit Produk';
         $categories = ProductCategory::active()->get();
         $brands = ProductBrand::active()->get();
         $product->load(['category', 'brand', 'images']);

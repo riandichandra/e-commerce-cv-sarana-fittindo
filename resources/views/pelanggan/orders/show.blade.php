@@ -1,13 +1,19 @@
 <x-pelanggan-layout>
     <section class="bg-[#071d33] px-8 py-14 text-white">
         <div class="mx-auto max-w-[1290px]">
-            <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8d8ee]">Order Detail</p>
+            <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8d8ee]">Pesanan Detail</p>
             <h1 class="mt-4 text-4xl font-black uppercase tracking-[-.03em]">Detail Pesanan</h1>
         </div>
     </section>
 
     <section class="bg-[#f7faff] px-8 py-14">
         <div class="mx-auto grid max-w-[1290px] grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
+            @if (session('success') || session('error'))
+                <div class="border-l-4 {{ session('success') ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-500 bg-red-50 text-red-700' }} px-4 py-3 text-sm font-semibold lg:col-span-2">
+                    {{ session('success') ?? session('error') }}
+                </div>
+            @endif
+
             <div class="space-y-6">
                 <div class="bg-white p-6 shadow-sm">
                     <div
@@ -17,7 +23,7 @@
                             <p class="mt-1 text-sm text-[#657891]">{{ $order->created_at->format('d M Y H:i') }}</p>
                         </div>
                         <div class="flex flex-col items-start gap-2 sm:items-end">
-                            <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Order</p>
+                            <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Pesanan</p>
                             <span
                                 class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
                                 {{ $order->status_label }}
@@ -33,7 +39,7 @@
                         <div>
                             <p class="text-[#657891]">Status pembayaran</p>
                             <p class="mt-1 font-black text-[#10233d]">
-                                {{ $order->payment?->status ? ucwords(str_replace('_', ' ', $order->payment->status)) : '-' }}
+                                {{ $order->payment?->status_label ?? '-' }}
                             </p>
                         </div>
                         <div>
@@ -42,11 +48,17 @@
                             <p class="mt-1 text-[#657891]">{{ $order->shipping_phone }}</p>
                         </div>
                         <div>
-                            <p class="text-[#657891]">Total pembayaran</p>
+                            <p class="text-[#657891]">{{ $order->isWaitingForShippingCost() ? 'Total sementara' : 'Total pembayaran' }}</p>
                             <p class="mt-1 text-lg font-black text-[#c8102e]">Rp
                                 {{ number_format($order->total_amount, 0, ',', '.') }}</p>
                         </div>
                     </div>
+
+                    @if ($order->isWaitingForShippingCost())
+                        <div class="mt-5 border-l-4 border-orange-400 bg-orange-50 px-4 py-3 text-sm font-semibold leading-6 text-orange-800">
+                            Ongkos kirim untuk alamat Anda sedang menunggu konfirmasi admin. Silakan tunggu total pembayaran final sebelum mengunggah bukti pembayaran.
+                        </div>
+                    @endif
                 </div>
 
                 <div class="bg-white p-6 shadow-sm">
@@ -81,10 +93,23 @@
                     @endforeach
                 </div>
 
-                <div class="mt-6 flex justify-between border-t border-[#f2c8d0] pt-4 text-sm">
-                    <span class="text-[#657891]">Total</span>
-                    <span class="font-black text-[#c8102e]">Rp
-                        {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                <div class="mt-6 space-y-3 border-t border-[#f2c8d0] pt-4 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-[#657891]">Subtotal</span>
+                        <span class="font-black text-[#10233d]">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="flex items-start justify-between gap-4">
+                        <span class="text-[#657891]">Ongkos kirim</span>
+                        @if ($order->isWaitingForShippingCost())
+                            <span class="text-right font-black text-orange-700">Menunggu konfirmasi admin</span>
+                        @else
+                            <span class="font-black text-[#10233d]">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
+                        @endif
+                    </div>
+                    <div class="flex justify-between border-t border-[#e8eef7] pt-3">
+                        <span class="text-[#657891]">{{ $order->isWaitingForShippingCost() ? 'Total sementara' : 'Total pembayaran' }}</span>
+                        <span class="font-black text-[#c8102e]">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                    </div>
                 </div>
 
                 @if ($order->received_image)
@@ -96,15 +121,14 @@
                     </div>
                 @endif
 
-                @if ($order->status === 'shipped')
+                @if ($order->status === 'dikirim')
                     <form action="{{ route('pelanggan.orders.complete', $order) }}" method="POST"
                         enctype="multipart/form-data" class="mt-7">
                         @csrf
                         @method('PATCH')
 
                         <label for="received_image"
-                            class="text-sm font-black uppercase tracking-[.12em] text-[#10233d]">Foto Produk Sudah
-                            Sampai</label>
+                            class="text-sm font-black uppercase tracking-[.12em] text-[#10233d]">Foto Produk Sudah Sampai</label>
                         <input id="received_image" name="received_image" type="file"
                             accept="image/png,image/jpeg,image/webp"
                             class="mt-3 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary focus:outline-none"
@@ -114,7 +138,7 @@
                         <button type="submit"
                             class="mt-4 flex h-11 w-full items-center justify-center gap-2 bg-green-600 text-xs font-black uppercase tracking-[.16em] text-white hover:bg-green-700">
                             <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
-                            Completed
+                            Selesai
                         </button>
                     </form>
 
@@ -125,14 +149,18 @@
                         <button type="submit"
                             class="flex h-11 w-full items-center justify-center gap-2 bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
                             <iconify-icon icon="mdi:restore"></iconify-icon>
-                            Cancelled
+                            Dibatalkan
                         </button>
                     </form>
-                @elseif ($order->payment?->status !== 'verified')
+                @elseif ($order->isWaitingForShippingCost())
+                    <div class="mt-7 bg-orange-50 px-4 py-3 text-center text-xs font-black uppercase tracking-[.12em] text-orange-800">
+                        Menunggu Konfirmasi Ongkir
+                    </div>
+                @elseif ($order->payment?->status !== 'terverifikasi')
                     <a href="{{ route('pelanggan.orders.payment-proof', $order) }}"
                         class="mt-7 flex h-11 w-full items-center justify-center gap-2 bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
                         <iconify-icon icon="mdi:upload-outline"></iconify-icon>
-                        Upload Bukti
+                        Unggah Bukti
                     </a>
                 @endif
 

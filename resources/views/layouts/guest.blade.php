@@ -38,7 +38,7 @@
                         </a>
                         <a href="{{ route('dashboard') }}"
                             class="text-xs font-bold uppercase tracking-[.14em] text-[#5d7190]">
-                            Home
+                            Beranda
                         </a>
                     </div>
 

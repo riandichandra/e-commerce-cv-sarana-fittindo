@@ -11,11 +11,11 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $pagePath = explode('/', 'MARKETING/USERS');
-        $pageName = 'Customer Users';
+        $pageName = 'Pengguna Pelanggan';
         $search = $request->string('search')->toString();
         $status = $request->string('status')->toString();
 
-        $customers = User::role('pelanggan')
+        $customers = User::whereHas('roles', fn ($query) => $query->where('name', 'pelanggan'))
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
@@ -28,8 +28,8 @@ class UserController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $totalCustomers = User::role('pelanggan')->count();
-        $activeCustomers = User::role('pelanggan')->where('is_active', true)->count();
+        $totalCustomers = User::whereHas('roles', fn ($query) => $query->where('name', 'pelanggan'))->count();
+        $activeCustomers = User::whereHas('roles', fn ($query) => $query->where('name', 'pelanggan'))->where('is_active', true)->count();
 
         return view('marketing.users.index', compact(
             'pagePath',

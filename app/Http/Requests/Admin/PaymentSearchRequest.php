@@ -15,7 +15,7 @@ class PaymentSearchRequest extends FormRequest
     {
         return [
             'q' => ['nullable', 'string', 'max:100'],
-            'status' => ['nullable', 'string', 'in:pending,verified,rejected'],
+            'status' => ['nullable', 'string', 'in:menunggu,terverifikasi,ditolak'],
         ];
     }
 }

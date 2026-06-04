@@ -16,14 +16,14 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('restrict');
             $table->string('order_number', 50)->unique();
             $table->enum('status', [
-                'pending_payment',
-                'waiting_payment_confirmation',
-                'payment_confirmed',
-                'processing',
-                'shipped',
-                'completed',
-                'cancelled'
-            ])->default('pending_payment');
+                'belum_dibayar',
+                'menunggu_verifikasi_pembayaran',
+                'pembayaran_dikonfirmasi',
+                'diproses',
+                'dikirim',
+                'selesai',
+                'dibatalkan'
+            ])->default('belum_dibayar');
             $table->decimal('subtotal', 15, 2);
             $table->decimal('discount_amount', 15, 2)->default(0);
             $table->decimal('shipping_cost', 10, 2)->default(0);

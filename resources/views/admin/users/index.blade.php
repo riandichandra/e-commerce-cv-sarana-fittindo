@@ -3,14 +3,14 @@
         <div class="text-xs flex items-center gap-1">
             <p class="tracking-wider">ADMIN</p>
             <p>></p>
-            <p class="font-bold text-primary tracking-wider">USERS</p>
+            <p class="font-bold text-primary tracking-wider">PENGGUNAS</p>
         </div>
 
         <div class="w-full flex items-center justify-between mb-7">
             <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
             <x-button bgColor="primary" textColor="white" icon="mdi:plus" size="auto"
                 href="{{ route('admin.users.create') }}">
-                ADD USER
+                ADD PENGGUNA
             </x-button>
         </div>
 
@@ -22,7 +22,7 @@
                             {{ strtoupper(str_replace('_', ' ', $role->name)) }}
                         </h2>
                         <span class="bg-white px-3 py-1 text-xs font-semibold text-primary">
-                            {{ $role->users->count() }} USERS
+                            {{ $role->users->count() }} PENGGUNAS
                         </span>
                     </div>
 
@@ -31,12 +31,12 @@
                             <thead>
                                 <tr class="text-left text-sm text-gray-600 font-medium border-b border-gray-300">
                                     <th class="py-3 px-3">#</th>
-                                    <th class="py-3 px-3">Name</th>
+                                    <th class="py-3 px-3">Nama</th>
                                     <th class="py-3 px-3">Email</th>
-                                    <th class="py-3 px-3">Phone</th>
+                                    <th class="py-3 px-3">Telepon</th>
                                     <th class="py-3 px-3">Status</th>
-                                    <th class="py-3 px-3">Created</th>
-                                    <th class="py-3 px-3">Actions</th>
+                                    <th class="py-3 px-3">Dibuat</th>
+                                    <th class="py-3 px-3">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -48,7 +48,7 @@
                                         <td class="py-3 px-3">{{ $user->phone ?? '-' }}</td>
                                         <td class="py-3 px-3">
                                             <span class="px-2 py-1 text-xs {{ $user->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
-                                                {{ $user->is_active ? 'Active' : 'Inactive' }}
+                                                {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
                                             </span>
                                         </td>
                                         <td class="py-3 px-3">{{ $user->created_at->format('d M Y') }}</td>

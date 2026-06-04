@@ -23,13 +23,13 @@
                     <thead>
                         <tr class="text-left text-sm text-gray-600 font-medium border-b border-gray-300">
                             <th class="py-3 px-3">#</th>
-                            <th class="py-3 px-3">Method</th>
+                            <th class="py-3 px-3">Metode</th>
                             <th class="py-3 px-3">Bank</th>
-                            <th class="py-3 px-3">Account Number</th>
-                            <th class="py-3 px-3">Account Name</th>
-                            <th class="py-3 px-3">Order</th>
+                            <th class="py-3 px-3">Nomor Rekening</th>
+                            <th class="py-3 px-3">Nama Rekening</th>
+                            <th class="py-3 px-3">Pesanan</th>
                             <th class="py-3 px-3">Status</th>
-                            <th class="py-3 px-3">Actions</th>
+                            <th class="py-3 px-3">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,7 +45,7 @@
                                 <td class="py-3 px-3">{{ $paymentMethod->sort_order }}</td>
                                 <td class="py-3 px-3">
                                     <span class="px-2 py-1 text-xs {{ $paymentMethod->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
-                                        {{ $paymentMethod->is_active ? 'Active' : 'Inactive' }}
+                                        {{ $paymentMethod->is_active ? 'Aktif' : 'Nonaktif' }}
                                     </span>
                                 </td>
                                 <td class="py-3 px-3">

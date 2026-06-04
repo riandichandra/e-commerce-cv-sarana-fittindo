@@ -194,12 +194,12 @@ class DummyDataSeeder extends Seeder
                 $cancelledAt = null;
                 $cancellationReason = null;
 
-                if ($status === 'cancelled') {
+                if ($status === 'dibatalkan') {
                     $cancelledAt = now()->createFromTimestamp($createdAt->getTimestamp())->addDays($faker->numberBetween(1, 3));
                     $cancellationReason = $faker->randomElement([
-                        'Customer changed order',
-                        'Out of stock',
-                        'Payment not received in time',
+                        'Pelanggan mengubah pesanan',
+                        'Stok produk habis',
+                        'Pembayaran tidak diterima tepat waktu',
                     ]);
                 }
 
@@ -224,7 +224,7 @@ class DummyDataSeeder extends Seeder
                     'shipping_village' => $faker->word(),
                     'shipping_postal_code' => $faker->postcode(),
                     'notes' => $faker->boolean(30) ? $faker->sentence() : null,
-                    'cancelled_by' => $status === 'cancelled' ? Arr::random($verifiers) : null,
+                    'cancelled_by' => $status === 'dibatalkan' ? Arr::random($verifiers) : null,
                     'cancellation_reason' => $cancellationReason,
                     'cancelled_at' => $cancelledAt,
                 ]);
@@ -248,7 +248,7 @@ class DummyDataSeeder extends Seeder
                 $verifiedAt = null;
                 $verifiedBy = null;
 
-                if ($paymentStatus === 'verified') {
+                if ($paymentStatus === 'terverifikasi') {
                     $verifiedAt = now()->createFromTimestamp($createdAt->getTimestamp())->addDays($faker->numberBetween(1, 3));
                     $verifiedBy = Arr::random($verifiers);
                 }
@@ -263,7 +263,7 @@ class DummyDataSeeder extends Seeder
                     'status' => $paymentStatus,
                     'verified_by' => $verifiedBy,
                     'verified_at' => $verifiedAt,
-                    'notes' => $paymentStatus === 'rejected' ? 'Bukti transfer tidak sesuai.' : null,
+                    'notes' => $paymentStatus === 'ditolak' ? 'Bukti transfer tidak sesuai.' : null,
                 ]);
 
                 $payment->timestamps = false;
@@ -279,23 +279,23 @@ class DummyDataSeeder extends Seeder
         $chance = $faker->numberBetween(1, 100);
 
         return match (true) {
-            $chance <= 50 => 'completed',
-            $chance <= 70 => $faker->randomElement(['shipped', 'processing']),
-            $chance <= 80 => 'payment_confirmed',
-            $chance <= 90 => 'waiting_payment_confirmation',
-            $chance <= 95 => 'pending_payment',
-            default => 'cancelled',
+            $chance <= 50 => 'selesai',
+            $chance <= 70 => $faker->randomElement(['dikirim', 'diproses']),
+            $chance <= 80 => 'pembayaran_dikonfirmasi',
+            $chance <= 90 => 'menunggu_verifikasi_pembayaran',
+            $chance <= 95 => 'belum_dibayar',
+            default => 'dibatalkan',
         };
     }
 
     protected function determinePaymentStatus(string $orderStatus, $faker): string
     {
         return match ($orderStatus) {
-            'completed', 'shipped', 'processing', 'payment_confirmed' => 'verified',
-            'waiting_payment_confirmation' => 'pending',
-            'pending_payment' => $faker->boolean(70) ? 'pending' : 'rejected',
-            'cancelled' => $faker->boolean(40) ? 'pending' : 'rejected',
-            default => 'pending',
+            'selesai', 'dikirim', 'diproses', 'pembayaran_dikonfirmasi' => 'terverifikasi',
+            'menunggu_verifikasi_pembayaran' => 'menunggu',
+            'belum_dibayar' => $faker->boolean(70) ? 'menunggu' : 'ditolak',
+            'dibatalkan' => $faker->boolean(40) ? 'menunggu' : 'ditolak',
+            default => 'menunggu',
         };
     }
 

@@ -17,7 +17,7 @@
             ],
             [
                 'label' => 'Pesanan',
-                'value' => $completedOrders . ' / ' . $totalOrders,
+                'value' => $selesaiOrders . ' / ' . $totalOrders,
                 'icon' => 'mdi:shopping-outline',
                 'tone' => 'bg-rose-50 text-primary',
                 'meta' => $activeOrders . ' pesanan aktif',
@@ -32,19 +32,20 @@
         ];
 
         $statusClass = fn(?string $status) => match ($status) {
-            'pending_payment' => 'bg-yellow-100 text-yellow-800',
-            'waiting_payment_confirmation' => 'bg-blue-100 text-blue-800',
-            'payment_confirmed' => 'bg-emerald-100 text-emerald-800',
-            'processing' => 'bg-indigo-100 text-indigo-800',
-            'shipped' => 'bg-purple-100 text-purple-800',
-            'completed' => 'bg-green-100 text-green-800',
-            'cancelled', 'rejected' => 'bg-red-100 text-red-800',
-            'verified' => 'bg-green-100 text-green-800',
-            'pending' => 'bg-yellow-100 text-yellow-800',
+            'menunggu_konfirmasi_ongkir' => 'bg-orange-100 text-orange-800',
+            'belum_dibayar' => 'bg-yellow-100 text-yellow-800',
+            'menunggu_verifikasi_pembayaran' => 'bg-blue-100 text-blue-800',
+            'pembayaran_dikonfirmasi' => 'bg-emerald-100 text-emerald-800',
+            'diproses' => 'bg-indigo-100 text-indigo-800',
+            'dikirim' => 'bg-purple-100 text-purple-800',
+            'selesai' => 'bg-green-100 text-green-800',
+            'dibatalkan', 'ditolak' => 'bg-red-100 text-red-800',
+            'terverifikasi' => 'bg-green-100 text-green-800',
+            'menunggu' => 'bg-yellow-100 text-yellow-800',
             default => 'bg-gray-100 text-gray-700',
         };
 
-        $monthNames = [
+        $monthNamas = [
             1 => 'Jan',
             2 => 'Feb',
             3 => 'Mar',
@@ -70,7 +71,7 @@
                 </div>
                 <h1 class="mt-3 text-4xl font-black tracking-tight text-texthighlight">{{ $pageName }}</h1>
                 <p class="mt-2 max-w-3xl text-sm font-medium text-gray-600">
-                    Monitoring Dashboard menampilkan ringkasan penjualan, data pesanan, produk terlaris, dan promosi
+                    Monitoring Dasbor menampilkan ringkasan penjualan, data pesanan, produk terlaris, dan promosi
                     berjalan sebagai bahan pemantauan kinerja perusahaan.
                 </p>
             </div>
@@ -102,7 +103,7 @@
                                         @endforeach
                                     </select>
                                 </label>
-                                <p class="text-xs">Total penjualan verified untuk tahun terpilih.</p>
+                                <p class="text-xs">Total penjualan terverifikasi untuk tahun terpilih.</p>
                             </div>
                         </div>
                         <div class="flex h-12 w-12 items-center justify-center bg-emerald-50 text-emerald-700">
@@ -130,12 +131,12 @@
                                         onchange="this.form.submit()">
                                         @foreach ($availableMonths as $month)
                                             <option value="{{ $month }}" @selected($month === $selectedMonth)>
-                                                {{ $monthNames[$month] ?? $month }}</option>
+                                                {{ $monthNamas[$month] ?? $month }}</option>
                                         @endforeach
                                     </select>
                                 </label>
                                 <p class="text-xs">Penjualan untuk bulan
-                                    {{ $monthNames[$selectedMonth] ?? $selectedMonth }} {{ $selectedYear }}.</p>
+                                    {{ $monthNamas[$selectedMonth] ?? $selectedMonth }} {{ $selectedYear }}.</p>
                             </div>
                         </div>
                         <div class="flex h-12 w-12 items-center justify-center bg-blue-50 text-blue-700">
@@ -149,7 +150,7 @@
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <p class="text-xs font-black uppercase tracking-[.16em] text-gray-500">Pesanan</p>
-                        <p class="mt-3 text-3xl font-black text-texthighlight">{{ $completedOrders }} /
+                        <p class="mt-3 text-3xl font-black text-texthighlight">{{ $selesaiOrders }} /
                             {{ $totalOrders }}</p>
                         <p class="mt-2 text-sm font-semibold text-gray-500">{{ $activeOrders }} pesanan aktif</p>
                     </div>
@@ -217,7 +218,7 @@
                         <div>
                             <div class="flex items-center justify-between text-sm">
                                 <span
-                                    class="font-bold uppercase tracking-[.12em]">{{ str_replace('_', ' ', $status) }}</span>
+                                    class="font-bold uppercase tracking-[.12em]">{{ \App\Models\Payment::make(['status' => $status])->status_label }}</span>
                                 <span>{{ $count }}</span>
                             </div>
                             <div class="mt-2 h-2 bg-white/15">
@@ -234,9 +235,9 @@
         <section class="bg-white p-6 shadow-sm">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-xl font-black uppercase text-texthighlight">Top Customers</h2>
-                    <p class="mt-1 text-sm font-medium text-gray-500">Pelanggan dengan jumlah order terbanyak pada
-                        {{ $monthNames[$selectedMonth] ?? $selectedMonth }} {{ $selectedYear }}.</p>
+                    <h2 class="text-xl font-black uppercase text-texthighlight">Top Pelanggan</h2>
+                    <p class="mt-1 text-sm font-medium text-gray-500">Pelanggan dengan jumlah pesanan terbanyak pada
+                        {{ $monthNamas[$selectedMonth] ?? $selectedMonth }} {{ $selectedYear }}.</p>
                 </div>
             </div>
 
@@ -244,17 +245,17 @@
                 <table class="w-full text-left text-sm">
                     <thead>
                         <tr class="border-b border-gray-200 text-xs uppercase tracking-[.12em] text-gray-500">
-                            <th class="py-3 pr-4">Customer</th>
-                            <th class="py-3 pr-4">Orders</th>
-                            <th class="py-3 pr-4">Total Spent</th>
-                            <th class="py-3 pr-4">Avg Order</th>
+                            <th class="py-3 pr-4">Pelanggan</th>
+                            <th class="py-3 pr-4">Pesanan</th>
+                            <th class="py-3 pr-4">Total Belanja</th>
+                            <th class="py-3 pr-4">Rata-rata Pesanan</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($topCustomers as $customer)
                             <tr class="border-b border-gray-100 text-sm">
                                 <td class="py-4 pr-4 font-bold text-texthighlight">
-                                    {{ $customer->user?->name ?? 'Unknown' }}</td>
+                                    {{ $customer->user?->name ?? 'Tidak diketahui' }}</td>
                                 <td class="py-4 pr-4">{{ $customer->order_count }}</td>
                                 <td class="py-4 pr-4 font-bold">Rp
                                     {{ number_format($customer->total_spent, 0, ',', '.') }}</td>
@@ -281,8 +282,8 @@
                         </p>
                     </div>
                     <a href="{{ route('direktur.reports.strategic') }}"
-                        class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">View
-                        Report</a>
+                        class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">Lihat
+                        Laporan</a>
                     <table class="w-full text-left">
 
                         <div class="mt-5 overflow-x-auto">
@@ -290,9 +291,9 @@
                                 <thead>
                                     <tr
                                         class="border-b border-gray-200 text-xs uppercase tracking-[.12em] text-gray-500">
-                                        <th class="py-3 pr-4">Order</th>
-                                        <th class="py-3 pr-4">Customer</th>
-                                        <th class="py-3 pr-4">Items</th>
+                                        <th class="py-3 pr-4">Pesanan</th>
+                                        <th class="py-3 pr-4">Pelanggan</th>
+                                        <th class="py-3 pr-4">Item</th>
                                         <th class="py-3 pr-4">Total</th>
                                         <th class="py-3 pr-4">Status</th>
                                     </tr>
@@ -315,7 +316,7 @@
                                             <td class="py-4 pr-4">
                                                 <span
                                                     class="px-2 py-1 text-xs font-bold {{ $statusClass($order->status) }}">
-                                                    {{ ucwords(str_replace('_', ' ', $order->status)) }}
+                                                    {{ $order->status_label }}
                                                 </span>
                                             </td>
                                         </tr>

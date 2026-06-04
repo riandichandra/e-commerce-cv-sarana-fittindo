@@ -12,17 +12,17 @@ class DashboardController extends Controller
     public function index()
     {
         $pagePath = explode('/', 'MARKETING/DASHBOARD');
-        $pageName = 'Dashboard';
+        $pageName = 'Dasbor';
 
-        $totalCustomers = User::role('pelanggan')->count();
-        $activeCustomers = User::role('pelanggan')->where('is_active', true)->count();
+        $totalCustomers = User::whereHas('roles', fn ($query) => $query->where('name', 'pelanggan'))->count();
+        $activeCustomers = User::whereHas('roles', fn ($query) => $query->where('name', 'pelanggan'))->where('is_active', true)->count();
         $totalPromotions = Promotion::count();
         $activePromotions = Promotion::where('is_active', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->count();
         $upcomingPromotions = Promotion::whereDate('start_date', '>', now())->count();
-        $completedOrders = Order::where('status', 'completed')->count();
+        $selesaiOrders = Order::where('status', 'selesai')->count();
         $totalDiscountGiven = Order::sum('discount_amount');
 
         $recentPromotions = Promotion::with('createdBy')
@@ -30,7 +30,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        $recentCustomers = User::role('pelanggan')
+        $recentCustomers = User::whereHas('roles', fn ($query) => $query->where('name', 'pelanggan'))
             ->latest()
             ->limit(5)
             ->get();
@@ -40,7 +40,7 @@ class DashboardController extends Controller
 
             return [
                 'label' => $date->format('M'),
-                'count' => User::role('pelanggan')
+                'count' => User::whereHas('roles', fn ($query) => $query->where('name', 'pelanggan'))
                     ->whereYear('created_at', $date->year)
                     ->whereMonth('created_at', $date->month)
                     ->count(),
@@ -57,7 +57,7 @@ class DashboardController extends Controller
             'totalPromotions',
             'activePromotions',
             'upcomingPromotions',
-            'completedOrders',
+            'selesaiOrders',
             'totalDiscountGiven',
             'recentPromotions',
             'recentCustomers',

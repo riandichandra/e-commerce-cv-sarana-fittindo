@@ -13,13 +13,13 @@
         <div class="bg-[#FFF1F3] p-5 w-full">
             <h2 class="font-semibold tracking-wider text-texthighlight">PAYMENT LISTS</h2>
             <form method="GET" class="mt-4 mb-4 flex items-center gap-3">
-                <input type="text" name="q" placeholder="Search order number or customer"
+                <input type="text" name="q" placeholder="Cari nomor pesanan atau pelanggan"
                     value="{{ request('q') }}"
                     class="w-1/3 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary focus:outline-none">
 
                 <select name="status"
                     class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary focus:outline-none">
-                    <option value="">All statuses</option>
+                    <option value="">Semua status</option>
                     @foreach ($statuses as $s)
                         <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
                             {{ ucwords($s) }}</option>
@@ -28,7 +28,7 @@
 
                 <div class="flex gap-2">
                     <button type="submit"
-                        class="inline-flex items-center justify-center rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-red-700 transition">Search</button>
+                        class="inline-flex items-center justify-center rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-red-700 transition">Cari</button>
                     <a href="{{ route('admin.payments.index') }}"
                         class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition">Reset</a>
                 </div>
@@ -39,15 +39,15 @@
                     <thead>
                         <tr class="text-left text-sm text-gray-600 font-medium border-b border-gray-300">
                             <th class="py-3 px-3">#</th>
-                            <th class="py-3 px-3">Order Number</th>
-                            <th class="py-3 px-3">Customer</th>
-                            <th class="py-3 px-3">Method</th>
+                            <th class="py-3 px-3">Nomor Pesanan</th>
+                            <th class="py-3 px-3">Pelanggan</th>
+                            <th class="py-3 px-3">Metode</th>
                             <th class="py-3 px-3">Amount</th>
                             <th class="py-3 px-3">Sender</th>
-                            <th class="py-3 px-3">Transfer Date</th>
-                            <th class="py-3 px-3">Proof</th>
+                            <th class="py-3 px-3">Tanggal Transfer</th>
+                            <th class="py-3 px-3">Bukti</th>
                             <th class="py-3 px-3">Status</th>
-                            <th class="py-3 px-3">Verified By</th>
+                            <th class="py-3 px-3">Diverifikasi Oleh</th>
                             <th class="py-3 px-3">Action</th>
                         </tr>
                     </thead>
@@ -55,9 +55,9 @@
                         @forelse ($payments as $payment)
                             @php
                                 $statusClass = match ($payment->status) {
-                                    'verified' => 'bg-green-100 text-green-800',
-                                    'rejected' => 'bg-red-100 text-red-800',
-                                    'pending' => 'bg-yellow-100 text-yellow-800',
+                                    'terverifikasi' => 'bg-green-100 text-green-800',
+                                    'ditolak' => 'bg-red-100 text-red-800',
+                                    'menunggu' => 'bg-yellow-100 text-yellow-800',
                                     default => 'bg-gray-100 text-gray-700',
                                 };
                             @endphp
@@ -91,12 +91,12 @@
                                 </td>
                                 <td class="py-3 px-3">
                                     <span class="px-2 py-1 text-xs {{ $statusClass }}">
-                                        {{ ucwords(str_replace('_', ' ', $payment->status)) }}
+                                        {{ $payment->status_label }}
                                     </span>
                                 </td>
                                 <td class="py-3 px-3">{{ $payment->verifiedBy?->name ?? '-' }}</td>
                                 <td class="py-3 px-3">
-                                    @if ($payment->status === 'pending')
+                                    @if ($payment->status === 'menunggu')
                                         <div class="flex flex-col gap-2">
                                             <form action="{{ route('admin.payments.verify', $payment) }}"
                                                 method="POST">

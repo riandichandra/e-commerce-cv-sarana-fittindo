@@ -9,7 +9,7 @@
             <a href="{{ route('gm.dashboard') }}">
                 <li class="flex cursor-pointer items-center gap-3 p-3 px-5 {{ request()->routeIs('gm.dashboard') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
                     <iconify-icon icon="mdi:view-dashboard" class="fs-5"></iconify-icon>
-                    <p>DASHBOARD</p>
+                    <p>DASBOR</p>
                 </li>
             </a>
             <a href="{{ route('gm.reports.index') }}">
@@ -26,7 +26,7 @@
             <iconify-icon icon="mdi:account-circle" class="fs-5"></iconify-icon>
             <a href="{{ route('profile.edit') }}"
                 class="{{ request()->routeIs('profile.*') ? 'font-bold text-primary' : 'text-gray-600 hover:text-primary' }}">
-                {{ __('PROFILE') }}
+                {{ __('PROFIL') }}
             </a>
         </div>
 
@@ -37,7 +37,7 @@
 
                 <x-responsive-nav-link :href="route('logout')"
                     onclick="event.preventDefault(); this.closest('form').submit();">
-                    {{ __('LOG OUT') }}
+                    {{ __('KELUAR') }}
                 </x-responsive-nav-link>
             </form>
         </div>

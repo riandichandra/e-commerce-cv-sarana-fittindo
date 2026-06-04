@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="mb-8">
-        <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8102e]">Welcome Back</p>
-        <h1 class="mt-3 text-3xl font-black tracking-[-.03em] text-[#10233d]">Login ke akun Anda</h1>
+        <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8102e]">Selamat Datang Kembali</p>
+        <h1 class="mt-3 text-3xl font-black tracking-[-.03em] text-[#10233d]">Masuk ke akun Anda</h1>
         <p class="mt-3 text-sm leading-6 text-[#657891]">
             Masuk untuk melihat produk material, mengelola profil, dan melanjutkan kebutuhan proyek Anda.
         </p>
@@ -24,7 +24,7 @@
         </div>
 
         <div>
-            <label for="password" class="text-sm font-bold text-[#10233d]">Password</label>
+            <label for="password" class="text-sm font-bold text-[#10233d]">Kata Sandi</label>
             <div class="mt-2 flex items-center border border-[#f2c8d0] bg-[#fff7f8] px-4 focus-within:border-[#c8102e] focus-within:bg-white">
                 <iconify-icon icon="mdi:lock-outline" class="mr-3 text-[#6b7c91]"></iconify-icon>
                 <input id="password" type="password" name="password" required autocomplete="current-password"
@@ -54,7 +54,7 @@
 
         <p class="text-center text-sm text-[#657891]">
             Belum memiliki akun?
-            <a href="{{ route('register') }}" class="font-black text-[#c8102e] hover:text-[#9f0d24]">Register</a>
+            <a href="{{ route('register') }}" class="font-black text-[#c8102e] hover:text-[#9f0d24]">Daftar</a>
         </p>
     </form>
 </x-guest-layout>

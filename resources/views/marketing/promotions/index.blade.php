@@ -21,12 +21,12 @@
                     <thead>
                         <tr class="border-b border-gray-300 text-left text-sm font-medium text-gray-600">
                             <th class="px-3 py-3">#</th>
-                            <th class="px-3 py-3">Name</th>
+                            <th class="px-3 py-3">Nama</th>
                             <th class="px-3 py-3">Type</th>
                             <th class="px-3 py-3">Value</th>
                             <th class="px-3 py-3">Period</th>
                             <th class="px-3 py-3">Status</th>
-                            <th class="px-3 py-3">Actions</th>
+                            <th class="px-3 py-3">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -50,7 +50,7 @@
                                 </td>
                                 <td class="px-3 py-3">
                                     <span class="px-2 py-1 text-xs {{ $isRunning ? 'bg-green-100 text-green-700' : ($promotion->is_active ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700') }}">
-                                        {{ $isRunning ? 'Running' : ($promotion->is_active ? 'Scheduled/Ended' : 'Inactive') }}
+                                        {{ $isRunning ? 'Running' : ($promotion->is_active ? 'Scheduled/Ended' : 'Nonaktif') }}
                                     </span>
                                 </td>
                                 <td class="px-3 py-3">

@@ -1,7 +1,7 @@
 <x-pelanggan-layout>
     <section class="bg-[#071d33] px-8 py-14 text-white">
         <div class="mx-auto max-w-[1290px]">
-            <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8d8ee]">Customer Cart</p>
+            <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8d8ee]">Pelanggan Cart</p>
             <h1 class="mt-4 text-4xl font-black uppercase tracking-[-.03em]">Keranjang Belanja</h1>
         </div>
     </section>
@@ -31,7 +31,7 @@
 
                                 <div>
                                     <p class="text-xs font-black uppercase tracking-[.16em] text-[#7b8799]">
-                                        {{ $item->product->category?->name ?? 'Product' }}</p>
+                                        {{ $item->product->category?->name ?? 'Produk' }}</p>
                                     <a href="{{ route('pelanggan.products.show', $item->product) }}"
                                         class="mt-2 block text-lg font-black text-[#10233d] hover:text-[#c8102e]">
                                         {{ $item->product->name }}

@@ -57,7 +57,7 @@ class LoginRequest extends FormRequest
             Auth::guard()->logout();
 
             throw ValidationException::withMessages([
-                'email' => 'Your email address is not verified. Please check your inbox for a verification link.',
+                'email' => 'Alamat email Anda belum diverifikasi. Silakan cek kotak masuk untuk tautan verifikasi.',
             ]);
         }
 

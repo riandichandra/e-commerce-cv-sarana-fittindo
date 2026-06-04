@@ -15,7 +15,7 @@ class OrderSearchRequest extends FormRequest
     {
         return [
             'q' => ['nullable', 'string', 'max:100'],
-            'status' => ['nullable', 'string', 'in:pending_payment,waiting_payment_confirmation,payment_confirmed,processing,shipped,completed,cancelled'],
+            'status' => ['nullable', 'string', 'in:menunggu_konfirmasi_ongkir,belum_dibayar,menunggu_verifikasi_pembayaran,pembayaran_dikonfirmasi,diproses,dikirim,selesai,dibatalkan'],
         ];
     }
 }

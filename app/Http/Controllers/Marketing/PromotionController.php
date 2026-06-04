@@ -14,7 +14,7 @@ class PromotionController extends Controller
     public function index()
     {
         $pagePath = explode('/', 'MARKETING/PROMOTIONS');
-        $pageName = 'Promotions';
+        $pageName = 'Promosi';
         $promotions = Promotion::with('createdBy')
             ->latest()
             ->paginate(10);
@@ -25,7 +25,7 @@ class PromotionController extends Controller
     public function create()
     {
         $pagePath = explode('/', 'MARKETING/PROMOTIONS/CREATE');
-        $pageName = 'Create Promotion';
+        $pageName = 'Tambah Promosi';
         $promotion = new Promotion([
             'type' => 'percent',
             'is_active' => true,
@@ -50,13 +50,13 @@ class PromotionController extends Controller
 
         return redirect()
             ->route('marketing.promotions.index')
-            ->with('success', 'Promotion berhasil ditambahkan.');
+            ->with('success', 'Promosi berhasil ditambahkan.');
     }
 
     public function edit(Promotion $promotion)
     {
         $pagePath = explode('/', 'MARKETING/PROMOTIONS/EDIT');
-        $pageName = 'Edit Promotion';
+        $pageName = 'Edit Promosi';
 
         return view('marketing.promotions.edit', compact('pagePath', 'pageName', 'promotion'));
     }
@@ -78,7 +78,7 @@ class PromotionController extends Controller
 
         return redirect()
             ->route('marketing.promotions.index')
-            ->with('success', 'Promotion berhasil diperbarui.');
+            ->with('success', 'Promosi berhasil diperbarui.');
     }
 
     private function validatedData(Request $request, ?Promotion $promotion = null): array

@@ -13,7 +13,7 @@ class ProductCategoryController extends Controller
     {
         $pagePath = 'ADMIN/PRODUCTS/CATEGORIES';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Categories';
+        $pageName = 'Kategori';
         $categories = ProductCategory::withCount('products')->latest()->paginate(10);
 
         return view('admin.categories.index', compact('pagePath', 'pageName', 'categories'));
@@ -23,7 +23,7 @@ class ProductCategoryController extends Controller
     {
         $pagePath = 'ADMIN/PRODUCTS/CATEGORIES/CREATE';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Create Category';
+        $pageName = 'Tambah Kategori';
 
         return view('admin.categories.create', compact('pagePath', 'pageName'));
     }
@@ -49,7 +49,7 @@ class ProductCategoryController extends Controller
     {
         $pagePath = 'ADMIN/PRODUCTS/CATEGORIES/EDIT';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Edit Category';
+        $pageName = 'Edit Kategori';
 
         return view('admin.categories.edit', compact('pagePath', 'pageName', 'category'));
     }

@@ -25,18 +25,18 @@ class OrderFilterTest extends TestCase
         $paymentMethod = $this->makePaymentMethod();
         $product = $this->makeProduct();
 
-        $matchedOrder = $this->makeOrder($customer, $paymentMethod, $product, 'verified', 'completed');
-        $otherOrder = $this->makeOrder($otherCustomer, $paymentMethod, $product, 'pending', 'pending_payment');
+        $matchedOrder = $this->makeOrder($customer, $paymentMethod, $product, 'terverifikasi', 'selesai');
+        $otherOrder = $this->makeOrder($otherCustomer, $paymentMethod, $product, 'menunggu', 'belum_dibayar');
 
         $response = $this->actingAs($admin)->get(route('admin.orders.index', [
             'search' => 'Budi',
-            'status' => 'completed',
-            'payment_status' => 'verified',
+            'status' => 'selesai',
+            'payment_status' => 'terverifikasi',
             'delivery_status' => 'none',
         ]));
 
         $response->assertOk();
-        $response->assertSee('CARI & FILTER RIWAYAT PEMESANAN', false);
+        $response->assertSee('DAFTAR PESANAN', false);
         $response->assertSee($matchedOrder->order_number);
         $response->assertDontSee($otherOrder->order_number);
     }

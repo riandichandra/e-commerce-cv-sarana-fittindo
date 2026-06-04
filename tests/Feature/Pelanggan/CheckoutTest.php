@@ -64,17 +64,19 @@ class CheckoutTest extends TestCase
             'notes' => 'Kirim pagi.',
         ]);
 
-        $response->assertRedirect(route('pelanggan.products.index'));
-
         $this->assertDatabaseHas('orders', [
             'user_id' => $user->id,
             'payment_method_id' => $paymentMethod->id,
             'shipping_name' => 'Budi Santoso',
             'shipping_city' => 'Bandung',
             'notes' => 'Kirim pagi.',
+            'status' => 'menunggu_konfirmasi_ongkir',
+            'shipping_cost_status' => 'waiting_admin',
+            'shipping_cost' => 0,
         ]);
 
         $order = Order::first();
+        $response->assertRedirect(route('pelanggan.orders.show', $order));
 
         $this->assertDatabaseHas('order_items', [
             'order_id' => $order->id,
@@ -86,12 +88,49 @@ class CheckoutTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'order_id' => $order->id,
             'payment_method_id' => $paymentMethod->id,
-            'status' => 'pending',
+            'amount' => 300000,
+            'status' => 'menunggu',
         ]);
 
         $this->assertSame(1, (int) $product->fresh()->stock);
         $this->assertSame(0, CartItem::count());
         $this->assertSame(1, Payment::count());
+    }
+
+    public function test_customer_checkout_to_palembang_gets_fixed_shipping_cost(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), [
+            'shipping_name' => 'Budi Santoso',
+            'shipping_phone' => '081234567890',
+            'shipping_address' => 'Jl. Merdeka No. 10',
+            'shipping_province' => 'Sumatera Selatan',
+            'shipping_city' => 'Kota Palembang',
+            'shipping_district' => 'Ilir Timur I',
+            'shipping_village' => 'Dago',
+            'shipping_postal_code' => '30111',
+            'payment_method_id' => $paymentMethod->id,
+        ]);
+
+        $order = Order::first();
+
+        $response->assertRedirect(route('pelanggan.orders.show', $order));
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => 'belum_dibayar',
+            'shipping_cost_status' => 'fixed',
+            'shipping_cost' => 20000,
+            'total_amount' => 320000,
+        ]);
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $order->id,
+            'amount' => 320000,
+            'status' => 'menunggu',
+        ]);
     }
 
     public function test_checkout_reduces_stock_to_zero_and_sets_status_unavailable(): void
@@ -115,7 +154,9 @@ class CheckoutTest extends TestCase
             'payment_method_id' => $paymentMethod->id,
         ]);
 
-        $response->assertRedirect(route('pelanggan.products.index'));
+        $order = Order::first();
+
+        $response->assertRedirect(route('pelanggan.orders.show', $order));
         $this->assertSame(0, (int) $product->fresh()->stock);
         $this->assertSame('tidak tersedia', $product->fresh()->status);
     }
@@ -173,7 +214,9 @@ class CheckoutTest extends TestCase
             'payment_method_id' => $paymentMethod->id,
         ]);
 
-        $response->assertRedirect(route('pelanggan.products.index'));
+        $order = Order::first();
+
+        $response->assertRedirect(route('pelanggan.orders.show', $order));
 
         $this->assertDatabaseHas('orders', [
             'user_id' => $user->id,
@@ -185,7 +228,34 @@ class CheckoutTest extends TestCase
             'shipping_district' => 'Kebayoran Baru',
             'shipping_village' => 'Senayan',
             'shipping_postal_code' => $address->postal_code,
+            'status' => 'menunggu_konfirmasi_ongkir',
+            'shipping_cost_status' => 'waiting_admin',
         ]);
+    }
+
+    public function test_customer_cannot_upload_payment_proof_before_shipping_cost_is_confirmed(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), [
+            'shipping_name' => 'Budi Santoso',
+            'shipping_phone' => '081234567890',
+            'shipping_address' => 'Jl. Merdeka No. 10',
+            'shipping_province' => 'Jawa Barat',
+            'shipping_city' => 'Bandung',
+            'shipping_district' => 'Coblong',
+            'shipping_village' => 'Dago',
+            'shipping_postal_code' => '40135',
+            'payment_method_id' => $paymentMethod->id,
+        ]);
+
+        $order = Order::first();
+
+        $response = $this->actingAs($user)->get(route('pelanggan.orders.payment-proof', $order));
+
+        $response->assertRedirect(route('pelanggan.orders.show', $order));
+        $response->assertSessionHas('error');
     }
 
     public function test_customer_cannot_checkout_using_another_users_saved_address(): void

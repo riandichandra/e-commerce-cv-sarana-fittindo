@@ -53,6 +53,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('users', Admin\UserController::class)->except(['show', 'destroy']);
     Route::resource('categories', ProductCategoryController::class)->except(['show', 'destroy']);
     Route::resource('brands', Admin\ProductBrandController::class)->except(['show', 'destroy']);
+    Route::patch('orders/{order}/shipping-cost', [Admin\OrderController::class, 'updateShippingCost'])->name('orders.shipping-cost.update');
+    Route::get('pending-shipping-costs', [Admin\OrderController::class, 'pendingShippingCosts'])->name('pending-shipping-costs.index');
     Route::resource('orders', Admin\OrderController::class)->only(['index', 'show', 'update']);
     Route::resource('payments', Admin\PaymentController::class)->only(['index']);
     Route::patch('payments/{payment}/verify', [Admin\PaymentController::class, 'verify'])->name('payments.verify');

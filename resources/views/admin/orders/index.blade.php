@@ -11,24 +11,24 @@
         </div>
 
         <div class="bg-[#FFF1F3] p-5 w-full">
-            <h2 class="font-semibold tracking-wider text-texthighlight">ORDER LISTS</h2>
+            <h2 class="font-semibold tracking-wider text-texthighlight">DAFTAR PESANAN</h2>
             <form method="GET" class="mt-4 mb-4 flex items-center gap-3">
-                <input type="text" name="q" placeholder="Search order number or customer"
+                <input type="text" name="q" placeholder="Cari nomor pesanan atau pelanggan"
                     value="{{ request('q') }}"
                     class="w-1/3 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary focus:outline-none">
 
                 <select name="status"
                     class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-primary focus:outline-none">
-                    <option value="">All statuses</option>
+                    <option value="">Semua status</option>
                     @foreach ($statuses as $s)
                         <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
-                            {{ ucwords(str_replace('_', ' ', $s)) }}</option>
+                            {{ \App\Models\Order::make(['status' => $s])->status_label }}</option>
                     @endforeach
                 </select>
 
                 <div class="flex gap-2">
                     <button type="submit"
-                        class="inline-flex items-center justify-center rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-red-700 transition">Search</button>
+                        class="inline-flex items-center justify-center rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-red-700 transition">Cari</button>
                     <a href="{{ route('admin.orders.index') }}"
                         class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition">Reset</a>
                 </div>
@@ -38,34 +38,36 @@
                     <thead>
                         <tr class="text-left text-sm text-gray-600 font-medium border-b border-gray-300">
                             <th class="py-3 px-3">#</th>
-                            <th class="py-3 px-3">Order Number</th>
-                            <th class="py-3 px-3">Customer</th>
-                            <th class="py-3 px-3">Items</th>
+                            <th class="py-3 px-3">Nomor Pesanan</th>
+                            <th class="py-3 px-3">Pelanggan</th>
+                            <th class="py-3 px-3">Item</th>
                             <th class="py-3 px-3">Total</th>
-                            <th class="py-3 px-3">Payment</th>
-                            <th class="py-3 px-3">Order Status</th>
-                            <th class="py-3 px-3">Date</th>
-                            <th class="py-3 px-3">Actions</th>
+                            <th class="py-3 px-3">Pembayaran</th>
+                            <th class="py-3 px-3">Status Pesanan</th>
+                            <th class="py-3 px-3">Pengiriman</th>
+                            <th class="py-3 px-3">Tanggal</th>
+                            <th class="py-3 px-3">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($orders as $order)
                             @php
                                 $orderStatusClass = match ($order->status) {
-                                    'pending_payment' => 'bg-yellow-100 text-yellow-800',
-                                    'waiting_payment_confirmation' => 'bg-blue-100 text-blue-800',
-                                    'payment_confirmed' => 'bg-emerald-100 text-emerald-800',
-                                    'processing' => 'bg-indigo-100 text-indigo-800',
-                                    'shipped' => 'bg-purple-100 text-purple-800',
-                                    'completed' => 'bg-green-100 text-green-800',
-                                    'cancelled' => 'bg-red-100 text-red-800',
+                                    'menunggu_konfirmasi_ongkir' => 'bg-orange-100 text-orange-800',
+                                    'belum_dibayar' => 'bg-yellow-100 text-yellow-800',
+                                    'menunggu_verifikasi_pembayaran' => 'bg-blue-100 text-blue-800',
+                                    'pembayaran_dikonfirmasi' => 'bg-emerald-100 text-emerald-800',
+                                    'diproses' => 'bg-indigo-100 text-indigo-800',
+                                    'dikirim' => 'bg-purple-100 text-purple-800',
+                                    'selesai' => 'bg-green-100 text-green-800',
+                                    'dibatalkan' => 'bg-red-100 text-red-800',
                                     default => 'bg-gray-100 text-gray-700',
                                 };
 
                                 $paymentStatusClass = match ($order->payment?->status) {
-                                    'verified' => 'bg-green-100 text-green-800',
-                                    'rejected' => 'bg-red-100 text-red-800',
-                                    'pending' => 'bg-yellow-100 text-yellow-800',
+                                    'terverifikasi' => 'bg-green-100 text-green-800',
+                                    'ditolak' => 'bg-red-100 text-red-800',
+                                    'menunggu' => 'bg-yellow-100 text-yellow-800',
                                     default => 'bg-gray-100 text-gray-700',
                                 };
                             @endphp
@@ -84,29 +86,29 @@
                                     <div class="flex flex-col gap-1">
                                         <span>{{ $order->paymentMethod?->name ?? '-' }}</span>
                                         <span class="w-fit px-2 py-1 text-xs {{ $paymentStatusClass }}">
-                                            {{ $order->payment?->status ? ucwords(str_replace('_', ' ', $order->payment->status)) : 'Belum Ada' }}
+                                            {{ $order->payment?->status_label ?? 'Belum Ada' }}
                                         </span>
                                     </div>
                                 </td>
                                 <td class="py-3 px-3">
                                     <span class="px-2 py-1 text-xs {{ $orderStatusClass }}">
-                                        {{ ucwords(str_replace('_', ' ', $order->status)) }}
+                                        {{ $order->status_label }}
                                     </span>
                                 </td>
                                 <td class="py-3 px-3">
                                     <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700">
-                                        {{ $order->delivery?->status ? ucwords(str_replace('_', ' ', $order->delivery->status)) : 'Belum Ada' }}
+                                        {{ $order->delivery?->status_label ?? 'Belum Ada' }}
                                     </span>
                                 </td>
                                 <td class="py-3 px-3">{{ $order->created_at->format('d M Y') }}</td>
                                 <td class="py-3 px-3">
                                     @php
                                         $statusOptions = match ($order->status) {
-                                            'payment_confirmed' => [
-                                                'processing' => 'Processing',
-                                                'shipped' => 'Shipped',
+                                            'pembayaran_dikonfirmasi' => [
+                                                'diproses' => 'Diproses',
+                                                'dikirim' => 'Dikirim',
                                             ],
-                                            'processing' => ['shipped' => 'Shipped'],
+                                            'diproses' => ['dikirim' => 'Dikirim'],
                                             default => [],
                                         };
                                     @endphp

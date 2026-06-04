@@ -2,25 +2,25 @@
     @php
         $summaryCards = [
             [
-                'label' => 'Total Customers',
+                'label' => 'Total Pelanggan',
                 'value' => $totalCustomers,
                 'icon' => 'mdi:account-group',
                 'tone' => 'bg-rose-50 text-primary',
                 'meta' => $activeCustomers . ' pelanggan aktif',
             ],
             [
-                'label' => 'Active Promotions',
+                'label' => 'Promosi Aktif',
                 'value' => $activePromotions . ' / ' . $totalPromotions,
                 'icon' => 'mdi:loudspeaker',
                 'tone' => 'bg-emerald-50 text-emerald-700',
                 'meta' => $upcomingPromotions . ' promosi terjadwal',
             ],
             [
-                'label' => 'Completed Orders',
-                'value' => $completedOrders,
+                'label' => 'Selesai Pesanan',
+                'value' => $selesaiOrders,
                 'icon' => 'mdi:shopping-outline',
                 'tone' => 'bg-blue-50 text-blue-700',
-                'meta' => 'Order selesai',
+                'meta' => 'Pesanan selesai',
             ],
             [
                 'label' => 'Discount Given',
@@ -52,7 +52,7 @@
                     <iconify-icon icon="mdi:plus"></iconify-icon>
                 </a>
                 <a href="{{ route('marketing.users.index') }}" class="flex items-center justify-between bg-white px-4 py-3 font-bold text-texthighlight shadow-sm hover:text-primary">
-                    <span>Customers</span>
+                    <span>Pelanggan</span>
                     <iconify-icon icon="mdi:arrow-right"></iconify-icon>
                 </a>
             </div>
@@ -79,10 +79,10 @@
             <section class="bg-white p-6 shadow-sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-xl font-black uppercase text-texthighlight">Customer Growth</h2>
+                        <h2 class="text-xl font-black uppercase text-texthighlight">Pelanggan Growth</h2>
                         <p class="mt-1 text-sm font-medium text-gray-500">Pelanggan baru dalam 6 bulan terakhir.</p>
                     </div>
-                    <p class="text-sm font-black text-primary">{{ $totalCustomers }} customers</p>
+                    <p class="text-sm font-black text-primary">{{ $totalCustomers }} pelanggan</p>
                 </div>
 
                 <div class="mt-8 flex h-64 items-end gap-4 border-b border-gray-200">
@@ -104,7 +104,7 @@
             </section>
 
             <section class="bg-[#10233d] p-6 text-white shadow-sm">
-                <h2 class="text-xl font-black uppercase">Promotion Health</h2>
+                <h2 class="text-xl font-black uppercase">Kondisi Promosi</h2>
                 <p class="mt-1 text-sm font-medium text-blue-100">Status kampanye marketing saat ini.</p>
 
                 <div class="mt-6 space-y-5">
@@ -113,7 +113,7 @@
                         <span class="text-lg font-black">{{ $totalPromotions }}</span>
                     </div>
                     <div class="flex items-center justify-between border-b border-white/15 pb-4">
-                        <span class="text-sm text-blue-100">Active now</span>
+                        <span class="text-sm text-blue-100">Aktif now</span>
                         <span class="text-lg font-black">{{ $activePromotions }}</span>
                     </div>
                     <div class="flex items-center justify-between">
@@ -128,10 +128,10 @@
             <section class="bg-white p-6 shadow-sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-xl font-black uppercase text-texthighlight">Recent Promotions</h2>
+                        <h2 class="text-xl font-black uppercase text-texthighlight">Promosi Terbaru</h2>
                         <p class="mt-1 text-sm font-medium text-gray-500">Promosi terbaru yang dibuat.</p>
                     </div>
-                    <a href="{{ route('marketing.promotions.index') }}" class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">View All</a>
+                    <a href="{{ route('marketing.promotions.index') }}" class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">Lihat Semua</a>
                 </div>
 
                 <div class="mt-5 space-y-4">
@@ -142,7 +142,7 @@
                                 <p class="text-xs text-gray-500">{{ $promotion->start_date->format('d M Y') }} - {{ $promotion->end_date->format('d M Y') }}</p>
                             </div>
                             <span class="px-2 py-1 text-xs font-bold {{ $promotion->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
-                                {{ $promotion->is_active ? 'Active' : 'Inactive' }}
+                                {{ $promotion->is_active ? 'Aktif' : 'Nonaktif' }}
                             </span>
                         </div>
                     @empty
@@ -154,10 +154,10 @@
             <section class="bg-white p-6 shadow-sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-xl font-black uppercase text-texthighlight">Recent Customers</h2>
+                        <h2 class="text-xl font-black uppercase text-texthighlight">Pelanggan Terbaru</h2>
                         <p class="mt-1 text-sm font-medium text-gray-500">Pelanggan terbaru dari role pelanggan.</p>
                     </div>
-                    <a href="{{ route('marketing.users.index') }}" class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">View All</a>
+                    <a href="{{ route('marketing.users.index') }}" class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">Lihat Semua</a>
                 </div>
 
                 <div class="mt-5 space-y-4">
@@ -169,7 +169,7 @@
                                 <p class="text-xs text-gray-500">{{ $customer->created_at->format('d M Y') }}</p>
                             </div>
                             <span class="px-2 py-1 text-xs font-bold {{ $customer->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
-                                {{ $customer->is_active ? 'Active' : 'Inactive' }}
+                                {{ $customer->is_active ? 'Aktif' : 'Nonaktif' }}
                             </span>
                         </div>
                     @empty

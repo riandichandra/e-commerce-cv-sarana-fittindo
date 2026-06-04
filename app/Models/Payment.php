@@ -27,7 +27,17 @@ class Payment extends Model
         'verified_at' => 'datetime',
     ];
 
-    protected $enumStatuses = ['pending', 'verified', 'rejected'];
+    protected $enumStatuses = ['menunggu', 'terverifikasi', 'ditolak'];
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'menunggu' => 'Menunggu',
+            'terverifikasi' => 'Terverifikasi',
+            'ditolak' => 'Ditolak',
+            default => ucwords(str_replace('_', ' ', $this->status)),
+        };
+    }
 
     public function order() : BelongsTo
     {

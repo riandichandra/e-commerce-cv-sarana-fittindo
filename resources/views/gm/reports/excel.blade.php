@@ -25,21 +25,21 @@
         <thead>
             <tr>
                 <th>No</th>
-                <th>Order Number</th>
-                <th>Order Date</th>
-                <th>Customer</th>
-                <th>Phone</th>
-                <th>Shipping City</th>
-                <th>Products</th>
+                <th>Nomor Pesanan</th>
+                <th>Pesanan Date</th>
+                <th>Pelanggan</th>
+                <th>Telepon</th>
+                <th>Kota Pengiriman</th>
+                <th>Produk</th>
                 <th>Qty</th>
                 <th>Subtotal</th>
                 <th>Discount</th>
-                <th>Shipping Cost</th>
+                <th>Biaya Pengiriman</th>
                 <th>Total</th>
-                <th>Payment Method</th>
-                <th>Payment Status</th>
-                <th>Order Status</th>
-                <th>Verified At</th>
+                <th>Pembayaran Metode</th>
+                <th>Status Pembayaran</th>
+                <th>Status Pesanan</th>
+                <th>Diverifikasi Pada</th>
             </tr>
         </thead>
         <tbody>

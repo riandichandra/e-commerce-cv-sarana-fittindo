@@ -26,10 +26,10 @@ class OrderListTest extends TestCase
         $paymentMethod = $this->makePaymentMethod();
         $product = $this->makeProduct();
 
-        $unpaidOrder = $this->makeOrder($customer, $paymentMethod, $product, 'pending');
-        $paidOrder = $this->makeOrder($customer, $paymentMethod, $product, 'verified');
-        $shippedOrder = $this->makeOrder($customer, $paymentMethod, $product, 'verified', 'shipped');
-        $otherOrder = $this->makeOrder($otherCustomer, $paymentMethod, $product, 'pending');
+        $unpaidOrder = $this->makeOrder($customer, $paymentMethod, $product, 'menunggu');
+        $paidOrder = $this->makeOrder($customer, $paymentMethod, $product, 'terverifikasi');
+        $dikirimOrder = $this->makeOrder($customer, $paymentMethod, $product, 'terverifikasi', 'dikirim');
+        $otherOrder = $this->makeOrder($otherCustomer, $paymentMethod, $product, 'menunggu');
 
         $response = $this->actingAs($customer)->get(route('pelanggan.orders.index'));
 
@@ -38,13 +38,11 @@ class OrderListTest extends TestCase
         $response->assertSee('Sudah Dibayar');
         $response->assertSee($unpaidOrder->order_number);
         $response->assertSee($paidOrder->order_number);
-        $response->assertSee('Status Order');
+        $response->assertSee('Status Pesanan');
         $response->assertSee('Belum Dibayar');
         $response->assertSee('Pembayaran Dikonfirmasi');
-        $response->assertSee($shippedOrder->order_number);
+        $response->assertSee($dikirimOrder->order_number);
         $response->assertSee('Dikirim');
-        $response->assertSee('Completed');
-        $response->assertSee('Cancelled');
         $response->assertDontSee($otherOrder->order_number);
     }
 
@@ -53,67 +51,67 @@ class OrderListTest extends TestCase
         $customer = $this->makeCustomer();
         $paymentMethod = $this->makePaymentMethod();
         $product = $this->makeProduct();
-        $order = $this->makeOrder($customer, $paymentMethod, $product, 'verified', 'shipped');
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'terverifikasi', 'dikirim');
 
         $response = $this->actingAs($customer)->get(route('pelanggan.orders.show', $order));
 
         $response->assertOk();
         $response->assertSee('Detail Pesanan');
         $response->assertSee($order->order_number);
-        $response->assertSee('Status Order');
+        $response->assertSee('Status Pesanan');
         $response->assertSee('Dikirim');
-        $response->assertSee('Foto Produk Sudah Sampai');
-        $response->assertSee('Completed');
-        $response->assertSee('Cancelled');
+        $response->assertSeeText('Foto Produk Sudah Sampai');
+        $response->assertSee('Selesai');
+        $response->assertSee('Dibatalkan');
     }
 
-    public function test_customer_can_mark_shipped_order_as_completed(): void
+    public function test_customer_can_mark_dikirim_order_as_selesai(): void
     {
         Storage::fake('public');
 
         $customer = $this->makeCustomer();
         $paymentMethod = $this->makePaymentMethod();
         $product = $this->makeProduct();
-        $order = $this->makeOrder($customer, $paymentMethod, $product, 'verified', 'shipped');
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'terverifikasi', 'dikirim');
 
         $response = $this->actingAs($customer)->patch(route('pelanggan.orders.complete', $order), [
             'received_image' => $this->fakePngUpload(),
         ]);
 
         $response->assertRedirect(route('pelanggan.orders.index'));
-        $this->assertSame('completed', $order->fresh()->status);
+        $this->assertSame('selesai', $order->fresh()->status);
         Storage::disk('public')->assertExists($order->fresh()->received_image);
     }
 
-    public function test_customer_can_cancel_shipped_order_for_return(): void
+    public function test_customer_can_cancel_dikirim_order_for_return(): void
     {
         $customer = $this->makeCustomer();
         $paymentMethod = $this->makePaymentMethod();
         $product = $this->makeProduct();
-        $order = $this->makeOrder($customer, $paymentMethod, $product, 'verified', 'shipped');
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'terverifikasi', 'dikirim');
 
         $response = $this->actingAs($customer)->patch(route('pelanggan.orders.cancel', $order));
 
         $response->assertRedirect(route('pelanggan.orders.index'));
 
         $order->refresh();
-        $this->assertSame('cancelled', $order->status);
+        $this->assertSame('dibatalkan', $order->status);
         $this->assertSame($customer->id, $order->cancelled_by);
         $this->assertSame('Pengembalian diajukan oleh pelanggan.', $order->cancellation_reason);
         $this->assertNotNull($order->cancelled_at);
     }
 
-    public function test_customer_cannot_complete_order_that_has_not_been_shipped(): void
+    public function test_customer_cannot_complete_order_that_has_not_been_dikirim(): void
     {
         $customer = $this->makeCustomer();
         $paymentMethod = $this->makePaymentMethod();
         $product = $this->makeProduct();
-        $order = $this->makeOrder($customer, $paymentMethod, $product, 'verified', 'processing');
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'terverifikasi', 'diproses');
 
         $response = $this->actingAs($customer)->patch(route('pelanggan.orders.complete', $order));
 
         $response->assertRedirect(route('pelanggan.orders.index'));
-        $this->assertSame('processing', $order->fresh()->status);
+        $this->assertSame('diproses', $order->fresh()->status);
     }
 
     public function test_customer_can_upload_payment_proof_for_unpaid_order(): void
@@ -123,12 +121,12 @@ class OrderListTest extends TestCase
         $customer = $this->makeCustomer();
         $paymentMethod = $this->makePaymentMethod();
         $product = $this->makeProduct();
-        $order = $this->makeOrder($customer, $paymentMethod, $product, 'pending');
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'menunggu');
 
         $formResponse = $this->actingAs($customer)->get(route('pelanggan.orders.payment-proof', $order));
         $formResponse->assertOk();
-        $formResponse->assertSee('Upload Bukti Pembayaran');
-        $formResponse->assertSee('Status Order');
+        $formResponse->assertSee('Unggah Bukti Pembayaran');
+        $formResponse->assertSee('Status Pesanan');
         $formResponse->assertSee('Belum Dibayar');
 
         $response = $this->actingAs($customer)->post(route('pelanggan.orders.payment-proof.store', $order), [
@@ -143,9 +141,9 @@ class OrderListTest extends TestCase
         $payment = $order->payment()->first();
 
         $this->assertSame('Budi Santoso', $payment->sender_name);
-        $this->assertSame('pending', $payment->status);
+        $this->assertSame('menunggu', $payment->status);
         $this->assertSame('Transfer dari BCA.', $payment->notes);
-        $this->assertSame('waiting_payment_confirmation', $order->fresh()->status);
+        $this->assertSame('menunggu_verifikasi_pembayaran', $order->fresh()->status);
         Storage::disk('public')->assertExists($payment->proof_image);
     }
 
@@ -156,7 +154,7 @@ class OrderListTest extends TestCase
         $customer = $this->makeCustomer();
         $paymentMethod = $this->makePaymentMethod();
         $product = $this->makeProduct();
-        $order = $this->makeOrder($customer, $paymentMethod, $product, 'verified');
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'terverifikasi');
 
         $response = $this->actingAs($customer)->post(route('pelanggan.orders.payment-proof.store', $order), [
             'sender_name' => 'Budi Santoso',
@@ -221,7 +219,7 @@ class OrderListTest extends TestCase
         $order = Order::create([
             'user_id' => $user->id,
             'order_number' => 'SF' . now()->format('Ymd') . str_pad((string) (Order::count() + 1), 4, '0', STR_PAD_LEFT),
-            'status' => $orderStatus ?? ($paymentStatus === 'verified' ? 'payment_confirmed' : 'pending_payment'),
+            'status' => $orderStatus ?? ($paymentStatus === 'terverifikasi' ? 'pembayaran_dikonfirmasi' : 'belum_dibayar'),
             'subtotal' => 150000,
             'discount_amount' => 0,
             'shipping_cost' => 0,

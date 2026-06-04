@@ -8,7 +8,7 @@
         </div>
     </div>
 
-    <!-- Filters and Products Section -->
+    <!-- Filters and Produk Section -->
     <div class="px-12 py-12 bg-gray-50">
         <div class="grid grid-cols-4 gap-8">
             <!-- Sidebar Filters -->
@@ -16,7 +16,7 @@
                 <div class="bg-white rounded-lg p-6 sticky top-4">
                     <h3 class="text-lg font-bold text-gray-900 mb-6">FILTERS</h3>
 
-                    <!-- Category Filter -->
+                    <!-- Kategori Filter -->
                     <div class="mb-8">
                         <h4 class="font-semibold text-gray-900 mb-4">CATEGORY</h4>
                         <div class="space-y-3">
@@ -24,7 +24,7 @@
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
                                     @if (request('category') === '') checked @endif
                                     onchange="document.location.href = '{{ route('pelanggan.products.index') }}';">
-                                <span class="ml-3 text-sm text-gray-700">All Categories</span>
+                                <span class="ml-3 text-sm text-gray-700">Semua Kategori</span>
                             </label>
                             @foreach ($categories as $category)
                                 <label class="flex items-center cursor-pointer">
@@ -37,7 +37,7 @@
                         </div>
                     </div>
 
-                    <!-- Price Filter -->
+                    <!-- Harga Filter -->
                     <div>
                         <h4 class="font-semibold text-gray-900 mb-4">PRICE RANGE</h4>
                         <div class="space-y-3">
@@ -45,7 +45,7 @@
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
                                     @if (!request('price_range')) checked @endif
                                     onchange="document.location.href = '{{ route('pelanggan.products.index') }}';">
-                                <span class="ml-3 text-sm text-gray-700">All Prices</span>
+                                <span class="ml-3 text-sm text-gray-700">All Hargas</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
@@ -70,7 +70,7 @@
                 </div>
             </div>
 
-            <!-- Products Grid -->
+            <!-- Produk Grid -->
             <div class="col-span-3">
                 <div class="flex justify-between items-center mb-8">
                     <p class="text-sm text-gray-600">Showing {{ $products->count() }} of {{ $products->total() }}
@@ -79,9 +79,9 @@
                         class="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 focus:outline-none focus:border-red-600"
                         onchange="document.location.href = this.value;">
                         <option value="{{ route('pelanggan.products.index') }}">Sort by Latest</option>
-                        <option value="{{ route('pelanggan.products.index') }}?sort=price_asc">Price: Low to High
+                        <option value="{{ route('pelanggan.products.index') }}?sort=price_asc">Harga: Low to High
                         </option>
-                        <option value="{{ route('pelanggan.products.index') }}?sort=price_desc">Price: High to Low
+                        <option value="{{ route('pelanggan.products.index') }}?sort=price_desc">Harga: High to Low
                         </option>
                         <option value="{{ route('pelanggan.products.index') }}?sort=popular">Most Popular</option>
                     </select>
@@ -91,7 +91,7 @@
                     @forelse ($products as $product)
                         <div
                             class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition duration-300 flex flex-col">
-                            <!-- Product Image -->
+                            <!-- Gambar Produk -->
                             <a href="{{ route('pelanggan.products.show', $product) }}"
                                 class="relative h-56 bg-gray-200 overflow-hidden group block">
                                 @if ($product->primary_image)
@@ -100,7 +100,7 @@
                                         class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
                                 @else
                                     <div class="w-full h-full bg-gray-300 flex items-center justify-center">
-                                        <span class="text-gray-500">No Image</span>
+                                        <span class="text-gray-500">Tidak Ada Gambar</span>
                                     </div>
                                 @endif
 
@@ -125,7 +125,7 @@
                                     </button>
                                 </form>
 
-                                <!-- Stock Badge -->
+                                <!-- Label Stok -->
                                 @if ($product->stock > 0)
                                     <div
                                         class="absolute bottom-4 left-4 bg-green-600 text-white px-3 py-1 rounded text-xs font-semibold">
@@ -139,14 +139,14 @@
                                 @endif
                             </a>
 
-                            <!-- Product Info -->
+                            <!-- Info Produk -->
                             <div class="p-5 flex flex-col flex-1">
-                                <!-- Category -->
+                                <!-- Kategori -->
                                 <p class="text-xs text-gray-500 font-semibold mb-2 uppercase">
                                     {{ $product->category?->name ?? 'Uncategorized' }}
                                 </p>
 
-                                <!-- Product Name -->
+                                <!-- Nama Produk -->
                                 <h3
                                     class="text-sm font-bold text-gray-900 mb-2 line-clamp-2 hover:text-red-600 transition">
                                     <a href="{{ route('pelanggan.products.show', $product) }}">
@@ -154,17 +154,17 @@
                                     </a>
                                 </h3>
 
-                                <!-- Brand -->
+                                <!-- Merek -->
                                 @if ($product->brand)
                                     <p class="text-xs text-gray-500 mb-3">By {{ $product->brand->name }}</p>
                                 @endif
 
-                                <!-- Price -->
+                                <!-- Harga -->
                                 <p class="text-lg font-bold text-gray-900 mb-4">
                                     Rp {{ number_format($product->price, 0, ',', '.') }}
                                 </p>
 
-                                <!-- Add to Cart Button -->
+                                <!-- Tombol Tambah ke Keranjang -->
                                 @if ($product->stock > 0)
                                     <form
                                         action="{{ Auth::check() ? route('pelanggan.cart.store', $product) : route('login') }}"

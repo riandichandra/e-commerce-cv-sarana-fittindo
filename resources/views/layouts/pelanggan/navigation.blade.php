@@ -8,7 +8,7 @@
         <div class="hidden h-full flex-1 items-center justify-center gap-10 md:flex">
             <a href="{{ route('pelanggan.products.index') }}"
                 class="flex h-full items-center border-b-2 {{ request()->routeIs('pelanggan.products.*') && !request('category') ? 'border-[#c8102e] text-[#c8102e]' : 'border-transparent text-[#436aa6]' }} text-[12px] font-semibold">
-                All Products
+                Semua Produk
             </a>
             <a href="{{ route('pelanggan.products.index', ['category' => 'hpl']) }}"
                 class="flex h-full items-center border-b-2 {{ request('category') === 'hpl' ? 'border-[#c8102e] text-[#c8102e]' : 'border-transparent text-[#436aa6]' }} text-[12px] font-semibold">
@@ -37,12 +37,12 @@
         <div class="ml-auto flex items-center gap-4">
             <form action="{{ route('pelanggan.products.index') }}" method="GET" class="hidden sm:block">
                 <input id="customer-search" type="search" name="q" value="{{ request('q') }}"
-                    placeholder="Search Materials..." onkeydown="if (event.key === 'Enter') this.form.submit();"
+                    placeholder="Cari Material..." onkeydown="if (event.key === 'Enter') this.form.submit();"
                     class="h-8 w-[270px] border-0 bg-[#fff1f3] px-4 text-[11px] text-[#244263] placeholder:text-[#7d91ab] focus:border-[#c8102e] focus:ring-[#c8102e]">
             </form>
 
             <a href="{{ Auth::check() ? route('pelanggan.cart.index') : route('login') }}"
-                class="text-[#c8102e] hover:text-[#9f0d24]" title="Cart">
+                class="text-[#c8102e] hover:text-[#9f0d24]" title="Keranjang">
                 <iconify-icon icon="mdi:cart-outline" class="fs-5"></iconify-icon>
             </a>
 
@@ -63,7 +63,7 @@
                         <a href="{{ route('profile.edit') }}"
                             class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#244263] hover:bg-[#fff1f3]">
                             <iconify-icon icon="mdi:account-edit-outline"></iconify-icon>
-                            Profile
+                            Profil
                         </a>
                         <a href="{{ route('pelanggan.orders.index') }}"
                             class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#244263] hover:bg-[#fff1f3]">
@@ -80,7 +80,7 @@
                             <button type="submit"
                                 class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-semibold text-[#244263] hover:bg-[#fff1f3]">
                                 <iconify-icon icon="mdi:logout"></iconify-icon>
-                                Log Out
+                                Keluar
                             </button>
                         </form>
                     </div>
@@ -102,11 +102,11 @@
     <div x-cloak x-show="open" x-transition class="border-b border-[#f2c8d0] bg-white px-8 py-4 md:hidden">
         <form action="{{ route('pelanggan.products.index') }}" method="GET">
             <input id="customer-mobile-search" type="search" name="q" value="{{ request('q') }}"
-                placeholder="Search Materials..." onkeydown="if (event.key === 'Enter') this.form.submit();"
+                placeholder="Cari Material..." onkeydown="if (event.key === 'Enter') this.form.submit();"
                 class="mb-4 h-9 w-full border-0 bg-[#fff1f3] px-4 text-sm text-[#244263] placeholder:text-[#7d91ab] focus:border-[#c8102e] focus:ring-[#c8102e]">
         </form>
         <div class="flex flex-col gap-3 text-sm font-semibold text-[#436aa6]">
-            <a href="{{ route('pelanggan.products.index') }}">All Products</a>
+            <a href="{{ route('pelanggan.products.index') }}">Semua Produk</a>
             <a href="{{ route('pelanggan.products.index', ['category' => 'hpl']) }}">HPL</a>
             <a href="{{ route('pelanggan.products.index', ['category' => 'plywood']) }}">Plywood</a>
             <a href="{{ route('pelanggan.products.index', ['category' => 'laminate']) }}">Laminate</a>

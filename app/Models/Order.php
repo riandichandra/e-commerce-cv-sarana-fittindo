@@ -16,6 +16,9 @@ class Order extends Model
         'subtotal',
         'discount_amount',
         'shipping_cost',
+        'shipping_cost_status',
+        'shipping_cost_confirmed_at',
+        'shipping_cost_confirmed_by',
         'total_amount',
         'payment_method_id',
         'shipping_name',
@@ -38,17 +41,19 @@ class Order extends Model
         'discount_amount' => 'decimal:2',
         'shipping_cost' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'shipping_cost_confirmed_at' => 'datetime',
         'cancelled_at' => 'datetime',
     ];
 
     protected $enumStatuses = [
-        'pending_payment',
-        'waiting_payment_confirmation',
-        'payment_confirmed',
-        'processing',
-        'shipped',
-        'completed',
-        'cancelled'
+        'menunggu_konfirmasi_ongkir',
+        'belum_dibayar',
+        'menunggu_verifikasi_pembayaran',
+        'pembayaran_dikonfirmasi',
+        'diproses',
+        'dikirim',
+        'selesai',
+        'dibatalkan'
     ];
 
     public function user() : BelongsTo
@@ -76,6 +81,11 @@ class Order extends Model
         return $this->hasOne(Delivery::class);
     }
 
+    public function shippingCostConfirmedBy() : BelongsTo
+    {
+        return $this->belongsTo(User::class, 'shipping_cost_confirmed_by');
+    }
+
     public function statusHistory() : HasMany
     {
         return $this->hasMany(OrderStatusHistory::class);
@@ -84,13 +94,14 @@ class Order extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'pending_payment' => 'Belum Dibayar',
-            'waiting_payment_confirmation' => 'Menunggu Verifikasi Admin',
-            'payment_confirmed' => 'Pembayaran Dikonfirmasi',
-            'processing' => 'Diproses',
-            'shipped' => 'Dikirim',
-            'completed' => 'Selesai',
-            'cancelled' => 'Dibatalkan',
+            'menunggu_konfirmasi_ongkir' => 'Menunggu Konfirmasi Ongkir',
+            'belum_dibayar' => 'Belum Dibayar',
+            'menunggu_verifikasi_pembayaran' => 'Menunggu Verifikasi Admin',
+            'pembayaran_dikonfirmasi' => 'Pembayaran Dikonfirmasi',
+            'diproses' => 'Diproses',
+            'dikirim' => 'Dikirim',
+            'selesai' => 'Selesai',
+            'dibatalkan' => 'Dibatalkan',
             default => ucwords(str_replace('_', ' ', $this->status)),
         };
     }
@@ -98,15 +109,16 @@ class Order extends Model
     public function getStatusBadgeClassAttribute(): string
     {
         return match ($this->status) {
-            'pending_payment' => $this->payment?->status === 'rejected'
+            'menunggu_konfirmasi_ongkir' => 'bg-orange-100 text-orange-800',
+            'belum_dibayar' => $this->payment?->status === 'ditolak'
                 ? 'bg-red-100 text-red-800'
                 : 'bg-yellow-100 text-yellow-800',
-            'waiting_payment_confirmation' => 'bg-blue-100 text-blue-800',
-            'payment_confirmed' => 'bg-green-100 text-green-800',
-            'processing' => 'bg-indigo-100 text-indigo-800',
-            'shipped' => 'bg-sky-100 text-sky-800',
-            'completed' => 'bg-emerald-100 text-emerald-800',
-            'cancelled' => 'bg-red-100 text-red-800',
+            'menunggu_verifikasi_pembayaran' => 'bg-blue-100 text-blue-800',
+            'pembayaran_dikonfirmasi' => 'bg-green-100 text-green-800',
+            'diproses' => 'bg-indigo-100 text-indigo-800',
+            'dikirim' => 'bg-sky-100 text-sky-800',
+            'selesai' => 'bg-emerald-100 text-emerald-800',
+            'dibatalkan' => 'bg-red-100 text-red-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
@@ -121,5 +133,31 @@ class Order extends Model
         $sequence = $lastOrder ? (intval(substr($lastOrder->order_number, -4)) + 1) : 1;
         
         return 'SF' . $date . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+    }
+
+    public function isWaitingForShippingCost(): bool
+    {
+        return $this->status === 'menunggu_konfirmasi_ongkir'
+            || $this->shipping_cost_status === 'waiting_admin';
+    }
+
+    public function hasFinalShippingCost(): bool
+    {
+        return ! $this->isWaitingForShippingCost();
+    }
+
+    public static function isPalembangShippingCity(?string $city): bool
+    {
+        if (! $city) {
+            return false;
+        }
+
+        $normalized = str($city)
+            ->lower()
+            ->replace(['kota ', 'kabupaten ', 'kab. '], '')
+            ->squish()
+            ->toString();
+
+        return $normalized === 'palembang';
     }
 }

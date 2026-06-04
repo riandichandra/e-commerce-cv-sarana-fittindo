@@ -10,7 +10,7 @@
             <a href="{{ route('pelanggan.dashboard') }}"
                 class="inline-flex items-center gap-2 bg-[#C8102E] px-4 py-2 text-xs font-black uppercase tracking-[.14em] text-white hover:bg-[#9F0D24]">
                 <iconify-icon icon="mdi:view-dashboard-outline" class="fs-6"></iconify-icon>
-                Dashboard
+                Dasbor
             </a>
         </div>
     </x-slot>
@@ -20,7 +20,7 @@
             <section class="overflow-hidden bg-[#10233d] text-white shadow-sm">
                 <div class="grid grid-cols-1 gap-6 p-6 lg:grid-cols-[1fr_320px] lg:p-8">
                     <div>
-                        <p class="text-xs font-black uppercase tracking-[.22em] text-blue-100">Profile Center</p>
+                        <p class="text-xs font-black uppercase tracking-[.22em] text-blue-100">Pusat Profil</p>
                         <h1 class="mt-4 text-4xl font-black tracking-tight">{{ $user->name }}</h1>
                         <p class="mt-3 max-w-2xl text-sm font-medium leading-6 text-blue-100">
                             Kelola informasi akun dan keamanan password untuk akses portal {{ $roleName }}.
@@ -106,7 +106,7 @@
                                     </a>
                                     <div class="p-4">
                                         <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                            {{ $wishlist->product->category?->name ?? 'Product' }}
+                                            {{ $wishlist->product->category?->name ?? 'Produk' }}
                                         </p>
                                         <a href="{{ route('pelanggan.products.show', $wishlist->product) }}"
                                             class="mt-2 block text-sm font-bold text-gray-900 hover:text-red-700">
@@ -120,7 +120,7 @@
                                             @csrf
                                             <button type="submit"
                                                 class="text-xs font-bold uppercase tracking-wide text-red-600 hover:text-red-800">
-                                                Remove Wishlist
+                                                Hapus Wishlist
                                             </button>
                                         </form>
                                     </div>

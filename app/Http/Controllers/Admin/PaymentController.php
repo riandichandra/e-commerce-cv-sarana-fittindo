@@ -12,9 +12,9 @@ class PaymentController extends Controller
     {
         $pagePath = 'ADMIN/PAYMENTS';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Payments';
+        $pageName = 'Pembayaran';
 
-        $statuses = ['pending', 'verified', 'rejected'];
+        $statuses = ['menunggu', 'terverifikasi', 'ditolak'];
 
         $payments = Payment::with(['order.user', 'paymentMethod', 'verifiedBy'])
             ->when($request->status, fn($q) => $q->where('status', $request->status))
@@ -34,19 +34,19 @@ class PaymentController extends Controller
 
     public function verify(Payment $payment)
     {
-        if ($payment->status !== 'pending') {
+        if ($payment->status !== 'menunggu') {
             return redirect()->route('admin.payments.index')->with('error', 'Payment sudah diproses.');
         }
 
         $payment->update([
-            'status' => 'verified',
+            'status' => 'terverifikasi',
             'verified_by' => auth()->id(),
             'verified_at' => now(),
             'rejection_reason' => null,
         ]);
 
         if ($payment->order) {
-            $payment->order->update(['status' => 'payment_confirmed']);
+            $payment->order->update(['status' => 'pembayaran_dikonfirmasi']);
         }
 
         return redirect()->route('admin.payments.index')->with('success', 'Pembayaran berhasil diverifikasi dan status order diperbarui.');
@@ -54,19 +54,19 @@ class PaymentController extends Controller
 
     public function reject(Request $request, Payment $payment)
     {
-        if ($payment->status !== 'pending') {
+        if ($payment->status !== 'menunggu') {
             return redirect()->route('admin.payments.index')->with('error', 'Payment sudah diproses.');
         }
 
         $payment->update([
-            'status' => 'rejected',
+            'status' => 'ditolak',
             'verified_by' => auth()->id(),
             'verified_at' => now(),
             'rejection_reason' => $request->input('rejection_reason'),
         ]);
 
         if ($payment->order) {
-            $payment->order->update(['status' => 'cancelled']);
+            $payment->order->update(['status' => 'dibatalkan']);
         }
 
         return redirect()->route('admin.payments.index')->with('success', 'Pembayaran ditolak dan status order diubah menjadi dibatalkan.');

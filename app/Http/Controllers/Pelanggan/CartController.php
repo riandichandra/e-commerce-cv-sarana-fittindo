@@ -187,15 +187,23 @@ class CartController extends Controller
                     return $product->price * $item->quantity;
                 });
 
+                $isPalembang = Order::isPalembangShippingCity($validated['shipping_city'] ?? null);
+                $shippingCost = $isPalembang ? 20000 : 0;
+                $totalAmount = $subtotal + $shippingCost;
+                $shippingCostStatus = $isPalembang ? 'fixed' : 'waiting_admin';
+                $orderStatus = $isPalembang ? 'belum_dibayar' : 'menunggu_konfirmasi_ongkir';
+
                 $user = $request->user();
                 $order = Order::create([
                     'user_id' => $user->id,
                     'order_number' => Order::generateOrderNumber(),
-                    'status' => 'pending_payment',
+                    'status' => $orderStatus,
                     'subtotal' => $subtotal,
                     'discount_amount' => 0,
-                    'shipping_cost' => 0,
-                    'total_amount' => $subtotal,
+                    'shipping_cost' => $shippingCost,
+                    'shipping_cost_status' => $shippingCostStatus,
+                    'shipping_cost_confirmed_at' => $isPalembang ? now() : null,
+                    'total_amount' => $totalAmount,
                     'payment_method_id' => $validated['payment_method_id'],
                     'shipping_name' => $validated['shipping_name'],
                     'shipping_phone' => $validated['shipping_phone'],
@@ -227,9 +235,11 @@ class CartController extends Controller
                 Payment::create([
                     'order_id' => $order->id,
                     'payment_method_id' => $validated['payment_method_id'],
-                    'amount' => $subtotal,
-                    'status' => 'pending',
-                    'notes' => 'Menunggu konfirmasi pembayaran pelanggan.',
+                    'amount' => $totalAmount,
+                    'status' => 'menunggu',
+                    'notes' => $isPalembang
+                        ? 'Menunggu konfirmasi pembayaran pelanggan.'
+                        : 'Menunggu konfirmasi ongkos kirim admin.',
                 ]);
 
                 $cart->items()->delete();
@@ -240,8 +250,12 @@ class CartController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
+        $message = $order->isWaitingForShippingCost()
+            ? 'Checkout berhasil. Ongkos kirim untuk alamat Anda akan dikonfirmasi admin sebelum pembayaran.'
+            : 'Checkout berhasil. Silakan lakukan pembayaran sesuai total pesanan.';
+
         return redirect()
-            ->route('pelanggan.products.index')
-            ->with('success', 'Checkout berhasil. Order ' . $order->order_number . ' sudah tersimpan.');
+            ->route('pelanggan.orders.show', $order)
+            ->with('success', $message);
     }
 }

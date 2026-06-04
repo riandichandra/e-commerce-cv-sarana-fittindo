@@ -1,13 +1,19 @@
 <x-pelanggan-layout>
     <section class="bg-[#071d33] px-8 py-14 text-white">
         <div class="mx-auto max-w-[1290px]">
-            <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8d8ee]">Customer Orders</p>
+            <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8d8ee]">Pesanan Pelanggan</p>
             <h1 class="mt-4 text-4xl font-black uppercase tracking-[-.03em]">Pesanan Saya</h1>
         </div>
     </section>
 
     <section class="bg-[#f7faff] px-8 py-14">
         <div class="mx-auto grid max-w-[1290px] grid-cols-1 gap-8 xl:grid-cols-2">
+            @if (session('success') || session('error'))
+                <div class="border-l-4 {{ session('success') ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-500 bg-red-50 text-red-700' }} px-4 py-3 text-sm font-semibold xl:col-span-2">
+                    {{ session('success') ?? session('error') }}
+                </div>
+            @endif
+
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <h2 class="text-xl font-black uppercase text-[#10233d]">Belum Dibayar</h2>
@@ -27,7 +33,7 @@
                                 </p>
                             </div>
                             <div class="flex flex-col items-start gap-2 sm:items-end">
-                                <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Order</p>
+                                <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Pesanan</p>
                                 <span
                                     class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
                                     {{ $order->status_label }}
@@ -55,9 +61,11 @@
                                 <p class="mt-1 font-black text-[#10233d]">{{ $order->paymentMethod?->name ?? '-' }}</p>
                             </div>
                             <div class="sm:text-right">
-                                <p class="text-[#657891]">Total</p>
-                                <p class="mt-1 text-lg font-black text-[#c8102e]">Rp
-                                    {{ number_format($order->total_amount, 0, ',', '.') }}</p>
+                                <p class="text-[#657891]">{{ $order->isWaitingForShippingCost() ? 'Total sementara' : 'Total' }}</p>
+                                <p class="mt-1 text-lg font-black text-[#c8102e]">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</p>
+                                @if ($order->isWaitingForShippingCost())
+                                    <p class="mt-1 text-xs font-semibold text-orange-700">Ongkos kirim menunggu konfirmasi admin.</p>
+                                @endif
                             </div>
                         </div>
 
@@ -67,11 +75,17 @@
                                 <iconify-icon icon="mdi:eye-outline"></iconify-icon>
                                 Detail
                             </a>
-                            <a href="{{ route('pelanggan.orders.payment-proof', $order) }}"
-                                class="flex h-11 items-center justify-center gap-2 bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
-                                <iconify-icon icon="mdi:upload-outline"></iconify-icon>
-                                Upload Bukti
-                            </a>
+                            @if ($order->isWaitingForShippingCost())
+                                <div class="flex min-h-11 items-center justify-center bg-orange-50 px-3 text-center text-xs font-black uppercase tracking-[.12em] text-orange-800">
+                                    Menunggu Ongkir
+                                </div>
+                            @else
+                                <a href="{{ route('pelanggan.orders.payment-proof', $order) }}"
+                                    class="flex h-11 items-center justify-center gap-2 bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
+                                    <iconify-icon icon="mdi:upload-outline"></iconify-icon>
+                                    Unggah Bukti
+                                </a>
+                            @endif
                         </div>
                     </article>
                 @empty
@@ -103,7 +117,7 @@
                                 </p>
                             </div>
                             <div class="flex flex-col items-start gap-2 sm:items-end">
-                                <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Order</p>
+                                <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Pesanan</p>
                                 <span
                                     class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
                                     {{ $order->status_label }}

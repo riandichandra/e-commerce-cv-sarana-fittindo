@@ -13,7 +13,7 @@ class ProductBrandController extends Controller
     {
         $pagePath = 'ADMIN/PRODUCTS/BRANDS';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Brands';
+        $pageName = 'Merek';
         $brands = ProductBrand::withCount('products')->latest()->paginate(10);
 
         return view('admin.brands.index', compact('pagePath', 'pageName', 'brands'));
@@ -23,7 +23,7 @@ class ProductBrandController extends Controller
     {
         $pagePath = 'ADMIN/PRODUCTS/BRANDS/CREATE';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Create Brand';
+        $pageName = 'Tambah Merek';
 
         return view('admin.brands.create', compact('pagePath', 'pageName'));
     }
@@ -49,7 +49,7 @@ class ProductBrandController extends Controller
     {
         $pagePath = 'ADMIN/PRODUCTS/BRANDS/EDIT';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Edit Brand';
+        $pageName = 'Edit Merek';
 
         return view('admin.brands.edit', compact('pagePath', 'pageName', 'brand'));
     }

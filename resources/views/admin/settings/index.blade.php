@@ -22,18 +22,18 @@
                         <p class="font-bold text-texthighlight">{{ $user->name }}</p>
                         <p class="text-sm text-gray-600">{{ $user->email }}</p>
                         <span class="mt-2 inline-flex bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                            {{ strtoupper($user->role?->name ?? 'USER') }}
+                            {{ strtoupper($user->role?->name ?? 'PENGGUNA') }}
                         </span>
                     </div>
                 </div>
 
                 <dl class="mt-4 flex flex-col gap-3 text-sm">
                     <div>
-                        <dt class="text-gray-500">Phone</dt>
+                        <dt class="text-gray-500">Telepon</dt>
                         <dd class="font-medium text-texthighlight">{{ $user->phone ?? '-' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-gray-500">Email Verified</dt>
+                        <dt class="text-gray-500">Email Terverifikasi</dt>
                         <dd class="font-medium text-texthighlight">
                             {{ $user->email_verified_at ? $user->email_verified_at->format('d M Y H:i') : 'Belum diverifikasi' }}
                         </dd>
@@ -51,7 +51,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-1">
-                            <label for="name" class="text-sm font-medium text-gray-700">Name</label>
+                            <label for="name" class="text-sm font-medium text-gray-700">Nama</label>
                             <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}"
                                 class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
                             @error('name')
@@ -69,7 +69,7 @@
                         </div>
 
                         <div class="flex flex-col gap-1">
-                            <label for="phone" class="text-sm font-medium text-gray-700">Phone</label>
+                            <label for="phone" class="text-sm font-medium text-gray-700">Telepon</label>
                             <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone) }}"
                                 class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
                             @error('phone')
@@ -90,7 +90,7 @@
             </div>
 
             <div class="bg-[#FFF1F3] p-5 w-full xl:col-span-3">
-                <h2 class="font-semibold tracking-wider text-texthighlight">CHANGE PASSWORD</h2>
+                <h2 class="font-semibold tracking-wider text-texthighlight">UBAH KATA SANDI</h2>
 
                 <form method="POST" action="{{ route('password.update') }}" class="mt-4 flex flex-col gap-4">
                     @csrf
@@ -98,7 +98,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="flex flex-col gap-1">
-                            <label for="current_password" class="text-sm font-medium text-gray-700">Current Password</label>
+                            <label for="current_password" class="text-sm font-medium text-gray-700">Kata Sandi Saat Ini</label>
                             <input type="password" name="current_password" id="current_password"
                                 class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
                             @if ($errors->updatePassword->has('current_password'))
@@ -107,7 +107,7 @@
                         </div>
 
                         <div class="flex flex-col gap-1">
-                            <label for="password" class="text-sm font-medium text-gray-700">New Password</label>
+                            <label for="password" class="text-sm font-medium text-gray-700">Kata Sandi Baru</label>
                             <input type="password" name="password" id="password"
                                 class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
                             @if ($errors->updatePassword->has('password'))
@@ -116,7 +116,7 @@
                         </div>
 
                         <div class="flex flex-col gap-1">
-                            <label for="password_confirmation" class="text-sm font-medium text-gray-700">Confirm Password</label>
+                            <label for="password_confirmation" class="text-sm font-medium text-gray-700">Konfirmasi Kata Sandi</label>
                             <input type="password" name="password_confirmation" id="password_confirmation"
                                 class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
                             @if ($errors->updatePassword->has('password_confirmation'))
@@ -127,10 +127,10 @@
 
                     <div class="flex items-center gap-4">
                         <button type="submit" class="bg-primary text-white py-2 px-4 hover:bg-primary-dark transition w-fit">
-                            UPDATE PASSWORD
+                            PERBARUI KATA SANDI
                         </button>
                         @if (session('status') === 'password-updated')
-                            <p class="text-sm text-green-700">Password berhasil diperbarui.</p>
+                            <p class="text-sm text-green-700">Kata Sandi berhasil diperbarui.</p>
                         @endif
                     </div>
                 </form>

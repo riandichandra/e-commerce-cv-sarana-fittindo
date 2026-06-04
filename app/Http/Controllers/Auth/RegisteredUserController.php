@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -44,13 +45,17 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $user->assignRole('pelanggan');
+        $role = Role::firstOrCreate(
+            ['name' => 'pelanggan', 'guard_name' => 'web'],
+        );
+
+        $user->assignRole($role);
 
         event(new Registered($user));
 
         Auth::login($user);
 
         return redirect(route('verification.notice', absolute: false))
-                    ->with('message', 'Registration successful! A verification link has been sent to your email.');
+                    ->with('message', 'Registrasi berhasil. Tautan verifikasi telah dikirim ke email Anda.');
     }
 }

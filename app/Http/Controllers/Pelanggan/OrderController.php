@@ -18,11 +18,11 @@ class OrderController extends Controller
             ->get();
 
         $unpaidOrders = $orders->filter(function (Order $order) {
-            return $order->payment?->status !== 'verified';
+            return $order->payment?->status !== 'terverifikasi';
         });
 
         $paidOrders = $orders->filter(function (Order $order) {
-            return $order->payment?->status === 'verified';
+            return $order->payment?->status === 'terverifikasi';
         });
 
         return view('pelanggan.orders.index', compact('unpaidOrders', 'paidOrders'));
@@ -71,7 +71,13 @@ class OrderController extends Controller
 
         $order->load(['items', 'payment', 'paymentMethod']);
 
-        if ($order->payment?->status === 'verified') {
+        if ($order->isWaitingForShippingCost()) {
+            return redirect()
+                ->route('pelanggan.orders.show', $order)
+                ->with('error', 'Ongkos kirim belum dikonfirmasi admin. Silakan tunggu total pembayaran final.');
+        }
+
+        if ($order->payment?->status === 'terverifikasi') {
             return redirect()
                 ->route('pelanggan.orders.index')
                 ->with('error', 'Pesanan ini sudah dibayar.');
@@ -84,7 +90,7 @@ class OrderController extends Controller
     {
         abort_unless($order->user_id === $request->user()->id, 403);
 
-        if ($order->status !== 'shipped') {
+        if ($order->status !== 'dikirim') {
             return redirect()
                 ->route('pelanggan.orders.index')
                 ->with('error', 'Pesanan hanya dapat diselesaikan setelah dikirim.');
@@ -101,7 +107,7 @@ class OrderController extends Controller
         }
 
         $order->update([
-            'status' => 'completed',
+            'status' => 'selesai',
             'received_image' => $receivedImagePath,
         ]);
 
@@ -114,14 +120,14 @@ class OrderController extends Controller
     {
         abort_unless($order->user_id === $request->user()->id, 403);
 
-        if ($order->status !== 'shipped') {
+        if ($order->status !== 'dikirim') {
             return redirect()
                 ->route('pelanggan.orders.index')
                 ->with('error', 'Pengembalian hanya dapat diajukan saat pesanan sudah dikirim.');
         }
 
         $order->update([
-            'status' => 'cancelled',
+            'status' => 'dibatalkan',
             'cancelled_by' => $request->user()->id,
             'cancellation_reason' => 'Pengembalian diajukan oleh pelanggan.',
             'cancelled_at' => now(),
@@ -138,7 +144,13 @@ class OrderController extends Controller
 
         $order->load('payment');
 
-        if ($order->payment?->status === 'verified') {
+        if ($order->isWaitingForShippingCost()) {
+            return redirect()
+                ->route('pelanggan.orders.show', $order)
+                ->with('error', 'Ongkos kirim belum dikonfirmasi admin. Silakan tunggu total pembayaran final.');
+        }
+
+        if ($order->payment?->status === 'terverifikasi') {
             return redirect()
                 ->route('pelanggan.orders.index')
                 ->with('error', 'Pesanan ini sudah dibayar.');
@@ -166,7 +178,7 @@ class OrderController extends Controller
                 'proof_image' => $proofPath,
                 'transfer_date' => $validated['transfer_date'],
                 'sender_name' => $validated['sender_name'],
-                'status' => 'pending',
+                'status' => 'menunggu',
                 'verified_by' => null,
                 'verified_at' => null,
                 'rejection_reason' => null,
@@ -174,7 +186,7 @@ class OrderController extends Controller
             ]
         );
 
-        $order->update(['status' => 'waiting_payment_confirmation']);
+        $order->update(['status' => 'menunggu_verifikasi_pembayaran']);
 
         return redirect()
             ->route('pelanggan.orders.index')

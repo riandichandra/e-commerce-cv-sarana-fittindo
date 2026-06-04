@@ -16,7 +16,7 @@ class UserController extends Controller
     {
         $pagePath = 'ADMIN/USERS';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Users';
+        $pageName = 'Pengguna';
 
         $roles = Role::with(['users' => fn ($query) => $query->latest()])
     ->orderBy('id')
@@ -29,7 +29,7 @@ class UserController extends Controller
     {
         $pagePath = 'ADMIN/USERS/CREATE';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Create User';
+        $pageName = 'Tambah Pengguna';
         $roles = Role::orderBy('id')->get();
 
         return view('admin.users.create', compact('pagePath', 'pageName', 'roles'));
@@ -64,7 +64,7 @@ class UserController extends Controller
     {
         $pagePath = 'ADMIN/USERS/EDIT';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Edit User';
+        $pageName = 'Edit Pengguna';
         $roles = Role::orderBy('id')->get();
 
         return view('admin.users.edit', compact('pagePath', 'pageName', 'user', 'roles'));

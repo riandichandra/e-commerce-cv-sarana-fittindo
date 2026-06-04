@@ -15,9 +15,9 @@ class DashboardController extends Controller
     public function index()
     {
         $pagePath = explode('/', 'GM/DASHBOARD');
-        $pageName = 'Dashboard';
+        $pageName = 'Dasbor';
 
-        $availableYears = Payment::where('status', 'verified')
+        $availableYears = Payment::where('status', 'terverifikasi')
             ->whereNotNull('verified_at')
             ->selectRaw('YEAR(verified_at) as year')
             ->distinct()
@@ -34,7 +34,7 @@ class DashboardController extends Controller
             $selectedYear = $availableYears->first();
         }
 
-        $availableMonths = Payment::where('status', 'verified')
+        $availableMonths = Payment::where('status', 'terverifikasi')
             ->whereYear('verified_at', $selectedYear)
             ->whereNotNull('verified_at')
             ->selectRaw('MONTH(verified_at) as month')
@@ -58,28 +58,28 @@ class DashboardController extends Controller
             }
         }
 
-        $totalRevenue = Payment::where('status', 'verified')
+        $totalRevenue = Payment::where('status', 'terverifikasi')
             ->whereYear('verified_at', $selectedYear)
             ->sum('amount');
 
-        $monthlyRevenue = Payment::where('status', 'verified')
+        $monthlyRevenue = Payment::where('status', 'terverifikasi')
             ->whereYear('verified_at', $selectedYear)
             ->whereMonth('verified_at', $selectedMonth)
             ->sum('amount');
 
         $totalOrders = Order::count();
-        $completedOrders = Order::where('status', 'completed')->count();
-        $processingOrders = Order::whereIn('status', ['payment_confirmed', 'processing', 'shipped'])->count();
-        $totalCustomers = User::role('pelanggan')->count();
+        $selesaiOrders = Order::where('status', 'selesai')->count();
+        $diprosesOrders = Order::whereIn('status', ['pembayaran_dikonfirmasi', 'diproses', 'dikirim'])->count();
+        $totalCustomers = User::whereHas('roles', fn ($query) => $query->where('name', 'pelanggan'))->count();
         $activeProducts = Product::where('is_active', true)->count();
-        $verifiedPayments = Payment::where('status', 'verified')->count();
+        $verifiedPayments = Payment::where('status', 'terverifikasi')->count();
 
         $monthlySales = collect(range(5, 0))->map(function (int $monthsAgo) {
             $date = now()->subMonths($monthsAgo);
 
             return [
                 'label' => $date->format('M'),
-                'amount' => Payment::where('status', 'verified')
+                'amount' => Payment::where('status', 'terverifikasi')
                     ->whereYear('verified_at', $date->year)
                     ->whereMonth('verified_at', $date->month)
                     ->sum('amount'),
@@ -132,8 +132,8 @@ class DashboardController extends Controller
             'availableMonths',
             'selectedMonth',
             'totalOrders',
-            'completedOrders',
-            'processingOrders',
+            'selesaiOrders',
+            'diprosesOrders',
             'totalCustomers',
             'activeProducts',
             'verifiedPayments',

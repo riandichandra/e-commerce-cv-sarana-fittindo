@@ -1,25 +1,27 @@
 <x-direktur-layout>
     @php
         $orderStatuses = [
-            'pending_payment' => 'Pending Payment',
-            'waiting_payment_confirmation' => 'Waiting Payment Confirmation',
-            'payment_confirmed' => 'Payment Confirmed',
-            'processing' => 'Processing',
-            'shipped' => 'Shipped',
-            'completed' => 'Completed',
-            'cancelled' => 'Cancelled',
+            'menunggu_konfirmasi_ongkir' => 'Menunggu Konfirmasi Ongkir',
+            'belum_dibayar' => 'Belum Dibayar',
+            'menunggu_verifikasi_pembayaran' => 'Menunggu Verifikasi Pembayaran',
+            'pembayaran_dikonfirmasi' => 'Pembayaran Dikonfirmasi',
+            'diproses' => 'Diproses',
+            'dikirim' => 'Dikirim',
+            'selesai' => 'Selesai',
+            'dibatalkan' => 'Dibatalkan',
         ];
 
         $statusClass = fn (?string $status) => match ($status) {
-            'pending_payment' => 'bg-yellow-100 text-yellow-800',
-            'waiting_payment_confirmation' => 'bg-blue-100 text-blue-800',
-            'payment_confirmed' => 'bg-emerald-100 text-emerald-800',
-            'processing' => 'bg-indigo-100 text-indigo-800',
-            'shipped' => 'bg-purple-100 text-purple-800',
-            'completed' => 'bg-green-100 text-green-800',
-            'cancelled', 'rejected' => 'bg-red-100 text-red-800',
-            'verified' => 'bg-green-100 text-green-800',
-            'pending' => 'bg-yellow-100 text-yellow-800',
+            'menunggu_konfirmasi_ongkir' => 'bg-orange-100 text-orange-800',
+            'belum_dibayar' => 'bg-yellow-100 text-yellow-800',
+            'menunggu_verifikasi_pembayaran' => 'bg-blue-100 text-blue-800',
+            'pembayaran_dikonfirmasi' => 'bg-emerald-100 text-emerald-800',
+            'diproses' => 'bg-indigo-100 text-indigo-800',
+            'dikirim' => 'bg-purple-100 text-purple-800',
+            'selesai' => 'bg-green-100 text-green-800',
+            'dibatalkan', 'ditolak' => 'bg-red-100 text-red-800',
+            'terverifikasi' => 'bg-green-100 text-green-800',
+            'menunggu' => 'bg-yellow-100 text-yellow-800',
             default => 'bg-gray-100 text-gray-700',
         };
     @endphp
@@ -48,7 +50,7 @@
                 <p class="mt-2 text-2xl font-black text-texthighlight">Rp {{ number_format($summary['total_sales'], 0, ',', '.') }}</p>
             </div>
             <div class="bg-white p-5 shadow-sm">
-                <p class="text-xs font-black uppercase tracking-[.14em] text-gray-500">Revenue Verified</p>
+                <p class="text-xs font-black uppercase tracking-[.14em] text-gray-500">Pendapatan Terverifikasi</p>
                 <p class="mt-2 text-2xl font-black text-primary">Rp {{ number_format($summary['verified_revenue'], 0, ',', '.') }}</p>
             </div>
             <div class="bg-white p-5 shadow-sm">
@@ -65,7 +67,7 @@
                     <input type="date" name="end_date" value="{{ $filters['end_date'] }}"
                         class="border-gray-300 text-sm shadow-sm focus:border-primary focus:ring-primary">
                     <select name="status" class="border-gray-300 text-sm shadow-sm focus:border-primary focus:ring-primary">
-                        <option value="">All Order Status</option>
+                        <option value="">All Status Pesanan</option>
                         @foreach ($orderStatuses as $value => $label)
                             <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
                         @endforeach
@@ -82,11 +84,11 @@
                         <thead>
                             <tr class="border-b border-gray-300 text-left text-sm font-medium text-gray-600">
                                 <th class="px-3 py-3">#</th>
-                                <th class="px-3 py-3">Order</th>
-                                <th class="px-3 py-3">Customer</th>
-                                <th class="px-3 py-3">Items</th>
+                                <th class="px-3 py-3">Pesanan</th>
+                                <th class="px-3 py-3">Pelanggan</th>
+                                <th class="px-3 py-3">Item</th>
                                 <th class="px-3 py-3">Total</th>
-                                <th class="px-3 py-3">Payment</th>
+                                <th class="px-3 py-3">Pembayaran</th>
                                 <th class="px-3 py-3">Status</th>
                                 <th class="px-3 py-3">Date</th>
                             </tr>
@@ -109,7 +111,7 @@
                                     </td>
                                     <td class="px-3 py-3">
                                         <span class="px-2 py-1 text-xs {{ $statusClass($order->status) }}">
-                                            {{ ucwords(str_replace('_', ' ', $order->status)) }}
+                                            {{ $order->status_label }}
                                         </span>
                                     </td>
                                     <td class="px-3 py-3">{{ $order->created_at->format('d M Y') }}</td>
@@ -142,7 +144,7 @@
                             <span class="font-black">{{ $promotionStatus['upcoming'] }}</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span>Inactive</span>
+                            <span>Nonaktif</span>
                             <span class="font-black">{{ $promotionStatus['inactive'] }}</span>
                         </div>
                     </div>
@@ -170,7 +172,7 @@
                     <div class="mt-5 space-y-3">
                         @forelse ($orderStatusCounts as $status => $count)
                             <div class="flex items-center justify-between text-sm">
-                                <span class="font-bold uppercase text-gray-600">{{ str_replace('_', ' ', $status) }}</span>
+                                <span class="font-bold uppercase text-gray-600">{{ \App\Models\Payment::make(['status' => $status])->status_label }}</span>
                                 <span class="font-black text-primary">{{ $count }}</span>
                             </div>
                         @empty

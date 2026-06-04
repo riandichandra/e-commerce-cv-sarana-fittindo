@@ -26,7 +26,18 @@ class Delivery extends Model
         'delivered_at',
     ];
 
-    protected $enumStatuses = ['packed', 'shipped', 'in_transit', 'delivered'];
+    protected $enumStatuses = ['dikemas', 'dikirim', 'dalam_perjalanan', 'terkirim'];
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'dikemas' => 'Dikemas',
+            'dikirim' => 'Dikirim',
+            'dalam_perjalanan' => 'Dalam Perjalanan',
+            'terkirim' => 'Terkirim',
+            default => ucwords(str_replace('_', ' ', $this->status)),
+        };
+    }
 
     public function order() : BelongsTo
     {

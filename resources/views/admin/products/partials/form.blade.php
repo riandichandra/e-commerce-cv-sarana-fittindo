@@ -7,7 +7,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="flex flex-col gap-1">
-        <label for="name" class="text-sm font-medium text-gray-700">Product Name</label>
+        <label for="name" class="text-sm font-medium text-gray-700">Nama Produk</label>
         <input type="text" name="name" id="name" value="{{ old('name', $product?->name) }}"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
         @error('name')
@@ -16,10 +16,10 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="category_id" class="text-sm font-medium text-gray-700">Category</label>
+        <label for="category_id" class="text-sm font-medium text-gray-700">Kategori</label>
         <select name="category_id" id="category_id"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
-            <option value="">Choose category</option>
+            <option value="">Pilih kategori</option>
             @foreach ($categories as $category)
                 <option value="{{ $category->id }}" @selected((string) old('category_id', $product?->category_id) === (string) $category->id)>
                     {{ $category->name }}
@@ -32,7 +32,7 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="brand_id" class="text-sm font-medium text-gray-700">Brand</label>
+        <label for="brand_id" class="text-sm font-medium text-gray-700">Merek</label>
         <select name="brand_id" id="brand_id"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
             <option value="">No brand</option>
@@ -48,7 +48,7 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="price" class="text-sm font-medium text-gray-700">Price</label>
+        <label for="price" class="text-sm font-medium text-gray-700">Harga</label>
         <input type="number" name="price" id="price" min="0" step="0.01"
             value="{{ old('price', $product?->price) }}"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
@@ -58,7 +58,7 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="stock" class="text-sm font-medium text-gray-700">Stock Quantity</label>
+        <label for="stock" class="text-sm font-medium text-gray-700">Jumlah Stok</label>
         <input type="number" name="stock" id="stock" min="0" step="1"
             value="{{ old('stock', $product?->stock ?? 0) }}"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
@@ -69,7 +69,7 @@
 
     @if ($product?->exists)
         <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium text-gray-700">Current Status</label>
+            <label class="text-sm font-medium text-gray-700">Status Saat Ini</label>
             <span
                 class="inline-flex items-center rounded px-2 py-1 text-xs font-semibold {{ $product->status === 'tersedia' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                 {{ ucfirst($product->status) }}
@@ -107,7 +107,7 @@
 </div>
 
 <div class="flex flex-col gap-1">
-    <label for="description" class="text-sm font-medium text-gray-700">Description</label>
+    <label for="description" class="text-sm font-medium text-gray-700">Deskripsi</label>
     <textarea name="description" id="description" rows="4"
         class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">{{ old('description', $product?->description) }}</textarea>
     @error('description')
@@ -126,7 +126,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="flex flex-col gap-1">
-        <label for="images" class="text-sm font-medium text-gray-700">Product Images</label>
+        <label for="images" class="text-sm font-medium text-gray-700">Gambar Produk</label>
         <input type="file" name="images[]" id="images" multiple
             class="border border-gray-300 bg-white p-2 focus:ring-primary focus:border-primary transition w-full">
         @error('images')
@@ -138,7 +138,7 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="primary_image" class="text-sm font-medium text-gray-700">Primary Image Index</label>
+        <label for="primary_image" class="text-sm font-medium text-gray-700">Indeks Gambar Utama</label>
         <input type="number" name="primary_image" id="primary_image" min="0"
             value="{{ old('primary_image', 0) }}"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
@@ -150,7 +150,7 @@
 
 @if ($product?->images?->count())
     <div>
-        <p class="text-sm font-medium text-gray-700">Current Images</p>
+        <p class="text-sm font-medium text-gray-700">Gambar Saat Ini</p>
         <div class="mt-2 grid grid-cols-4 gap-3">
             @foreach ($product->images as $image)
                 <img src="{{ asset('storage/' . $image->image_path) }}" alt="{{ $product->name }}"
@@ -168,6 +168,6 @@
 
     <label class="inline-flex items-center gap-2 text-sm text-gray-700">
         <input type="checkbox" name="is_active" value="1" class="text-primary" @checked(old('is_active', $product?->is_active ?? true))>
-        Active
+        Aktif
     </label>
 </div>

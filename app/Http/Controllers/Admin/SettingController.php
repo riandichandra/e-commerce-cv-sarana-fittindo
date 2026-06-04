@@ -11,9 +11,14 @@ class SettingController extends Controller
     {
         $pagePath = 'ADMIN/SETTINGS';
         $pagePath = explode('/', $pagePath);
-        $pageName = 'Settings';
-        $user = $request->user()->load('role');
+        $pageName = 'Pengaturan';
 
-        return view('admin.settings.index', compact('pagePath', 'pageName', 'user'));
+        $user = $request->user()->load('roles');
+
+        return view('admin.settings.index', compact(
+            'pagePath',
+            'pageName',
+            'user'
+        ));
     }
 }

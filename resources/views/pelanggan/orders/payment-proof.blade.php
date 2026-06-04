@@ -1,8 +1,8 @@
 <x-pelanggan-layout>
     <section class="bg-[#071d33] px-8 py-14 text-white">
         <div class="mx-auto max-w-[1290px]">
-            <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8d8ee]">Payment Confirmation</p>
-            <h1 class="mt-4 text-4xl font-black uppercase tracking-[-.03em]">Upload Bukti Pembayaran</h1>
+            <p class="text-xs font-black uppercase tracking-[.24em] text-[#c8d8ee]">Konfirmasi Pembayaran</p>
+            <h1 class="mt-4 text-4xl font-black uppercase tracking-[-.03em]">Unggah Bukti Pembayaran</h1>
         </div>
     </section>
 
@@ -26,7 +26,7 @@
                                 <p class="mt-1 text-sm text-[#657891]">{{ $order->created_at->format('d M Y H:i') }}</p>
                             </div>
                             <div class="flex flex-col items-start gap-2 sm:items-end">
-                                <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Order</p>
+                                <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Pesanan</p>
                                 <span class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
                                     {{ $order->status_label }}
                                 </span>
@@ -125,13 +125,23 @@
                         @endforeach
                     </div>
 
-                    <div class="mt-6 flex justify-between border-t border-[#f2c8d0] pt-4 text-sm">
-                        <span class="text-[#657891]">Total pembayaran</span>
-                        <span class="font-black text-[#c8102e]">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                    <div class="mt-6 space-y-3 border-t border-[#f2c8d0] pt-4 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-[#657891]">Subtotal</span>
+                            <span class="font-black text-[#10233d]">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-[#657891]">Ongkos kirim</span>
+                            <span class="font-black text-[#10233d]">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between border-t border-[#e8eef7] pt-3">
+                            <span class="text-[#657891]">Total pembayaran</span>
+                            <span class="font-black text-[#c8102e]">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                        </div>
                     </div>
 
                     <button type="submit" class="mt-7 flex h-11 w-full items-center justify-center bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
-                        Upload Bukti
+                        Unggah Bukti
                     </button>
                     <a href="{{ route('pelanggan.orders.index') }}" class="mt-3 flex h-11 w-full items-center justify-center border border-[#d8e2f0] text-xs font-black uppercase tracking-[.16em] text-[#10233d] hover:border-[#c8102e] hover:text-[#c8102e]">
                         Kembali

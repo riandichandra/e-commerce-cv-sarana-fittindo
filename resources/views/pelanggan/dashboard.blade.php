@@ -355,7 +355,7 @@
     <footer class="bg-[#fff1f3] px-8 pt-20 text-[#5d7190]">
         <div class="mx-auto grid max-w-[1290px] grid-cols-1 gap-12 border-b border-[#d9e7f7] pb-16 md:grid-cols-4">
             <div>
-                <h4 class="text-[13px] font-black uppercase tracking-[.08em] text-[#c8102e]">Sarana Fittindo Palembang
+                <h4 class="text-[13px] font-black uppercase tracking-[.08em] text-[#c8102e]">Sarana Fittindo Palembang 
                 </h4>
                 <p class="mt-8 text-[12px] leading-6">
                     CV Sarana Fittindo is a leading provider of high-end interior building materials, specializing in
