@@ -15,6 +15,11 @@ class Order extends Model
         'status',
         'subtotal',
         'discount_amount',
+        'promotion_id',
+        'promotion_code',
+        'promotion_name',
+        'promotion_type',
+        'promotion_value',
         'shipping_cost',
         'shipping_cost_status',
         'shipping_cost_confirmed_at',
@@ -39,6 +44,7 @@ class Order extends Model
     protected $casts = [
         'subtotal' => 'decimal:2',
         'discount_amount' => 'decimal:2',
+        'promotion_value' => 'decimal:2',
         'shipping_cost' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'shipping_cost_confirmed_at' => 'datetime',
@@ -69,6 +75,11 @@ class Order extends Model
     public function paymentMethod() : BelongsTo
     {
         return $this->belongsTo(PaymentMethod::class);
+    }
+
+    public function promotion() : BelongsTo
+    {
+        return $this->belongsTo(Promotion::class);
     }
 
     public function payment() : HasOne

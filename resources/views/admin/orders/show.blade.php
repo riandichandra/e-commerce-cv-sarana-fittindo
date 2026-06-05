@@ -70,7 +70,7 @@
                         @if ($order->isWaitingForShippingCost())
                             <p class="font-semibold text-orange-700">Ongkos kirim belum dikonfirmasi.</p>
                         @endif
-                        <p>Item: {{ $order->items->sum('quantity') }}</p>
+                        <p>Item: {{ $order->items()->sum('quantity') }}</p>
                     </div>
                 </div>
 
@@ -106,6 +106,17 @@
                             <span>Subtotal</span>
                             <span class="font-semibold text-texthighlight">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span>
                         </div>
+                        @if ((float) $order->discount_amount > 0)
+                            <div class="flex items-start justify-between gap-4">
+                                <span>
+                                    Diskon
+                                    @if ($order->promotion_name)
+                                        <span class="block text-xs font-semibold text-gray-500">{{ $order->promotion_name }}</span>
+                                    @endif
+                                </span>
+                                <span class="text-right font-semibold text-green-700">-Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
+                            </div>
+                        @endif
                         <div class="flex justify-between gap-4">
                             <span>Ongkos kirim</span>
                             @if ($order->isWaitingForShippingCost())
@@ -174,9 +185,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($order->items as $item)
+                        @forelse ($items as $item)
                             <tr class="border-b border-gray-200 text-sm">
-                                <td class="py-3 px-3">{{ $loop->iteration }}</td>
+                                <td class="py-3 px-3">{{ $items->firstItem() + $loop->index }}</td>
                                 <td class="py-3 px-3 font-medium text-texthighlight">{{ $item->product_name }}</td>
                                 <td class="py-3 px-3">Rp {{ number_format($item->product_price, 0, ',', '.') }}
                                 </td>
@@ -191,6 +202,10 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+
+            <div class="mt-4">
+                {{ $items->links() }}
             </div>
         </div>
     </div>

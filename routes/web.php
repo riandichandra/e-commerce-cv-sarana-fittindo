@@ -67,6 +67,7 @@ Route::middleware(['auth', 'role:marketing'])->prefix('marketing')->name('market
     Route::get('/dashboard', [Marketing\DashboardController::class, 'index'])->name('dashboard');
     Route::resource('promotions', Marketing\PromotionController::class)->except(['show', 'destroy']);
     Route::get('/users', [Marketing\UserController::class, 'index'])->name('users.index');
+    Route::get('/settings', [Marketing\SettingController::class, 'index'])->name('settings.index');
 });
 
 // GM routes
@@ -74,12 +75,14 @@ Route::middleware(['auth', 'role:gm'])->prefix('gm')->name('gm.')->group(functio
     Route::get('/dashboard', [GM\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/reports', [GM\ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/download', [GM\ReportController::class, 'download'])->name('reports.download');
+    Route::get('/settings', [GM\SettingController::class, 'index'])->name('settings.index');
 });
 
 // Direktur routes
 Route::middleware(['auth', 'role:direktur'])->prefix('direktur')->name('direktur.')->group(function () {
     Route::get('/dashboard', [Direktur\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/strategic-reports', [Direktur\ReportController::class, 'strategic'])->name('reports.strategic');
+    Route::get('/settings', [Direktur\SettingController::class, 'index'])->name('settings.index');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

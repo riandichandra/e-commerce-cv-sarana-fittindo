@@ -276,6 +276,10 @@
                     </tbody>
                 </table>
             </div>
+
+            <div class="mt-4">
+                {{ $topCustomers->links() }}
+            </div>
         </section>
 
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_420px]">
@@ -327,12 +331,16 @@
                                         Belum ada pesanan.</td>
                                 </tr>
                             @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+                    </tbody>
+                </table>
+            </div>
 
-            <section class="bg-white p-6 shadow-sm">
+            <div class="mt-4">
+                {{ $recentOrders->links() }}
+            </div>
+        </section>
+
+        <section class="bg-white p-6 shadow-sm">
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-xl font-black uppercase text-texthighlight">Produk Teratas</h2>
@@ -371,7 +379,11 @@
                         </div>
                     @endforelse
                 </div>
-            </section>
-        </div>
+            </div>
+
+            <div class="mt-4">
+                {{ $topProducts->links() }}
+            </div>
+        </section>
     </div>
 </x-gm-layout>

@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Product;
+use App\Services\PromotionDiscountService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -89,7 +90,7 @@ class CartController extends Controller
         return back()->with('success', 'Produk berhasil dihapus dari keranjang.');
     }
 
-    public function checkoutForm(Request $request)
+    public function checkoutForm(Request $request, PromotionDiscountService $promotionDiscountService)
     {
         $cart = Cart::getForUser($request->user());
         $cart->load(['items.product.images', 'items.product.category']);
@@ -112,7 +113,9 @@ class CartController extends Controller
             ->latest()
             ->get();
 
-        return view('pelanggan.cart.checkout', compact('cart', 'paymentMethods', 'addresses'));
+        $discountSummary = $promotionDiscountService->bestForSubtotal((float) $cart->subtotal);
+
+        return view('pelanggan.cart.checkout', compact('cart', 'paymentMethods', 'addresses', 'discountSummary'));
     }
 
     public function checkout(Request $request)
@@ -187,9 +190,13 @@ class CartController extends Controller
                     return $product->price * $item->quantity;
                 });
 
+                $discountSummary = app(PromotionDiscountService::class)->bestForSubtotal((float) $subtotal);
+                $promotion = $discountSummary['promotion'];
+                $discountAmount = (float) $discountSummary['discount_amount'];
+                $subtotalAfterDiscount = (float) $discountSummary['subtotal_after_discount'];
                 $isPalembang = Order::isPalembangShippingCity($validated['shipping_city'] ?? null);
                 $shippingCost = $isPalembang ? 20000 : 0;
-                $totalAmount = $subtotal + $shippingCost;
+                $totalAmount = $subtotalAfterDiscount + $shippingCost;
                 $shippingCostStatus = $isPalembang ? 'fixed' : 'waiting_admin';
                 $orderStatus = $isPalembang ? 'belum_dibayar' : 'menunggu_konfirmasi_ongkir';
 
@@ -199,7 +206,12 @@ class CartController extends Controller
                     'order_number' => Order::generateOrderNumber(),
                     'status' => $orderStatus,
                     'subtotal' => $subtotal,
-                    'discount_amount' => 0,
+                    'discount_amount' => $discountAmount,
+                    'promotion_id' => $promotion?->id,
+                    'promotion_code' => $promotion?->code,
+                    'promotion_name' => $promotion?->name,
+                    'promotion_type' => $promotion?->type,
+                    'promotion_value' => $promotion?->value,
                     'shipping_cost' => $shippingCost,
                     'shipping_cost_status' => $shippingCostStatus,
                     'shipping_cost_confirmed_at' => $isPalembang ? now() : null,

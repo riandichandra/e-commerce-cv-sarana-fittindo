@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
@@ -119,8 +120,19 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        if ($request->filled('redirect_to') && $request->input('redirect_to') === route('admin.settings.index')) {
-            return Redirect::route('admin.settings.index')->with('status', 'profile-updated');
+        if ($request->filled('redirect_to')) {
+            $allowedRedirects = collect([
+                'admin.settings.index',
+                'marketing.settings.index',
+                'gm.settings.index',
+                'direktur.settings.index',
+            ])->filter(fn ($routeName) => Route::has($routeName))
+              ->map(fn ($routeName) => route($routeName))
+              ->all();
+
+            if (in_array($request->input('redirect_to'), $allowedRedirects, true)) {
+                return Redirect::to($request->input('redirect_to'))->with('status', 'profile-updated');
+            }
         }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');

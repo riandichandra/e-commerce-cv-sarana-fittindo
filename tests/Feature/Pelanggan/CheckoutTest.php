@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Promotion;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -130,6 +131,166 @@ class CheckoutTest extends TestCase
             'order_id' => $order->id,
             'amount' => 320000,
             'status' => 'menunggu',
+        ]);
+    }
+
+    public function test_checkout_applies_active_nominal_promotion(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+        $promotion = $this->makePromotion([
+            'name' => 'Promo Nominal',
+            'type' => 'nominal',
+            'value' => 50000,
+        ]);
+
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangCheckoutPayload($paymentMethod));
+
+        $order = Order::first();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'promotion_id' => $promotion->id,
+            'promotion_name' => 'Promo Nominal',
+            'promotion_type' => 'nominal',
+            'promotion_value' => 50000,
+            'discount_amount' => 50000,
+            'shipping_cost' => 20000,
+            'total_amount' => 270000,
+        ]);
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $order->id,
+            'amount' => 270000,
+        ]);
+    }
+
+    public function test_checkout_applies_active_percent_promotion(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+        $this->makePromotion([
+            'name' => 'Promo Persen',
+            'type' => 'percent',
+            'value' => 10,
+        ]);
+
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangCheckoutPayload($paymentMethod));
+
+        $this->assertDatabaseHas('orders', [
+            'discount_amount' => 30000,
+            'total_amount' => 290000,
+        ]);
+
+        $this->assertDatabaseHas('payments', [
+            'amount' => 290000,
+        ]);
+    }
+
+    public function test_checkout_limits_percent_promotion_by_max_discount(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+        $this->makePromotion([
+            'type' => 'percent',
+            'value' => 50,
+            'max_discount' => 75000,
+        ]);
+
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangCheckoutPayload($paymentMethod));
+
+        $this->assertDatabaseHas('orders', [
+            'discount_amount' => 75000,
+            'total_amount' => 245000,
+        ]);
+    }
+
+    public function test_checkout_does_not_apply_promotion_below_min_purchase(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+        $this->makePromotion([
+            'type' => 'nominal',
+            'value' => 50000,
+            'min_purchase' => 400000,
+        ]);
+
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangCheckoutPayload($paymentMethod));
+
+        $this->assertDatabaseHas('orders', [
+            'promotion_id' => null,
+            'discount_amount' => 0,
+            'total_amount' => 320000,
+        ]);
+    }
+
+    public function test_checkout_ignores_inactive_upcoming_and_expired_promotions(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+
+        $this->makePromotion(['name' => 'Inactive', 'value' => 50000, 'is_active' => false]);
+        $this->makePromotion(['name' => 'Upcoming', 'value' => 50000, 'start_date' => now()->addDay(), 'end_date' => now()->addDays(3)]);
+        $this->makePromotion(['name' => 'Expired', 'value' => 50000, 'start_date' => now()->subDays(3), 'end_date' => now()->subDay()]);
+
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangCheckoutPayload($paymentMethod));
+
+        $this->assertDatabaseHas('orders', [
+            'promotion_id' => null,
+            'discount_amount' => 0,
+            'total_amount' => 320000,
+        ]);
+    }
+
+    public function test_checkout_uses_promotion_with_largest_discount(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+        $this->makePromotion(['name' => 'Small Promo', 'type' => 'nominal', 'value' => 25000]);
+        $bestPromotion = $this->makePromotion(['name' => 'Best Promo', 'type' => 'percent', 'value' => 20]);
+
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangCheckoutPayload($paymentMethod));
+
+        $this->assertDatabaseHas('orders', [
+            'promotion_id' => $bestPromotion->id,
+            'promotion_name' => 'Best Promo',
+            'discount_amount' => 60000,
+            'total_amount' => 260000,
+        ]);
+    }
+
+    public function test_checkout_outside_palembang_uses_discounted_subtotal_until_shipping_is_confirmed(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+        $this->makePromotion(['type' => 'nominal', 'value' => 50000]);
+
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), [
+            'shipping_name' => 'Budi Santoso',
+            'shipping_phone' => '081234567890',
+            'shipping_address' => 'Jl. Merdeka No. 10',
+            'shipping_province' => 'Jawa Barat',
+            'shipping_city' => 'Bandung',
+            'shipping_district' => 'Coblong',
+            'shipping_village' => 'Dago',
+            'shipping_postal_code' => '40135',
+            'payment_method_id' => $paymentMethod->id,
+        ]);
+
+        $order = Order::first();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => 'menunggu_konfirmasi_ongkir',
+            'shipping_cost_status' => 'waiting_admin',
+            'shipping_cost' => 0,
+            'discount_amount' => 50000,
+            'total_amount' => 250000,
+        ]);
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $order->id,
+            'amount' => 250000,
         ]);
     }
 
@@ -347,5 +508,35 @@ class CheckoutTest extends TestCase
         DB::table('regencies')->insertOrIgnore(['id' => 1, 'province_id' => 1, 'name' => 'Jakarta Selatan']);
         DB::table('districts')->insertOrIgnore(['id' => 1, 'regency_id' => 1, 'name' => 'Kebayoran Baru']);
         DB::table('villages')->insertOrIgnore(['id' => 1, 'district_id' => 1, 'name' => 'Senayan']);
+    }
+
+    private function makePromotion(array $overrides = []): Promotion
+    {
+        return Promotion::create(array_merge([
+            'name' => 'Promo Test',
+            'code' => null,
+            'type' => 'nominal',
+            'value' => 50000,
+            'min_purchase' => null,
+            'max_discount' => null,
+            'start_date' => now()->subDay(),
+            'end_date' => now()->addDay(),
+            'is_active' => true,
+        ], $overrides));
+    }
+
+    private function palembangCheckoutPayload(PaymentMethod $paymentMethod): array
+    {
+        return [
+            'shipping_name' => 'Budi Santoso',
+            'shipping_phone' => '081234567890',
+            'shipping_address' => 'Jl. Merdeka No. 10',
+            'shipping_province' => 'Sumatera Selatan',
+            'shipping_city' => 'Kota Palembang',
+            'shipping_district' => 'Ilir Timur I',
+            'shipping_village' => 'Dago',
+            'shipping_postal_code' => '30111',
+            'payment_method_id' => $paymentMethod->id,
+        ];
     }
 }

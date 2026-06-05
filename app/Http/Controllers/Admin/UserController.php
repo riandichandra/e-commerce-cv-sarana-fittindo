@@ -12,17 +12,22 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $pagePath = 'ADMIN/USERS';
         $pagePath = explode('/', $pagePath);
         $pageName = 'Pengguna';
 
-        $roles = Role::with(['users' => fn ($query) => $query->latest()])
-    ->orderBy('id')
-    ->get();
+        $roles = Role::orderBy('id')->get();
+        $selectedRoleId = $request->input('role_id');
 
-        return view('admin.users.index', compact('pagePath', 'pageName', 'roles'));
+        $users = User::with('roles')
+            ->when($selectedRoleId, fn ($q) => $q->whereHas('roles', fn ($r) => $r->where('id', $selectedRoleId)))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.users.index', compact('pagePath', 'pageName', 'roles', 'users', 'selectedRoleId'));
     }
 
     public function create()

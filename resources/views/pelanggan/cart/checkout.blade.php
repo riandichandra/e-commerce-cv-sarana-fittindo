@@ -50,6 +50,7 @@
                 class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]"
                 x-data="{
                     addresses: @js($addressOptions),
+                    subtotalAfterDiscount: @js((float) $discountSummary['subtotal_after_discount']),
                     selectedAddressId: @js($selectedAddressId),
                     shippingNama: @js(old('shipping_name', auth()->user()->name)),
                     shippingTelepon: @js(old('shipping_phone', auth()->user()->phone)),
@@ -95,6 +96,11 @@
                         }
 
                         return this.isPalembangCity() ? 'Rp 20.000' : 'Menunggu konfirmasi admin';
+                    },
+                    totalPaymentLabel() {
+                        const total = this.subtotalAfterDiscount + (this.isPalembangCity() ? 20000 : 0);
+
+                        return new Intl.NumberFormat('id-ID').format(total);
                     },
                 }"
                 x-init="applySelectedAddress(false)"
@@ -245,9 +251,32 @@
                             <span class="text-[#657891]">Subtotal</span>
                             <span class="font-black text-[#c8102e]">Rp {{ number_format($cart->subtotal, 0, ',', '.') }}</span>
                         </div>
+                        @if ($discountSummary['promotion'])
+                            <div class="flex items-start justify-between gap-4">
+                                <span class="text-[#657891]">Promosi</span>
+                                <span class="text-right font-black text-[#10233d]">
+                                    {{ $discountSummary['promotion']->name }}
+                                    @if ($discountSummary['promotion']->code)
+                                        <span class="block text-xs font-semibold text-[#657891]">{{ $discountSummary['promotion']->code }}</span>
+                                    @endif
+                                </span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-[#657891]">Diskon</span>
+                                <span class="font-black text-green-700">-Rp {{ number_format($discountSummary['discount_amount'], 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-[#657891]">Subtotal setelah diskon</span>
+                                <span class="font-black text-[#10233d]">Rp {{ number_format($discountSummary['subtotal_after_discount'], 0, ',', '.') }}</span>
+                            </div>
+                        @endif
                         <div class="flex items-start justify-between gap-4">
                             <span class="text-[#657891]">Ongkos kirim</span>
                             <span class="text-right font-black text-[#10233d]" x-text="shippingCostLabel()"></span>
+                        </div>
+                        <div class="flex justify-between border-t border-[#e8eef7] pt-4">
+                            <span class="text-[#657891]" x-text="shippingCity && ! isPalembangCity() ? 'Total sementara' : 'Total pembayaran'"></span>
+                            <span class="font-black text-[#c8102e]">Rp <span x-text="totalPaymentLabel()"></span></span>
                         </div>
                         <div class="border-l-4 border-orange-400 bg-orange-50 px-4 py-3 text-xs font-semibold leading-5 text-orange-800" x-show="shippingCity && ! isPalembangCity()">
                             Ongkos kirim untuk alamat di luar Kota Palembang akan dikonfirmasi oleh admin. Anda dapat membayar setelah total pembayaran final.

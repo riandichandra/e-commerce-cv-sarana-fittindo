@@ -17,7 +17,8 @@ class PromotionController extends Controller
         $pageName = 'Promosi';
         $promotions = Promotion::with('createdBy')
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
         return view('marketing.promotions.index', compact('pagePath', 'pageName', 'promotions'));
     }

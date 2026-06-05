@@ -193,6 +193,10 @@
                         </tbody>
                     </table>
                 </div>
+
+                <div class="mt-4">
+                    {{ $recentOrders->links() }}
+                </div>
             </section>
 
             <section class="bg-white p-6 shadow-sm">
@@ -226,6 +230,10 @@
                             Belum ada pembayaran.
                         </div>
                     @endforelse
+                </div>
+
+                <div class="mt-4">
+                    {{ $recentPayments->links() }}
                 </div>
             </section>
         </div>

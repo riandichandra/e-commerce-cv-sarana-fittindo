@@ -20,11 +20,13 @@ class DashboardController extends Controller
 
         $availableYears = Payment::where('status', 'terverifikasi')
             ->whereNotNull('verified_at')
-            ->selectRaw('YEAR(verified_at) as year')
-            ->distinct()
-            ->orderByDesc('year')
-            ->pluck('year')
-            ->map(fn ($year) => (int) $year);
+            ->orderBy('verified_at')
+            ->pluck('verified_at')
+            ->map(fn ($date) => (int) $date->year)
+            ->unique()
+            ->values()
+            ->sortDesc()
+            ->values();
 
         if ($availableYears->isEmpty()) {
             $availableYears = collect([now()->year]);
@@ -38,11 +40,11 @@ class DashboardController extends Controller
         $availableMonths = Payment::where('status', 'terverifikasi')
             ->whereYear('verified_at', $selectedYear)
             ->whereNotNull('verified_at')
-            ->selectRaw('MONTH(verified_at) as month')
-            ->distinct()
-            ->orderBy('month')
-            ->pluck('month')
-            ->map(fn ($month) => (int) $month);
+            ->orderBy('verified_at')
+            ->pluck('verified_at')
+            ->map(fn ($date) => (int) $date->month)
+            ->unique()
+            ->values();
 
         if ($availableMonths->isEmpty()) {
             $availableMonths = collect(range(1, 12));
@@ -103,8 +105,8 @@ class DashboardController extends Controller
             ->selectRaw('SUM(subtotal) as total_sales')
             ->groupBy('product_name')
             ->orderByDesc('total_sales')
-            ->limit(5)
-            ->get();
+            ->paginate(5, ['*'], 'top_products_page')
+            ->withQueryString();
 
         $topCustomers = Order::query()
             ->when($selectedYear, fn($q) => $q->whereYear('created_at', $selectedYear))
@@ -116,23 +118,23 @@ class DashboardController extends Controller
             ->groupBy('user_id')
             ->orderByDesc('order_count')
             ->orderByDesc('total_spent')
-            ->limit(5)
             ->with('user')
-            ->get();
+            ->paginate(5, ['*'], 'top_customers_page')
+            ->withQueryString();
 
         $recentOrders = Order::with(['user', 'payment'])
             ->withCount('items')
             ->latest()
-            ->limit(6)
-            ->get();
+            ->paginate(6, ['*'], 'recent_orders_page')
+            ->withQueryString();
 
         $activePromotions = Promotion::with('createdBy')
             ->where('is_active', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->latest()
-            ->limit(5)
-            ->get();
+            ->paginate(5, ['*'], 'active_promotions_page')
+            ->withQueryString();
 
         return view('direktur.dashboard', compact(
             'pagePath',

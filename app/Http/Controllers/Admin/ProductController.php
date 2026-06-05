@@ -19,7 +19,8 @@ class ProductController extends Controller
 
         $products = Product::with(['category', 'brand'])
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
         return view('admin.products.index', compact('pagePath', 'pageName', 'products'));
     }

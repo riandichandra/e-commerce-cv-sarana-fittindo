@@ -49,9 +49,13 @@ class OrderController extends Controller
         $pagePath = explode('/', $pagePath);
         $pageName = 'Detail Pesanan';
 
-        $order->load(['user', 'paymentMethod', 'payment', 'delivery', 'items.product']);
+        $order->load(['user', 'paymentMethod', 'payment', 'delivery']);
+        $items = $order->items()
+            ->with('product')
+            ->paginate(10, ['*'], 'items_page')
+            ->withQueryString();
 
-        return view('admin.orders.show', compact('pagePath', 'pageName', 'order'));
+        return view('admin.orders.show', compact('pagePath', 'pageName', 'order', 'items'));
     }
 
     public function update(Request $request, Order $order)
@@ -82,7 +86,8 @@ class OrderController extends Controller
                     ->orWhere('shipping_cost_status', 'waiting_admin');
             })
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return view('admin.pending-shipping-costs.index', compact('pagePath', 'pageName', 'orders'));
     }
@@ -100,7 +105,7 @@ class OrderController extends Controller
         ]);
 
         $shippingCost = (float) $validated['shipping_cost'];
-        $totalAmount = (float) $order->subtotal - (float) $order->discount_amount + $shippingCost;
+        $totalAmount = max((float) $order->subtotal - (float) $order->discount_amount, 0) + $shippingCost;
 
         $order->update([
             'shipping_cost' => $shippingCost,

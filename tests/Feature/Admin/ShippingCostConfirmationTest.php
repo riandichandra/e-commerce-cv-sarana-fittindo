@@ -45,6 +45,36 @@ class ShippingCostConfirmationTest extends TestCase
         ]);
     }
 
+    public function test_admin_confirmed_shipping_cost_keeps_order_discount_in_total(): void
+    {
+        $admin = $this->makeUser('admin');
+        $customer = $this->makeUser('pelanggan');
+        $paymentMethod = $this->makePaymentMethod();
+        $order = $this->makeWaitingShippingCostOrder($customer, $paymentMethod, [
+            'discount_amount' => 50000,
+            'total_amount' => 250000,
+        ]);
+        $order->payment->update(['amount' => 250000]);
+
+        $response = $this->actingAs($admin)->patch(route('admin.orders.shipping-cost.update', $order), [
+            'shipping_cost' => 45000,
+        ]);
+
+        $response->assertRedirect(route('admin.orders.show', $order));
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'discount_amount' => 50000,
+            'shipping_cost' => 45000,
+            'total_amount' => 295000,
+        ]);
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $order->id,
+            'amount' => 295000,
+        ]);
+    }
+
     public function test_admin_order_list_can_filter_waiting_shipping_cost_status(): void
     {
         $admin = $this->makeUser('admin');
@@ -127,4 +157,3 @@ class ShippingCostConfirmationTest extends TestCase
         return $order;
     }
 }
-

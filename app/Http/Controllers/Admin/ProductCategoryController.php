@@ -14,7 +14,7 @@ class ProductCategoryController extends Controller
         $pagePath = 'ADMIN/PRODUCTS/CATEGORIES';
         $pagePath = explode('/', $pagePath);
         $pageName = 'Kategori';
-        $categories = ProductCategory::withCount('products')->latest()->paginate(10);
+        $categories = ProductCategory::withCount('products')->latest()->paginate(10)->withQueryString();
 
         return view('admin.categories.index', compact('pagePath', 'pageName', 'categories'));
     }

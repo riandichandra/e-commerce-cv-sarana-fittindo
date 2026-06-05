@@ -14,7 +14,7 @@ class ProductBrandController extends Controller
         $pagePath = 'ADMIN/PRODUCTS/BRANDS';
         $pagePath = explode('/', $pagePath);
         $pageName = 'Merek';
-        $brands = ProductBrand::withCount('products')->latest()->paginate(10);
+        $brands = ProductBrand::withCount('products')->latest()->paginate(10)->withQueryString();
 
         return view('admin.brands.index', compact('pagePath', 'pageName', 'brands'));
     }

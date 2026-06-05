@@ -51,7 +51,7 @@ class OrderController extends Controller
             $query->whereDate('created_at', '<=', $request->input('date_to'));
         }
 
-        $orders = $query->latest()->paginate(10);
+        $orders = $query->latest()->paginate(10)->withQueryString();
 
         return view('pelanggan.orders.history', compact('orders'));
     }

@@ -98,6 +98,17 @@
                         <span class="text-[#657891]">Subtotal</span>
                         <span class="font-black text-[#10233d]">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span>
                     </div>
+                    @if ((float) $order->discount_amount > 0)
+                        <div class="flex items-start justify-between gap-4">
+                            <span class="text-[#657891]">
+                                Diskon
+                                @if ($order->promotion_name)
+                                    <span class="mt-1 block text-xs font-semibold text-[#10233d]">{{ $order->promotion_name }}</span>
+                                @endif
+                            </span>
+                            <span class="text-right font-black text-green-700">-Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
                     <div class="flex items-start justify-between gap-4">
                         <span class="text-[#657891]">Ongkos kirim</span>
                         @if ($order->isWaitingForShippingCost())

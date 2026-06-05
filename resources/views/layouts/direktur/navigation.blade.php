@@ -1,4 +1,5 @@
-<nav x-data="{ open: false }" class="flex h-full w-full flex-col items-center justify-between border-b border-gray-100 bg-white">
+<nav x-data="{ open: false }"
+    class="flex h-full w-full flex-col items-center justify-between border-b border-gray-100 bg-white">
     <div class="w-full">
         <div class="m-5">
             <h1 class="text-xl font-black text-primary">CV SARANA FITTINDO</h1>
@@ -7,13 +8,15 @@
 
         <ul class="mt-3 w-full text-sm font-medium text-gray-600">
             <a href="{{ route('direktur.dashboard') }}">
-                <li class="flex cursor-pointer items-center gap-3 p-3 px-5 {{ request()->routeIs('direktur.dashboard') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
+                <li
+                    class="flex cursor-pointer items-center gap-3 p-3 px-5 {{ request()->routeIs('direktur.dashboard') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
                     <iconify-icon icon="mdi:monitor-dashboard" class="fs-5"></iconify-icon>
                     <p>DASBOR</p>
                 </li>
             </a>
             <a href="{{ route('direktur.reports.strategic') }}">
-                <li class="flex cursor-pointer items-center gap-3 p-3 px-5 {{ request()->routeIs('direktur.reports.*') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
+                <li
+                    class="flex cursor-pointer items-center gap-3 p-3 px-5 {{ request()->routeIs('direktur.reports.*') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
                     <iconify-icon icon="mdi:file-chart-outline" class="fs-5"></iconify-icon>
                     <p>LAPORAN</p>
                 </li>
@@ -23,10 +26,10 @@
 
     <div class="flex w-full flex-col gap-2 border-t border-gray-200 py-3 text-sm font-medium">
         <div class="flex w-full items-center gap-2 p-3 px-5 py-0">
-            <iconify-icon icon="mdi:account-circle" class="fs-5"></iconify-icon>
-            <a href="{{ route('profile.edit') }}"
-                class="{{ request()->routeIs('profile.*') ? 'font-bold text-primary' : 'text-gray-600 hover:text-primary' }}">
-                {{ __('PROFIL') }}
+            <iconify-icon icon="mdi:gear" class="fs-5"></iconify-icon>
+            <a href="{{ route('direktur.settings.index') }}"
+                class="{{ request()->routeIs('direktur.settings.*') ? 'font-bold text-primary' : 'text-gray-600 hover:text-primary' }}">
+                {{ __('PENGATURAN') }}
             </a>
         </div>
 
@@ -46,7 +49,8 @@
             <div class="h-8 w-8 bg-primary"></div>
             <div>
                 <p class="font-bold">{{ Auth::user()->name }}</p>
-                <p class="text-xs">{{ ucwords(str_replace('_', ' ', Auth::user()->getRoleNames()->first() ?? '-')) }}</p>
+                <p class="text-xs">{{ ucwords(str_replace('_', ' ', Auth::user()->getRoleNames()->first() ?? '-')) }}
+                </p>
             </div>
         </div>
     </div>

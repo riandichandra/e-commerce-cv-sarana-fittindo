@@ -29,10 +29,10 @@
 
     <div class="flex w-full flex-col gap-2 border-t border-gray-200 py-3 text-sm font-medium">
         <div class="flex w-full items-center gap-2 p-3 px-5 py-0">
-            <iconify-icon icon="mdi:account-circle" class="fs-5"></iconify-icon>
-            <a href="{{ route('profile.edit') }}"
-                class="{{ request()->routeIs('profile.*') ? 'font-bold text-primary' : 'text-gray-600 hover:text-primary' }}">
-                {{ __('PROFIL') }}
+            <iconify-icon icon="mdi:gear" class="fs-5"></iconify-icon>
+            <a href="{{ route('marketing.settings.index') }}"
+                class="{{ request()->routeIs('marketing.settings.*') ? 'font-bold text-primary' : 'text-gray-600 hover:text-primary' }}">
+                {{ __('PENGATURAN') }}
             </a>
         </div>
 

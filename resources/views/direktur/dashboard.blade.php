@@ -271,6 +271,10 @@
                     </tbody>
                 </table>
             </div>
+
+            <div class="mt-4">
+                {{ $topCustomers->links() }}
+            </div>
         </section>
 
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_420px]">
@@ -325,11 +329,16 @@
                                             <td colspan="5"
                                                 class="py-8 text-center text-sm font-semibold text-gray-500">
                                                 Belum ada pesanan.</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4">
+                        {{ $recentOrders->links() }}
+                    </div>
+                </div>
             </section>
 
             <section class="bg-white p-6 shadow-sm">
@@ -370,6 +379,10 @@
                         </div>
                     @endforelse
                 </div>
+
+                <div class="mt-4">
+                    {{ $topProducts->links() }}
+                </div>
             </section>
         </div>
 
@@ -400,6 +413,10 @@
                     <div class="col-span-full py-10 text-center text-sm font-semibold text-gray-500">Tidak ada promosi
                         yang sedang berjalan.</div>
                 @endforelse
+            </div>
+
+            <div class="mt-4">
+                {{ $activePromotions->links() }}
             </div>
         </section>
     </div>

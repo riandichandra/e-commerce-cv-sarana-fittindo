@@ -14,7 +14,7 @@ class PaymentMethodController extends Controller
         $pagePath = 'ADMIN/PAYMENTS/PAYMENT METHODS';
         $pagePath = explode('/', $pagePath);
         $pageName = 'Metode Pembayaran';
-        $paymentMethods = PaymentMethod::orderBy('sort_order')->orderBy('bank_name')->paginate(10);
+        $paymentMethods = PaymentMethod::orderBy('sort_order')->orderBy('bank_name')->paginate(10)->withQueryString();
 
         return view('admin.payment-methods.index', compact('pagePath', 'pageName', 'paymentMethods'));
     }

@@ -29,13 +29,13 @@ class DashboardController extends Controller
         $recentOrders = Order::with(['user', 'payment', 'paymentMethod'])
             ->withCount('items')
             ->latest()
-            ->limit(5)
-            ->get();
+            ->paginate(5, ['*'], 'recent_orders_page')
+            ->withQueryString();
 
         $recentPayments = Payment::with(['order.user', 'paymentMethod'])
             ->latest()
-            ->limit(5)
-            ->get();
+            ->paginate(5, ['*'], 'recent_payments_page')
+            ->withQueryString();
 
         $paymentStatusCounts = [
             'menunggu' => Payment::where('status', 'menunggu')->count(),
