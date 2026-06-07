@@ -3,11 +3,11 @@
         <div class="text-xs flex items-center gap-1">
             <p class="tracking-wider">ADMIN</p>
             <p>></p>
-            <p class="tracking-wider">PRODUCTS</p>
+            <p class="tracking-wider">PRODUK</p>
             <p>></p>
-            <p class="tracking-wider">BRANDS</p>
+            <p class="tracking-wider">MEREK</p>
             <p>></p>
-            <p class="font-bold text-primary tracking-wider">CREATE</p>
+            <p class="font-bold text-primary tracking-wider">TAMBAH</p>
         </div>
 
         <div class="w-full flex items-center justify-between mb-7">
@@ -20,7 +20,7 @@
     </div>
 
     <div class="bg-[#FFF1F3] p-5 w-full">
-        <h2 class="font-semibold tracking-wider text-texthighlight">ADD NEW BRAND</h2>
+        <h2 class="font-semibold tracking-wider text-texthighlight">TAMBAH MEREK BARU</h2>
         <form action="{{ route('admin.brands.store') }}" method="POST" class="mt-4 w-full flex flex-col gap-4">
             @csrf
 
@@ -43,12 +43,13 @@
             </div>
 
             <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                <input type="checkbox" name="is_active" value="1" class="text-primary" @checked(old('is_active', true))>
+                <input type="checkbox" name="is_active" value="1" class="text-primary"
+                    @checked(old('is_active', true))>
                 Aktif
             </label>
 
             <button type="submit" class="bg-primary text-white py-2 px-4 hover:bg-primary-dark transition w-fit">
-                CREATE BRAND
+                TAMBAH MEREK
             </button>
         </form>
     </div>

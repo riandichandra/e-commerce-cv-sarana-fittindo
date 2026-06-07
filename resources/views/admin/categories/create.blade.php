@@ -14,13 +14,13 @@
             <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
             <x-button bgColor="primary" textColor="white" icon="mdi:arrow-left" size="auto"
                 href="{{ route('admin.categories.index') }}">
-                BACK
+                KEMABALI
             </x-button>
         </div>
     </div>
 
     <div class="bg-[#FFF1F3] p-5 w-full">
-        <h2 class="font-semibold tracking-wider text-texthighlight">ADD NEW CATEGORY</h2>
+        <h2 class="font-semibold tracking-wider text-texthighlight">TAMBAH KATEGORI BARU</h2>
         <form action="{{ route('admin.categories.store') }}" method="POST" class="mt-4 w-full flex flex-col gap-4">
             @csrf
 
@@ -43,12 +43,13 @@
             </div>
 
             <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                <input type="checkbox" name="is_active" value="1" class="text-primary" @checked(old('is_active', true))>
+                <input type="checkbox" name="is_active" value="1" class="text-primary"
+                    @checked(old('is_active', true))>
                 Aktif
             </label>
 
             <button type="submit" class="bg-primary text-white py-2 px-4 hover:bg-primary-dark transition w-fit">
-                CREATE CATEGORY
+                TAMBAH KATEGORI
             </button>
         </form>
     </div>

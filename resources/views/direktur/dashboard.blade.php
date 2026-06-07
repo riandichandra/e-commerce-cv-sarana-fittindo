@@ -232,117 +232,107 @@
             </section>
         </div>
 
-        <section class="bg-white p-6 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-xl font-black uppercase text-texthighlight">Top Pelanggan</h2>
-                    <p class="mt-1 text-sm font-medium text-gray-500">Pelanggan dengan jumlah pesanan terbanyak pada
-                        {{ $monthNamas[$selectedMonth] ?? $selectedMonth }} {{ $selectedYear }}.</p>
-                </div>
+        <section class="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
+            <div class="border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
+                <h2 class="text-xl font-black uppercase text-texthighlight">Top Pelanggan</h2>
+                <p class="mt-1 text-sm font-medium text-gray-500">Pelanggan dengan jumlah pesanan terbanyak pada
+                    {{ $monthNamas[$selectedMonth] ?? $selectedMonth }} {{ $selectedYear }}.</p>
             </div>
 
-            <div class="mt-6 overflow-x-auto">
-                <table class="w-full text-left text-sm">
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[760px] text-left">
                     <thead>
-                        <tr class="border-b border-gray-200 text-xs uppercase tracking-[.12em] text-gray-500">
-                            <th class="py-3 pr-4">Pelanggan</th>
-                            <th class="py-3 pr-4">Pesanan</th>
-                            <th class="py-3 pr-4">Total Belanja</th>
-                            <th class="py-3 pr-4">Rata-rata Pesanan</th>
+                        <tr class="border-b border-gray-200 bg-gray-50 text-xs font-bold uppercase tracking-[.08em] text-gray-500">
+                            <th class="w-16 px-5 py-3">No.</th>
+                            <th class="px-5 py-3">Pelanggan</th>
+                            <th class="px-5 py-3">Pesanan</th>
+                            <th class="px-5 py-3">Total Belanja</th>
+                            <th class="px-5 py-3">Rata-rata Pesanan</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-100 text-sm">
                         @forelse ($topCustomers as $customer)
-                            <tr class="border-b border-gray-100 text-sm">
-                                <td class="py-4 pr-4 font-bold text-texthighlight">
-                                    {{ $customer->user?->name ?? 'Tidak diketahui' }}</td>
-                                <td class="py-4 pr-4">{{ $customer->order_count }}</td>
-                                <td class="py-4 pr-4 font-bold">Rp
-                                    {{ number_format($customer->total_spent, 0, ',', '.') }}</td>
-                                <td class="py-4 pr-4">Rp
-                                    {{ number_format((float) $customer->avg_order_value, 0, ',', '.') }}</td>
+                            <tr class="transition hover:bg-gray-50">
+                                <td class="px-5 py-4 font-semibold text-gray-500">{{ $topCustomers->firstItem() + $loop->index }}</td>
+                                <td class="px-5 py-4 font-bold text-texthighlight">{{ $customer->user?->name ?? 'Tidak diketahui' }}</td>
+                                <td class="px-5 py-4 text-gray-600">{{ $customer->order_count }}</td>
+                                <td class="px-5 py-4 font-bold text-texthighlight">Rp {{ number_format($customer->total_spent, 0, ',', '.') }}</td>
+                                <td class="px-5 py-4 text-gray-600">Rp {{ number_format((float) $customer->avg_order_value, 0, ',', '.') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="py-6 px-4 text-center text-sm text-gray-500">Belum ada data
-                                    pelanggan untuk periode ini.</td>
+                                <td colspan="5" class="px-5 py-12 text-center text-sm text-gray-500">Belum ada data pelanggan untuk periode ini.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            <div class="mt-4">
-                {{ $topCustomers->links() }}
-            </div>
+            @if ($topCustomers->hasPages())
+                <div class="border-t border-gray-200 px-5 py-4">
+                    {{ $topCustomers->links() }}
+                </div>
+            @endif
         </section>
 
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_420px]">
-            <section class="bg-white p-6 shadow-sm">
-                <div class="flex items-center justify-between">
+            <section class="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
                     <div>
                         <h2 class="text-xl font-black uppercase text-texthighlight">Data Pesanan Terbaru</h2>
-                        <p class="mt-1 text-sm font-medium text-gray-500">Pesanan terbaru untuk pemantauan operasional.
-                        </p>
+                        <p class="mt-1 text-sm font-medium text-gray-500">Pesanan terbaru untuk pemantauan operasional.</p>
                     </div>
                     <a href="{{ route('direktur.reports.strategic') }}"
-                        class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">Lihat
-                        Laporan</a>
-                    <table class="w-full text-left">
+                        class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">Lihat Laporan</a>
+                </div>
 
-                        <div class="mt-5 overflow-x-auto">
-                            <table class="w-full text-left">
-                                <thead>
-                                    <tr
-                                        class="border-b border-gray-200 text-xs uppercase tracking-[.12em] text-gray-500">
-                                        <th class="py-3 pr-4">Pesanan</th>
-                                        <th class="py-3 pr-4">Pelanggan</th>
-                                        <th class="py-3 pr-4">Item</th>
-                                        <th class="py-3 pr-4">Total</th>
-                                        <th class="py-3 pr-4">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse ($recentOrders as $order)
-                                        <tr class="border-b border-gray-100 text-sm">
-                                            <td class="py-4 pr-4 font-black text-texthighlight">
-                                                {{ $order->order_number }}
-                                            </td>
-                                            <td class="py-4 pr-4">
-                                                <p class="font-bold text-gray-800">
-                                                    {{ $order->user?->name ?? $order->shipping_name }}</p>
-                                                <p class="text-xs text-gray-500">
-                                                    {{ $order->created_at->format('d M Y') }}</p>
-                                            </td>
-                                            <td class="py-4 pr-4">{{ $order->items_count }}</td>
-                                            <td class="py-4 pr-4 font-bold">Rp
-                                                {{ number_format($order->total_amount, 0, ',', '.') }}</td>
-                                            <td class="py-4 pr-4">
-                                                <span
-                                                    class="px-2 py-1 text-xs font-bold {{ $statusClass($order->status) }}">
-                                                    {{ $order->status_label }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="5"
-                                                class="py-8 text-center text-sm font-semibold text-gray-500">
-                                                Belum ada pesanan.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[760px] text-left">
+                        <thead>
+                            <tr class="border-b border-gray-200 bg-gray-50 text-xs font-bold uppercase tracking-[.08em] text-gray-500">
+                                <th class="w-16 px-5 py-3">No.</th>
+                                <th class="px-5 py-3">Pesanan</th>
+                                <th class="px-5 py-3">Pelanggan</th>
+                                <th class="px-5 py-3">Item</th>
+                                <th class="px-5 py-3">Total</th>
+                                <th class="px-5 py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-sm">
+                            @forelse ($recentOrders as $order)
+                                <tr class="align-top transition hover:bg-gray-50">
+                                    <td class="px-5 py-4 font-semibold text-gray-500">{{ $recentOrders->firstItem() + $loop->index }}</td>
+                                    <td class="px-5 py-4">
+                                        <div class="font-black text-texthighlight">{{ $order->order_number }}</div>
+                                        <div class="mt-1 text-xs text-gray-500">{{ $order->created_at->format('d M Y') }}</div>
+                                    </td>
+                                    <td class="px-5 py-4 font-bold text-gray-800">{{ $order->user?->name ?? $order->shipping_name }}</td>
+                                    <td class="px-5 py-4 text-gray-600">{{ $order->items_count }}</td>
+                                    <td class="px-5 py-4 font-bold text-texthighlight">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                                    <td class="px-5 py-4">
+                                        <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $statusClass($order->status) }}">
+                                            {{ $order->status_label }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-5 py-12 text-center text-sm font-semibold text-gray-500">Belum ada pesanan.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
 
-                    <div class="mt-4">
+                @if ($recentOrders->hasPages())
+                    <div class="border-t border-gray-200 px-5 py-4">
                         {{ $recentOrders->links() }}
                     </div>
-                </div>
+                @endif
             </section>
 
-            <section class="bg-white p-6 shadow-sm">
-                <div class="flex items-center justify-between">
+            <section class="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between gap-4 border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
                     <div>
                         <h2 class="text-xl font-black uppercase text-texthighlight">Produk Terlaris</h2>
                         <p class="mt-1 text-sm font-medium text-gray-500">Produk dengan nilai penjualan tertinggi.</p>
@@ -350,74 +340,71 @@
 
                     <form method="GET" action="{{ route('direktur.dashboard') }}" class="flex items-center gap-3">
                         <label class="text-xs font-semibold text-gray-500">Tahun</label>
-                        <select name="year" class="rounded border border-gray-200 bg-white px-3 py-2 text-sm"
+                        <select name="year" class="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                             onchange="this.form.submit()">
                             @foreach ($availableYears as $year)
-                                <option value="{{ $year }}" @selected($year === $selectedYear)>{{ $year }}
-                                </option>
+                                <option value="{{ $year }}" @selected($year === $selectedYear)>{{ $year }}</option>
                             @endforeach
                         </select>
                         <input type="hidden" name="month" value="{{ $selectedMonth }}">
                     </form>
                 </div>
 
-                <div class="mt-5 space-y-4">
+                <div class="divide-y divide-gray-100">
                     @forelse ($topProducts as $product)
-                        <div class="border-b border-gray-100 pb-4">
+                        <div class="px-5 py-4 transition hover:bg-gray-50">
                             <div class="flex items-start justify-between gap-4">
                                 <div>
                                     <p class="font-black text-texthighlight">{{ $product->product_name }}</p>
-                                    <p class="mt-1 text-sm font-semibold text-gray-600">{{ $product->total_quantity }}
-                                        item terjual</p>
+                                    <p class="mt-1 text-sm font-semibold text-gray-600">{{ $product->total_quantity }} item terjual</p>
                                 </div>
-                                <p class="text-sm font-black text-primary">Rp
-                                    {{ number_format($product->total_sales, 0, ',', '.') }}</p>
+                                <p class="text-sm font-black text-primary">Rp {{ number_format($product->total_sales, 0, ',', '.') }}</p>
                             </div>
                         </div>
                     @empty
-                        <div class="py-10 text-center text-sm font-semibold text-gray-500">Belum ada produk terjual.
-                        </div>
+                        <div class="px-5 py-12 text-center text-sm font-semibold text-gray-500">Belum ada produk terjual.</div>
                     @endforelse
                 </div>
 
-                <div class="mt-4">
-                    {{ $topProducts->links() }}
-                </div>
+                @if ($topProducts->hasPages())
+                    <div class="border-t border-gray-200 px-5 py-4">
+                        {{ $topProducts->links() }}
+                    </div>
+                @endif
             </section>
         </div>
 
-        <section class="bg-white p-6 shadow-sm">
-            <div class="flex items-center justify-between">
+        <section class="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
+            <div class="flex items-center justify-between border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
                 <div>
                     <h2 class="text-xl font-black uppercase text-texthighlight">Promosi Sedang Berjalan</h2>
-                    <p class="mt-1 text-sm font-medium text-gray-500">Promosi aktif untuk pemantauan strategi
-                        penjualan.</p>
+                    <p class="mt-1 text-sm font-medium text-gray-500">Promosi aktif untuk pemantauan strategi penjualan.</p>
                 </div>
-                <span
-                    class="bg-primary px-3 py-1 text-xs font-black uppercase tracking-[.12em] text-white">{{ $runningPromotions }}
-                    Aktif</span>
+                <span class="rounded-full bg-primary px-3 py-1 text-xs font-black uppercase tracking-[.12em] text-white">{{ $runningPromotions }} Aktif</span>
             </div>
 
-            <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+            <div class="grid grid-cols-1 divide-y divide-gray-100 md:grid-cols-2 md:divide-x md:divide-y-0 xl:grid-cols-5">
                 @forelse ($activePromotions as $promotion)
-                    <div class="bg-[#FFF1F3] p-4">
+                    <div class="p-5 transition hover:bg-gray-50">
                         <p class="font-black text-texthighlight">{{ $promotion->name }}</p>
                         <p class="mt-2 text-sm font-semibold text-gray-600">
                             {{ $promotion->type === 'percent' ? rtrim(rtrim(number_format($promotion->value, 2, ',', '.'), '0'), ',') . '%' : 'Rp ' . number_format($promotion->value, 0, ',', '.') }}
                         </p>
                         <p class="mt-3 text-xs font-semibold text-gray-500">
-                            {{ $promotion->start_date->format('d M Y') }} -
-                            {{ $promotion->end_date->format('d M Y') }}</p>
+                            {{ $promotion->code ?: 'Tanpa kode' }} · {{ $promotion->start_date->format('d M Y') }} - {{ $promotion->end_date->format('d M Y') }}
+                        </p>
+                        <p class="mt-2 text-xs text-gray-500">{{ $promotion->createdBy?->name ?? '-' }}</p>
                     </div>
                 @empty
-                    <div class="col-span-full py-10 text-center text-sm font-semibold text-gray-500">Tidak ada promosi
-                        yang sedang berjalan.</div>
+                    <div class="col-span-full px-5 py-12 text-center text-sm font-semibold text-gray-500">Tidak ada promosi yang sedang berjalan.</div>
                 @endforelse
             </div>
 
-            <div class="mt-4">
-                {{ $activePromotions->links() }}
-            </div>
+            @if ($activePromotions->hasPages())
+                <div class="border-t border-gray-200 px-5 py-4">
+                    {{ $activePromotions->links() }}
+                </div>
+            @endif
         </section>
     </div>
 </x-direktur-layout>

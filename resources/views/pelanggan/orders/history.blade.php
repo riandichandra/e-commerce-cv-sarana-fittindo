@@ -50,19 +50,6 @@
                             </select>
                         </div>
 
-                        <!-- Date From -->
-                        <div>
-                            <label for="date_from" class="text-sm font-semibold text-[#10233d]">Dari Tanggal</label>
-                            <input id="date_from" type="date" name="date_from" value="{{ request('date_from') }}"
-                                class="mt-2 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
-                        </div>
-
-                        <!-- Date To -->
-                        <div>
-                            <label for="date_to" class="text-sm font-semibold text-[#10233d]">Sampai Tanggal</label>
-                            <input id="date_to" type="date" name="date_to" value="{{ request('date_to') }}"
-                                class="mt-2 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
-                        </div>
                     </div>
 
                     <div class="flex gap-3">
@@ -84,7 +71,8 @@
             <div class="mb-4 text-sm text-[#657891]">
                 @if (request()->hasAny(['search', 'status', 'date_from', 'date_to']))
                     <p>Menampilkan <strong>{{ $orders->count() }}</strong> dari
-                        <strong>{{ $orders->total() }}</strong> pesanan</p>
+                        <strong>{{ $orders->total() }}</strong> pesanan
+                    </p>
                 @else
                     <p>Total pesanan: <strong>{{ $orders->total() }}</strong></p>
                 @endif

@@ -35,7 +35,7 @@
         <label for="brand_id" class="text-sm font-medium text-gray-700">Merek</label>
         <select name="brand_id" id="brand_id"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
-            <option value="">No brand</option>
+            <option value="">Tidak Ada Merek</option>
             @foreach ($brands as $brand)
                 <option value="{{ $brand->id }}" @selected((string) old('brand_id', $product?->brand_id) === (string) $brand->id)>
                     {{ $brand->name }}
@@ -78,7 +78,7 @@
     @endif
 
     <div class="flex flex-col gap-1">
-        <label for="weight" class="text-sm font-medium text-gray-700">Weight</label>
+        <label for="weight" class="text-sm font-medium text-gray-700">Berat</label>
         <input type="number" name="weight" id="weight" min="0" step="0.01"
             value="{{ old('weight', $product?->weight) }}"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
@@ -88,7 +88,7 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="thickness" class="text-sm font-medium text-gray-700">Thickness</label>
+        <label for="thickness" class="text-sm font-medium text-gray-700">Ketebalan</label>
         <input type="text" name="thickness" id="thickness" value="{{ old('thickness', $product?->thickness) }}"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
         @error('thickness')
@@ -97,7 +97,7 @@
     </div>
 
     <div class="flex flex-col gap-1">
-        <label for="dimensions" class="text-sm font-medium text-gray-700">Dimensions</label>
+        <label for="dimensions" class="text-sm font-medium text-gray-700">Ukuran</label>
         <input type="text" name="dimensions" id="dimensions" value="{{ old('dimensions', $product?->dimensions) }}"
             class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">
         @error('dimensions')
@@ -116,7 +116,7 @@
 </div>
 
 <div class="flex flex-col gap-1">
-    <label for="specifications" class="text-sm font-medium text-gray-700">Specifications</label>
+    <label for="specifications" class="text-sm font-medium text-gray-700">Spesifikasi</label>
     <textarea name="specifications" id="specifications" rows="4"
         class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">{{ $specifications }}</textarea>
     @error('specifications')
@@ -163,7 +163,7 @@
 <div class="flex flex-wrap items-center gap-6">
     <label class="inline-flex items-center gap-2 text-sm text-gray-700">
         <input type="checkbox" name="is_featured" value="1" class="text-primary" @checked(old('is_featured', $product?->is_featured ?? false))>
-        Featured
+        Unggulan
     </label>
 
     <label class="inline-flex items-center gap-2 text-sm text-gray-700">

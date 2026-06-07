@@ -22,7 +22,20 @@ class ProductController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.products.index', compact('pagePath', 'pageName', 'products'));
+        $totalProducts = Product::count();
+        $activeProducts = Product::where('is_active', true)->count();
+        $availableProducts = Product::where('status', Product::STATUS_AVAILABLE)->count();
+        $outOfStockProducts = Product::where('stock', 0)->count();
+
+        return view('admin.products.index', compact(
+            'pagePath',
+            'pageName',
+            'products',
+            'totalProducts',
+            'activeProducts',
+            'availableProducts',
+            'outOfStockProducts',
+        ));
     }
 
     public function create()

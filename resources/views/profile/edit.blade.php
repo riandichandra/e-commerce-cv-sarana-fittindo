@@ -27,7 +27,7 @@
                         </p>
                     </div>
                     <div class="bg-white/10 p-5">
-                        <p class="text-xs font-black uppercase tracking-[.16em] text-blue-100">Signed in as</p>
+                        <p class="text-xs font-black uppercase tracking-[.16em] text-blue-100">Masuk Sebagai</p>
                         <p class="mt-3 text-xl font-black">{{ $roleName }}</p>
                         <p class="mt-2 text-sm font-semibold text-blue-100">{{ $user->email }}</p>
                         <div class="mt-5 flex items-center gap-2 text-sm font-semibold text-blue-100">

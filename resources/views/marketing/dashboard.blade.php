@@ -125,8 +125,8 @@
         </div>
 
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
-            <section class="bg-white p-6 shadow-sm">
-                <div class="flex items-center justify-between">
+            <section class="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
                     <div>
                         <h2 class="text-xl font-black uppercase text-texthighlight">Promosi Terbaru</h2>
                         <p class="mt-1 text-sm font-medium text-gray-500">Promosi terbaru yang dibuat.</p>
@@ -134,25 +134,46 @@
                     <a href="{{ route('marketing.promotions.index') }}" class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">Lihat Semua</a>
                 </div>
 
-                <div class="mt-5 space-y-4">
+                <div class="divide-y divide-gray-100">
                     @forelse ($recentPromotions as $promotion)
-                        <div class="flex items-start justify-between border-b border-gray-100 pb-4">
+                        @php
+                            $today = today();
+                            $isRunning = $promotion->is_active && $promotion->start_date->lte($today) && $promotion->end_date->gte($today);
+                            $isUpcoming = $promotion->is_active && $promotion->start_date->gt($today);
+                            $isEnded = $promotion->is_active && $promotion->end_date->lt($today);
+                            $statusClass = $isRunning
+                                ? 'bg-green-100 text-green-700'
+                                : ($isUpcoming
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : ($isEnded ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700'));
+                            $statusText = $isRunning
+                                ? 'Berjalan'
+                                : ($isUpcoming
+                                    ? 'Terjadwal'
+                                    : ($isEnded ? 'Berakhir' : 'Nonaktif'));
+                        @endphp
+                        <div class="flex items-start justify-between gap-4 px-5 py-4 transition hover:bg-gray-50">
                             <div>
                                 <p class="font-black text-texthighlight">{{ $promotion->name }}</p>
-                                <p class="text-xs text-gray-500">{{ $promotion->start_date->format('d M Y') }} - {{ $promotion->end_date->format('d M Y') }}</p>
+                                <p class="mt-1 text-xs font-semibold text-gray-500">
+                                    {{ $promotion->code ?: 'Tanpa kode' }} · {{ $promotion->start_date->format('d M Y') }} - {{ $promotion->end_date->format('d M Y') }}
+                                </p>
                             </div>
-                            <span class="px-2 py-1 text-xs font-bold {{ $promotion->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
-                                {{ $promotion->is_active ? 'Aktif' : 'Nonaktif' }}
+                            <span class="shrink-0 rounded-full px-3 py-1 text-xs font-bold {{ $statusClass }}">
+                                {{ $statusText }}
                             </span>
                         </div>
                     @empty
-                        <div class="py-10 text-center text-sm font-semibold text-gray-500">Belum ada promosi.</div>
+                        <div class="px-5 py-12 text-center">
+                            <iconify-icon icon="mdi:loudspeaker-off-outline" class="text-4xl text-gray-300"></iconify-icon>
+                            <p class="mt-2 text-sm font-semibold text-gray-500">Belum ada promosi.</p>
+                        </div>
                     @endforelse
                 </div>
             </section>
 
-            <section class="bg-white p-6 shadow-sm">
-                <div class="flex items-center justify-between">
+            <section class="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
                     <div>
                         <h2 class="text-xl font-black uppercase text-texthighlight">Pelanggan Terbaru</h2>
                         <p class="mt-1 text-sm font-medium text-gray-500">Pelanggan terbaru dari role pelanggan.</p>
@@ -160,20 +181,23 @@
                     <a href="{{ route('marketing.users.index') }}" class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">Lihat Semua</a>
                 </div>
 
-                <div class="mt-5 space-y-4">
+                <div class="divide-y divide-gray-100">
                     @forelse ($recentCustomers as $customer)
-                        <div class="flex items-start justify-between border-b border-gray-100 pb-4">
+                        <div class="flex items-start justify-between gap-4 px-5 py-4 transition hover:bg-gray-50">
                             <div>
                                 <p class="font-black text-texthighlight">{{ $customer->name }}</p>
                                 <p class="mt-1 text-sm font-semibold text-gray-600">{{ $customer->email }}</p>
-                                <p class="text-xs text-gray-500">{{ $customer->created_at->format('d M Y') }}</p>
+                                <p class="text-xs text-gray-500">{{ $customer->phone ?? 'Tanpa telepon' }} · {{ $customer->created_at->format('d M Y') }}</p>
                             </div>
-                            <span class="px-2 py-1 text-xs font-bold {{ $customer->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
+                            <span class="shrink-0 rounded-full px-3 py-1 text-xs font-bold {{ $customer->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
                                 {{ $customer->is_active ? 'Aktif' : 'Nonaktif' }}
                             </span>
                         </div>
                     @empty
-                        <div class="py-10 text-center text-sm font-semibold text-gray-500">Belum ada pelanggan.</div>
+                        <div class="px-5 py-12 text-center">
+                            <iconify-icon icon="mdi:account-search-outline" class="text-4xl text-gray-300"></iconify-icon>
+                            <p class="mt-2 text-sm font-semibold text-gray-500">Belum ada pelanggan.</p>
+                        </div>
                     @endforelse
                 </div>
             </section>

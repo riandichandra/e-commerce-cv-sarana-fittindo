@@ -6,75 +6,157 @@
             <p class="font-bold tracking-wider text-primary">{{ $pagePath[1] }}</p>
         </div>
 
-        <div class="mb-7 flex w-full items-center justify-between">
-            <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
-            <x-button bgColor="primary" textColor="white" icon="mdi:plus" size="auto"
-                href="{{ route('marketing.promotions.create') }}">
-                ADD PROMOTION
-            </x-button>
+        <div class="mb-7 flex w-full flex-wrap items-end justify-between gap-4">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[.16em] text-primary">Kelola Promosi</p>
+                <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
+                <p class="mt-2 text-sm font-medium text-gray-600">Pantau periode, nilai diskon, dan status promosi
+                    pelanggan.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="rounded-md border border-gray-200 bg-white px-4 py-3 text-sm text-gray-600 shadow-sm">
+                    <span class="font-bold text-texthighlight">{{ $promotions->total() }}</span> promosi terdaftar
+                </div>
+                <x-button bgColor="primary" textColor="white" icon="mdi:plus" size="auto"
+                    href="{{ route('marketing.promotions.create') }}">
+                    TAMBAH PROMOSI
+                </x-button>
+            </div>
         </div>
 
-        <div class="w-full bg-[#FFF1F3] p-5">
-            <h2 class="font-semibold tracking-wider text-texthighlight">PROMOTION LISTS</h2>
+        <div class="w-full overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
+            <div
+                class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
+                <div>
+                    <h2 class="font-bold tracking-wider text-texthighlight">LIST PROMOSI</h2>
+                    <p class="mt-1 text-sm text-gray-500">Data promosi yang tampil di landing page dan checkout
+                        pelanggan.</p>
+                </div>
+            </div>
+
             <div class="overflow-x-auto">
-                <table class="mt-3 w-full">
+                <table class="w-full min-w-[980px] text-left">
                     <thead>
-                        <tr class="border-b border-gray-300 text-left text-sm font-medium text-gray-600">
-                            <th class="px-3 py-3">#</th>
-                            <th class="px-3 py-3">Nama</th>
-                            <th class="px-3 py-3">Type</th>
-                            <th class="px-3 py-3">Value</th>
-                            <th class="px-3 py-3">Period</th>
-                            <th class="px-3 py-3">Status</th>
-                            <th class="px-3 py-3">Aksi</th>
+                        <tr
+                            class="border-b border-gray-200 bg-gray-50 text-xs font-bold uppercase tracking-[.08em] text-gray-500">
+                            <th class="w-16 px-5 py-3">No.</th>
+                            <th class="px-5 py-3">Promosi</th>
+                            <th class="px-5 py-3">Tipe & Nilai</th>
+                            <th class="px-5 py-3">Periode</th>
+                            <th class="px-5 py-3">Syarat</th>
+                            <th class="px-5 py-3">Status</th>
+                            <th class="px-5 py-3">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-100 text-sm">
                         @forelse ($promotions as $promotion)
                             @php
-                                $isRunning = $promotion->is_active && $promotion->start_date->isPast() && $promotion->end_date->isFuture();
+                                $today = today();
+                                $startsAt = $promotion->start_date;
+                                $endsAt = $promotion->end_date;
+                                $isRunning = $promotion->is_active && $startsAt->lte($today) && $endsAt->gte($today);
+                                $isUpcoming = $promotion->is_active && $startsAt->gt($today);
+                                $isEnded = $promotion->is_active && $endsAt->lt($today);
+                                $statusClass = $isRunning
+                                    ? 'bg-green-100 text-green-700'
+                                    : ($isUpcoming
+                                        ? 'bg-blue-100 text-blue-700'
+                                        : ($isEnded
+                                            ? 'bg-yellow-100 text-yellow-700'
+                                            : 'bg-gray-200 text-gray-700'));
+                                $statusText = $isRunning
+                                    ? 'Berjalan'
+                                    : ($isUpcoming
+                                        ? 'Terjadwal'
+                                        : ($isEnded
+                                            ? 'Berakhir'
+                                            : 'Nonaktif'));
                             @endphp
-                            <tr class="border-b border-gray-200 text-sm">
-                                <td class="px-3 py-3">{{ $promotions->firstItem() + $loop->index }}</td>
-                                <td class="px-3 py-3 font-medium text-texthighlight">{{ $promotion->name }}</td>
-                                <td class="px-3 py-3">{{ ucfirst($promotion->type) }}</td>
-                                <td class="px-3 py-3">
-                                    @if ($promotion->type === 'percent')
-                                        {{ rtrim(rtrim(number_format($promotion->value, 2, ',', '.'), '0'), ',') }}%
-                                    @else
-                                        Rp {{ number_format($promotion->value, 0, ',', '.') }}
+                            <tr class="align-top transition hover:bg-gray-50">
+                                <td class="px-5 py-4 font-semibold text-gray-500">
+                                    {{ $promotions->firstItem() + $loop->index }}</td>
+                                <td class="px-5 py-4">
+                                    <div class="font-bold text-texthighlight">{{ $promotion->name }}</div>
+                                    <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                                        <span class="rounded bg-gray-100 px-2 py-1 font-semibold text-gray-700">
+                                            {{ $promotion->code ?: 'Tanpa kode' }}
+                                        </span>
+                                        @if ($promotion->banner_image)
+                                            <a class="font-semibold text-primary hover:text-primary-dark"
+                                                href="{{ asset('storage/' . $promotion->banner_image) }}"
+                                                target="_blank">
+                                                Lihat banner
+                                            </a>
+                                        @endif
+                                    </div>
+                                    @if ($promotion->description)
+                                        <p class="mt-2 max-w-md text-sm leading-5 text-gray-500">
+                                            {{ $promotion->description }}</p>
                                     @endif
                                 </td>
-                                <td class="px-3 py-3">
-                                    {{ $promotion->start_date->format('d M Y') }} - {{ $promotion->end_date->format('d M Y') }}
+                                <td class="px-5 py-4">
+                                    <div class="font-semibold text-texthighlight">
+                                        {{ $promotion->type === 'percent' ? 'Persen' : 'Nominal' }}</div>
+                                    <div class="mt-1 text-gray-600">
+                                        @if ($promotion->type === 'percent')
+                                            {{ rtrim(rtrim(number_format($promotion->value, 2, ',', '.'), '0'), ',') }}%
+                                        @else
+                                            Rp {{ number_format($promotion->value, 0, ',', '.') }}
+                                        @endif
+                                    </div>
+                                    @if ($promotion->max_discount)
+                                        <div class="mt-1 text-xs text-gray-500">Maks. Rp
+                                            {{ number_format($promotion->max_discount, 0, ',', '.') }}</div>
+                                    @endif
                                 </td>
-                                <td class="px-3 py-3">
-                                    <span class="px-2 py-1 text-xs {{ $isRunning ? 'bg-green-100 text-green-700' : ($promotion->is_active ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700') }}">
-                                        {{ $isRunning ? 'Running' : ($promotion->is_active ? 'Scheduled/Ended' : 'Nonaktif') }}
+                                <td class="px-5 py-4 text-gray-600">
+                                    <div>{{ $startsAt->format('d M Y') }}</div>
+                                    <div class="text-xs text-gray-400">sampai</div>
+                                    <div>{{ $endsAt->format('d M Y') }}</div>
+                                </td>
+                                <td class="px-5 py-4 text-gray-600">
+                                    @if ($promotion->min_purchase)
+                                        Min. Rp {{ number_format($promotion->min_purchase, 0, ',', '.') }}
+                                    @else
+                                        Tanpa minimum
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4">
+                                    <span
+                                        class="inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $statusClass }}">
+                                        {{ $statusText }}
                                     </span>
                                 </td>
-                                <td class="px-3 py-3">
-                                    <div class="flex items-center gap-2">
-                                        <a class="inline-flex items-center gap-1.5 bg-primary px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-dark"
-                                            href="{{ route('marketing.promotions.edit', $promotion) }}">
-                                            <iconify-icon icon="mdi:pencil" class="fs-6"></iconify-icon>
-                                            EDIT
-                                        </a>
-                                    </div>
+                                <td class="px-5 py-4">
+                                    <a class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-bold text-white transition hover:bg-primary-dark"
+                                        href="{{ route('marketing.promotions.edit', $promotion) }}">
+                                        <iconify-icon icon="mdi:pencil" class="fs-6"></iconify-icon>
+                                        EDIT
+                                    </a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-3 py-6 text-center text-sm text-gray-500">Belum ada promosi.</td>
+                                <td colspan="7" class="px-5 py-12 text-center">
+                                    <div class="mx-auto flex max-w-sm flex-col items-center gap-2 text-gray-500">
+                                        <iconify-icon icon="mdi:loudspeaker-off-outline"
+                                            class="text-4xl text-gray-300"></iconify-icon>
+                                        <p class="font-semibold text-texthighlight">Belum ada promosi</p>
+                                        <p class="text-sm">Tambahkan promosi agar pelanggan dapat melihat kampanye
+                                            terbaru.</p>
+                                    </div>
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            <div class="mt-4">
-                {{ $promotions->links() }}
-            </div>
+            @if ($promotions->hasPages())
+                <div class="border-t border-gray-200 px-5 py-4">
+                    {{ $promotions->links() }}
+                </div>
+            @endif
         </div>
     </div>
 </x-marketing-layout>

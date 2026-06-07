@@ -3,9 +3,9 @@
         <div class="text-xs flex items-center gap-1">
             <p class="tracking-wider">ADMIN</p>
             <p>></p>
-            <p class="tracking-wider">PRODUCTS</p>
+            <p class="tracking-wider">PRODUK</p>
             <p>></p>
-            <p class="tracking-wider">BRANDS</p>
+            <p class="tracking-wider">MEREK</p>
             <p>></p>
             <p class="font-bold text-primary tracking-wider">EDIT</p>
         </div>
@@ -14,14 +14,15 @@
             <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
             <x-button bgColor="primary" textColor="white" icon="mdi:arrow-left" size="auto"
                 href="{{ route('admin.brands.index') }}">
-                BACK
+                KEMBALI
             </x-button>
         </div>
     </div>
 
     <div class="bg-[#FFF1F3] p-5 w-full">
-        <h2 class="font-semibold tracking-wider text-texthighlight">EDIT BRAND</h2>
-        <form action="{{ route('admin.brands.update', $brand) }}" method="POST" class="mt-4 w-full flex flex-col gap-4">
+        <h2 class="font-semibold tracking-wider text-texthighlight">EDIT MEREK</h2>
+        <form action="{{ route('admin.brands.update', $brand) }}" method="POST"
+            class="mt-4 w-full flex flex-col gap-4">
             @csrf
             @method('PUT')
 
@@ -44,12 +45,13 @@
             </div>
 
             <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                <input type="checkbox" name="is_active" value="1" class="text-primary" @checked(old('is_active', $brand->is_active))>
+                <input type="checkbox" name="is_active" value="1" class="text-primary"
+                    @checked(old('is_active', $brand->is_active))>
                 Aktif
             </label>
 
             <button type="submit" class="bg-primary text-white py-2 px-4 hover:bg-primary-dark transition w-fit">
-                UPDATE BRAND
+                UPDATE MEREK
             </button>
         </form>
     </div>

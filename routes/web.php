@@ -60,6 +60,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch('payments/{payment}/verify', [Admin\PaymentController::class, 'verify'])->name('payments.verify');
     Route::patch('payments/{payment}/reject', [Admin\PaymentController::class, 'reject'])->name('payments.reject');
     Route::resource('payment-methods', Admin\PaymentMethodController::class)->except(['show', 'destroy']);
+    Route::resource('promotions', Admin\PromotionController::class)->only(['index']);
 });
 
 // Marketing routes

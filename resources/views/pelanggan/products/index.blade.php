@@ -2,8 +2,8 @@
     <!-- Header Section -->
     <div class="bg-slate-900 text-white px-12 py-12">
         <div class="max-w-6xl">
-            <h1 class="text-4xl font-bold mb-4">ALL PRODUCTS</h1>
-            <p class="text-gray-300 text-base">Browse our complete collection of premium building materials and supplies
+            <h1 class="text-4xl font-bold mb-4">SEMUA PRODUK</h1>
+            <p class="text-gray-300 text-base">Jelajahi koleksi lengkap bahan dan perlengkapan bangunan premium kami.
             </p>
         </div>
     </div>
@@ -14,11 +14,11 @@
             <!-- Sidebar Filters -->
             <div class="col-span-1">
                 <div class="bg-white rounded-lg p-6 sticky top-4">
-                    <h3 class="text-lg font-bold text-gray-900 mb-6">FILTERS</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-6">FILTER</h3>
 
                     <!-- Kategori Filter -->
                     <div class="mb-8">
-                        <h4 class="font-semibold text-gray-900 mb-4">CATEGORY</h4>
+                        <h4 class="font-semibold text-gray-900 mb-4">KATEGORI</h4>
                         <div class="space-y-3">
                             <label class="flex items-center cursor-pointer">
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
@@ -39,19 +39,19 @@
 
                     <!-- Harga Filter -->
                     <div>
-                        <h4 class="font-semibold text-gray-900 mb-4">PRICE RANGE</h4>
+                        <h4 class="font-semibold text-gray-900 mb-4">KISARAN HARGA</h4>
                         <div class="space-y-3">
                             <label class="flex items-center cursor-pointer">
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
                                     @if (!request('price_range')) checked @endif
                                     onchange="document.location.href = '{{ route('pelanggan.products.index') }}';">
-                                <span class="ml-3 text-sm text-gray-700">All Hargas</span>
+                                <span class="ml-3 text-sm text-gray-700">Semua Harga</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
                                     @if (request('price_range') === 'under_100k') checked @endif
                                     onchange="document.location.href = '{{ route('pelanggan.products.index') }}?price_range=under_100k';">
-                                <span class="ml-3 text-sm text-gray-700">Under Rp 100K</span>
+                                <span class="ml-3 text-sm text-gray-700">Dibawah Rp 100K</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
@@ -63,7 +63,7 @@
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
                                     @if (request('price_range') === 'above_500k') checked @endif
                                     onchange="document.location.href = '{{ route('pelanggan.products.index') }}?price_range=above_500k';">
-                                <span class="ml-3 text-sm text-gray-700">Above Rp 500K</span>
+                                <span class="ml-3 text-sm text-gray-700">Di atas Rp 500K</span>
                             </label>
                         </div>
                     </div>
@@ -73,17 +73,17 @@
             <!-- Produk Grid -->
             <div class="col-span-3">
                 <div class="flex justify-between items-center mb-8">
-                    <p class="text-sm text-gray-600">Showing {{ $products->count() }} of {{ $products->total() }}
-                        products</p>
+                    <p class="text-sm text-gray-600">Menampilkan {{ $products->count() }} dari {{ $products->total() }}
+                        produk</p>
                     <select
                         class="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 focus:outline-none focus:border-red-600"
                         onchange="document.location.href = this.value;">
-                        <option value="{{ route('pelanggan.products.index') }}">Sort by Latest</option>
-                        <option value="{{ route('pelanggan.products.index') }}?sort=price_asc">Harga: Low to High
+                        <option value="{{ route('pelanggan.products.index') }}">Urutkan Berdasarkan Terbaru</option>
+                        <option value="{{ route('pelanggan.products.index') }}?sort=price_asc">Harga: Rendah ke Tinggi
                         </option>
-                        <option value="{{ route('pelanggan.products.index') }}?sort=price_desc">Harga: High to Low
+                        <option value="{{ route('pelanggan.products.index') }}?sort=price_desc">Harga: Tinggi ke Rendah
                         </option>
-                        <option value="{{ route('pelanggan.products.index') }}?sort=popular">Most Popular</option>
+                        <option value="{{ route('pelanggan.products.index') }}?sort=popular">Paling Populer</option>
                     </select>
                 </div>
 
@@ -129,12 +129,12 @@
                                 @if ($product->stock > 0)
                                     <div
                                         class="absolute bottom-4 left-4 bg-green-600 text-white px-3 py-1 rounded text-xs font-semibold">
-                                        IN STOCK
+                                        Tersedia
                                     </div>
                                 @else
                                     <div
                                         class="absolute bottom-4 left-4 bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold">
-                                        OUT OF STOCK
+                                        Habis
                                     </div>
                                 @endif
                             </a>
@@ -175,21 +175,21 @@
                                         @endauth
                                         <button type="submit"
                                             class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 transition duration-300 text-sm rounded">
-                                            ADD TO CART
+                                            TAMBAH KE KERANJANG
                                         </button>
                                     </form>
                                 @else
                                     <button type="button"
                                         class="w-full bg-gray-400 text-white font-bold py-2 px-4 transition duration-300 text-sm rounded cursor-not-allowed"
                                         disabled>
-                                        OUT OF STOCK
+                                        Habis
                                     </button>
                                 @endif
                             </div>
                         </div>
                     @empty
                         <div class="col-span-3 py-12 text-center">
-                            <p class="text-gray-500 text-lg">No products found</p>
+                            <p class="text-gray-500 text-lg">Tidak ada produk yang ditemukan</p>
                         </div>
                     @endforelse
                 </div>

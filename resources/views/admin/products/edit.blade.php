@@ -3,7 +3,7 @@
         <div class="text-xs flex items-center gap-1">
             <p class="tracking-wider">ADMIN</p>
             <p>></p>
-            <p class="tracking-wider">PRODUCTS</p>
+            <p class="tracking-wider">PRODUK</p>
             <p>></p>
             <p class="font-bold text-primary tracking-wider">EDIT</p>
         </div>
@@ -12,21 +12,22 @@
             <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
             <x-button bgColor="primary" textColor="white" icon="mdi:arrow-left" size="auto"
                 href="{{ route('admin.products.index') }}">
-                BACK
+                KEMBALI
             </x-button>
         </div>
     </div>
 
     <div class="bg-[#FFF1F3] p-5 w-full">
-        <h2 class="font-semibold tracking-wider text-texthighlight">EDIT PRODUCT</h2>
-        <form action="{{ route('admin.products.update', $product) }}" method="POST" enctype="multipart/form-data" class="mt-4 w-full flex flex-col gap-4">
+        <h2 class="font-semibold tracking-wider text-texthighlight">EDIT PRODUK</h2>
+        <form action="{{ route('admin.products.update', $product) }}" method="POST" enctype="multipart/form-data"
+            class="mt-4 w-full flex flex-col gap-4">
             @csrf
             @method('PUT')
 
             @include('admin.products.partials.form', ['product' => $product])
 
             <button type="submit" class="bg-primary text-white py-2 px-4 hover:bg-primary-dark transition w-fit">
-                UPDATE PRODUCT
+                UPDATE PRODUK
             </button>
         </form>
     </div>

@@ -1,0 +1,158 @@
+# Entity Relationship Diagram
+
+## Entities
+
+### Cart (`App\Models\Cart`)
+
+### CartItem (`App\Models\CartItem`)
+
+### Delivery (`App\Models\Delivery`)
+
+### District (`App\Models\District`)
+
+### Notification (`App\Models\Notification`)
+
+### Order (`App\Models\Order`)
+
+### OrderItem (`App\Models\OrderItem`)
+
+### OrderStatusHistory (`App\Models\OrderStatusHistory`)
+
+### Payment (`App\Models\Payment`)
+
+### PaymentMethod (`App\Models\PaymentMethod`)
+
+### Product (`App\Models\Product`)
+
+### ProductBrand (`App\Models\ProductBrand`)
+
+### ProductCategory (`App\Models\ProductCategory`)
+
+### ProductImage (`App\Models\ProductImage`)
+
+### Promotion (`App\Models\Promotion`)
+
+### Province (`App\Models\Province`)
+
+### Regency (`App\Models\Regency`)
+
+### Role (`App\Models\Role`)
+
+### User (`App\Models\User`)
+
+### UserAddress (`App\Models\UserAddress`)
+
+### Village (`App\Models\Village`)
+
+### Wishlist (`App\Models\Wishlist`)
+
+## Relationships
+
+### Cart Relationships
+
+- **BelongsTo** `user` to User (Local Key: `user_id`, Foreign Key: `id`)
+- **HasMany** `items` to CartItem (Local Key: `id`, Foreign Key: `cart_id`)
+
+### CartItem Relationships
+
+- **BelongsTo** `cart` to Cart (Local Key: `cart_id`, Foreign Key: `id`)
+- **BelongsTo** `product` to Product (Local Key: `product_id`, Foreign Key: `id`)
+
+### Delivery Relationships
+
+- **BelongsTo** `order` to Order (Local Key: `order_id`, Foreign Key: `id`)
+
+### District Relationships
+
+- **BelongsTo** `regency` to Regency (Local Key: `regency_id`, Foreign Key: `id`)
+- **HasMany** `villages` to Village (Local Key: `id`, Foreign Key: `district_id`)
+
+### Notification Relationships
+
+- **BelongsTo** `user` to User (Local Key: `user_id`, Foreign Key: `id`)
+
+### Order Relationships
+
+- **BelongsTo** `user` to User (Local Key: `user_id`, Foreign Key: `id`)
+- **HasMany** `items` to OrderItem (Local Key: `id`, Foreign Key: `order_id`)
+- **BelongsTo** `paymentMethod` to PaymentMethod (Local Key: `payment_method_id`, Foreign Key: `id`)
+- **BelongsTo** `promotion` to Promotion (Local Key: `promotion_id`, Foreign Key: `id`)
+- **HasOne** `payment` to Payment (Local Key: `id`, Foreign Key: `order_id`)
+- **HasOne** `delivery` to Delivery (Local Key: `id`, Foreign Key: `order_id`)
+- **BelongsTo** `shippingCostConfirmedBy` to User (Local Key: `shipping_cost_confirmed_by`, Foreign Key: `id`)
+- **HasMany** `statusHistory` to OrderStatusHistory (Local Key: `id`, Foreign Key: `order_id`)
+
+### OrderItem Relationships
+
+- **BelongsTo** `order` to Order (Local Key: `order_id`, Foreign Key: `id`)
+- **BelongsTo** `product` to Product (Local Key: `product_id`, Foreign Key: `id`)
+
+### OrderStatusHistory Relationships
+
+- **BelongsTo** `order` to Order (Local Key: `order_id`, Foreign Key: `id`)
+- **BelongsTo** `changedBy` to User (Local Key: `changed_by`, Foreign Key: `id`)
+
+### Payment Relationships
+
+- **BelongsTo** `order` to Order (Local Key: `order_id`, Foreign Key: `id`)
+- **BelongsTo** `paymentMethod` to PaymentMethod (Local Key: `payment_method_id`, Foreign Key: `id`)
+- **BelongsTo** `verifiedBy` to User (Local Key: `verified_by`, Foreign Key: `id`)
+
+### Product Relationships
+
+- **BelongsTo** `category` to ProductCategory (Local Key: `category_id`, Foreign Key: `id`)
+- **BelongsTo** `brand` to ProductBrand (Local Key: `brand_id`, Foreign Key: `id`)
+- **HasMany** `images` to ProductImage (Local Key: `id`, Foreign Key: `product_id`)
+
+### ProductBrand Relationships
+
+- **HasMany** `products` to Product (Local Key: `id`, Foreign Key: `brand_id`)
+
+### ProductCategory Relationships
+
+- **HasMany** `products` to Product (Local Key: `id`, Foreign Key: `category_id`)
+
+### ProductImage Relationships
+
+- **BelongsTo** `product` to Product (Local Key: `product_id`, Foreign Key: `id`)
+
+### Promotion Relationships
+
+- **BelongsTo** `createdBy` to User (Local Key: `created_by`, Foreign Key: `id`)
+- **BelongsToMany** `products` to Product (Local Key: ``, Foreign Key: ``)
+- **HasMany** `orders` to Order (Local Key: `id`, Foreign Key: `promotion_id`)
+
+### Province Relationships
+
+- **HasMany** `regencies` to Regency (Local Key: `id`, Foreign Key: `province_id`)
+- **HasManyThrough** `districts` to District (Local Key: ``, Foreign Key: ``)
+
+### Regency Relationships
+
+- **BelongsTo** `province` to Province (Local Key: `province_id`, Foreign Key: `id`)
+- **HasMany** `districts` to District (Local Key: `id`, Foreign Key: `regency_id`)
+- **HasManyThrough** `villages` to Village (Local Key: ``, Foreign Key: ``)
+
+### User Relationships
+
+- **HasOne** `cart` to Cart (Local Key: `id`, Foreign Key: `user_id`)
+- **HasMany** `wishlists` to Wishlist (Local Key: `id`, Foreign Key: `user_id`)
+- **HasMany** `addresses` to UserAddress (Local Key: `id`, Foreign Key: `user_id`)
+
+### UserAddress Relationships
+
+- **BelongsTo** `user` to User (Local Key: `user_id`, Foreign Key: `id`)
+- **BelongsTo** `province` to Province (Local Key: `province_id`, Foreign Key: `id`)
+- **BelongsTo** `regency` to Regency (Local Key: `regency_id`, Foreign Key: `id`)
+- **BelongsTo** `district` to District (Local Key: `district_id`, Foreign Key: `id`)
+- **BelongsTo** `village` to Village (Local Key: `village_id`, Foreign Key: `id`)
+
+### Village Relationships
+
+- **BelongsTo** `district` to District (Local Key: `district_id`, Foreign Key: `id`)
+
+### Wishlist Relationships
+
+- **BelongsTo** `user` to User (Local Key: `user_id`, Foreign Key: `id`)
+- **BelongsTo** `product` to Product (Local Key: `product_id`, Foreign Key: `id`)
+
