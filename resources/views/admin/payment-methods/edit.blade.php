@@ -29,7 +29,7 @@
             @include('admin.payment-methods.partials.form')
 
             <button type="submit" class="bg-primary text-white py-2 px-4 hover:bg-primary-dark transition w-fit">
-                UPDATE METODE PEMBAYARAN
+                EDIT METODE PEMBAYARAN
             </button>
         </form>
     </div>

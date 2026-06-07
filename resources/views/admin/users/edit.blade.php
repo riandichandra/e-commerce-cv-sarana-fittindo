@@ -3,7 +3,7 @@
         <div class="text-xs flex items-center gap-1">
             <p class="tracking-wider">ADMIN</p>
             <p>></p>
-            <p class="tracking-wider">PENGGUNAS</p>
+            <p class="tracking-wider">PENGGUNA</p>
             <p>></p>
             <p class="font-bold text-primary tracking-wider">EDIT</p>
         </div>
@@ -12,7 +12,7 @@
             <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
             <x-button bgColor="primary" textColor="white" icon="mdi:arrow-left" size="auto"
                 href="{{ route('admin.users.index') }}">
-                BACK
+                KEMBALI
             </x-button>
         </div>
     </div>
@@ -26,7 +26,7 @@
             @include('admin.users.partials.form', ['user' => $user])
 
             <button type="submit" class="bg-primary text-white py-2 px-4 hover:bg-primary-dark transition w-fit">
-                UPDATE PENGGUNA
+                EDIT PENGGUNA
             </button>
         </form>
     </div>

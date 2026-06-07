@@ -13,12 +13,13 @@
             </div>
             <x-button bgColor="primary" textColor="white" icon="mdi:plus" size="auto"
                 href="{{ route('admin.users.create') }}">
-                ADD PENGGUNA
+                TAMBAH PENGGUNA
             </x-button>
         </div>
 
         <div class="w-full overflow-hidden border border-[#f2c8d0] bg-white shadow-sm">
-            <div class="flex flex-col gap-3 border-b border-[#f2c8d0] bg-[#fff7f8] p-5 lg:flex-row lg:items-center lg:justify-between">
+            <div
+                class="flex flex-col gap-3 border-b border-[#f2c8d0] bg-[#fff7f8] p-5 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h2 class="text-lg font-black tracking-wide text-texthighlight">Daftar Pengguna</h2>
                     <p class="mt-1 text-sm text-gray-600">Kelola akun, role, dan status akses pengguna.</p>
@@ -39,7 +40,8 @@
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[900px]">
                     <thead>
-                        <tr class="border-b border-gray-200 bg-white text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                        <tr
+                            class="border-b border-gray-200 bg-white text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                             <th class="w-16 px-5 py-4">No.</th>
                             <th class="px-5 py-4">Pengguna</th>
                             <th class="px-5 py-4">Kontak</th>
@@ -52,7 +54,8 @@
                     <tbody class="divide-y divide-gray-100">
                         @forelse ($users as $user)
                             <tr class="text-sm transition hover:bg-[#fff7f8]">
-                                <td class="px-5 py-4 align-top font-semibold text-gray-500">{{ $users->firstItem() + $loop->index }}</td>
+                                <td class="px-5 py-4 align-top font-semibold text-gray-500">
+                                    {{ $users->firstItem() + $loop->index }}</td>
                                 <td class="px-5 py-4">
                                     <p class="font-bold text-texthighlight">{{ $user->name }}</p>
                                     <p class="mt-1 text-xs text-gray-500">ID: {{ $user->id }}</p>
@@ -67,7 +70,8 @@
                                     </span>
                                 </td>
                                 <td class="px-5 py-4">
-                                    <span class="px-2.5 py-1 text-xs font-bold {{ $user->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
+                                    <span
+                                        class="px-2.5 py-1 text-xs font-bold {{ $user->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
                                         {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
                                     </span>
                                 </td>
@@ -87,11 +91,14 @@
                             <tr>
                                 <td colspan="7" class="px-5 py-14 text-center">
                                     <div class="mx-auto flex max-w-md flex-col items-center">
-                                        <div class="flex h-14 w-14 items-center justify-center bg-[#fff1f3] text-primary">
-                                            <iconify-icon icon="mdi:account-group-outline" class="fs-3"></iconify-icon>
+                                        <div
+                                            class="flex h-14 w-14 items-center justify-center bg-[#fff1f3] text-primary">
+                                            <iconify-icon icon="mdi:account-group-outline"
+                                                class="fs-3"></iconify-icon>
                                         </div>
                                         <p class="mt-4 text-base font-bold text-texthighlight">Belum ada pengguna.</p>
-                                        <p class="mt-2 text-sm text-gray-500">Tambahkan akun untuk mulai mengatur akses dashboard.</p>
+                                        <p class="mt-2 text-sm text-gray-500">Tambahkan akun untuk mulai mengatur akses
+                                            dashboard.</p>
                                         <a href="{{ route('admin.users.create') }}"
                                             class="mt-5 inline-flex h-10 items-center justify-center gap-2 bg-primary px-4 text-sm font-bold text-white transition hover:bg-red-700">
                                             <iconify-icon icon="mdi:plus" class="fs-6"></iconify-icon>

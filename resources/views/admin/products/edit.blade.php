@@ -27,7 +27,7 @@
             @include('admin.products.partials.form', ['product' => $product])
 
             <button type="submit" class="bg-primary text-white py-2 px-4 hover:bg-primary-dark transition w-fit">
-                UPDATE PRODUK
+                EDIT PRODUK
             </button>
         </form>
     </div>

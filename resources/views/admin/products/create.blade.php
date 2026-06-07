@@ -18,7 +18,7 @@
     </div>
 
     <div class="bg-[#FFF1F3] p-5 w-full">
-        <h2 class="font-semibold tracking-wider text-texthighlight">ADD NEW PRODUCT</h2>
+        <h2 class="font-semibold tracking-wider text-texthighlight">TAMBAH PRODUK BARU</h2>
         <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data"
             class="mt-4 w-full flex flex-col gap-4">
             @csrf
