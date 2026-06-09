@@ -78,9 +78,18 @@ class OrderListTest extends TestCase
             'received_image' => $this->fakePngUpload(),
         ]);
 
-        $response->assertRedirect(route('pelanggan.orders.index'));
+        $response
+            ->assertRedirect(route('pelanggan.orders.index'))
+            ->assertSessionHas('success', 'Pesanan berhasil ditandai selesai dan foto produk diterima tersimpan.');
         $this->assertSame('selesai', $order->fresh()->status);
         Storage::disk('public')->assertExists($order->fresh()->received_image);
+
+        $this->actingAs($customer)
+            ->withSession(['success' => 'Pesanan berhasil ditandai selesai dan foto produk diterima tersimpan.'])
+            ->get(route('pelanggan.orders.index'))
+            ->assertOk()
+            ->assertSee('Pesanan berhasil diperbarui')
+            ->assertSee('Status pesanan terbaru sudah tercatat di sistem.');
     }
 
     public function test_customer_can_cancel_dikirim_order_for_return(): void
@@ -110,8 +119,17 @@ class OrderListTest extends TestCase
 
         $response = $this->actingAs($customer)->patch(route('pelanggan.orders.complete', $order));
 
-        $response->assertRedirect(route('pelanggan.orders.index'));
+        $response
+            ->assertRedirect(route('pelanggan.orders.index'))
+            ->assertSessionHas('error', 'Pesanan hanya dapat diselesaikan setelah dikirim.');
         $this->assertSame('diproses', $order->fresh()->status);
+
+        $this->actingAs($customer)
+            ->withSession(['error' => 'Pesanan hanya dapat diselesaikan setelah dikirim.'])
+            ->get(route('pelanggan.orders.index'))
+            ->assertOk()
+            ->assertSee('Aksi pesanan gagal')
+            ->assertSee('Pesanan hanya dapat diselesaikan setelah dikirim.');
     }
 
     public function test_customer_can_upload_payment_proof_for_unpaid_order(): void

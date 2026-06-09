@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -160,6 +161,37 @@ class ProfileTest extends TestCase
         ]);
     }
 
+    public function test_profile_address_section_renders_custom_delete_notification_ui(): void
+    {
+        $user = $this->makeCustomer();
+        $location = $this->createLocation();
+
+        $user->addresses()->create([
+            'label' => 'Rumah',
+            'receiver_name' => 'Budi',
+            'receiver_phone' => '08123456789',
+            'full_address' => 'Jalan Mawar No. 10',
+            'province_id' => $location['province_id'],
+            'regency_id' => $location['regency_id'],
+            'district_id' => $location['district_id'],
+            'village_id' => $location['village_id'],
+            'postal_code' => '12345',
+            'is_main' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->withSession(['status' => 'address-deleted'])
+            ->get('/profile');
+
+        $response
+            ->assertOk()
+            ->assertSee('Alamat berhasil dihapus')
+            ->assertSee('Hapus alamat ini?')
+            ->assertSee('Ya, Hapus Alamat')
+            ->assertSee('Riwayat pesanan yang sudah dibuat tidak akan berubah.');
+    }
+
     public function test_user_cannot_update_another_users_address(): void
     {
         $user = User::factory()->create();
@@ -194,6 +226,34 @@ class ProfileTest extends TestCase
 
         $response->assertNotFound();
         $this->assertSame('Rumah', $address->refresh()->label);
+    }
+
+    public function test_user_cannot_delete_another_users_address(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $location = $this->createLocation();
+        $address = $otherUser->addresses()->create([
+            'label' => 'Rumah',
+            'receiver_name' => 'Sari',
+            'receiver_phone' => '08111111111',
+            'full_address' => 'Jalan Kenanga No. 1',
+            'province_id' => $location['province_id'],
+            'regency_id' => $location['regency_id'],
+            'district_id' => $location['district_id'],
+            'village_id' => $location['village_id'],
+            'postal_code' => '11111',
+            'is_main' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->delete("/profile/addresses/{$address->id}");
+
+        $response->assertNotFound();
+        $this->assertDatabaseHas('user_addresses', [
+            'id' => $address->id,
+        ]);
     }
 
     public function test_setting_an_address_as_main_unsets_other_addresses(): void
@@ -244,6 +304,110 @@ class ProfileTest extends TestCase
 
         $this->assertFalse($firstAddress->refresh()->is_main);
         $this->assertTrue($secondAddress->refresh()->is_main);
+    }
+
+    public function test_deleting_main_address_promotes_latest_remaining_address(): void
+    {
+        $user = User::factory()->create();
+        $location = $this->createLocation();
+        $firstAddress = $user->addresses()->create([
+            'label' => 'Rumah',
+            'receiver_name' => 'Budi',
+            'receiver_phone' => '08123456789',
+            'full_address' => 'Jalan Mawar No. 10',
+            'province_id' => $location['province_id'],
+            'regency_id' => $location['regency_id'],
+            'district_id' => $location['district_id'],
+            'village_id' => $location['village_id'],
+            'postal_code' => '12345',
+            'is_main' => true,
+            'created_at' => now()->subDay(),
+            'updated_at' => now()->subDay(),
+        ]);
+        $secondAddress = $user->addresses()->create([
+            'label' => 'Kantor',
+            'receiver_name' => 'Budi',
+            'receiver_phone' => '08123456780',
+            'full_address' => 'Jalan Melati No. 20',
+            'province_id' => $location['province_id'],
+            'regency_id' => $location['regency_id'],
+            'district_id' => $location['district_id'],
+            'village_id' => $location['village_id'],
+            'postal_code' => '54321',
+            'is_main' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->delete("/profile/addresses/{$firstAddress->id}");
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $this->assertDatabaseMissing('user_addresses', [
+            'id' => $firstAddress->id,
+        ]);
+        $this->assertTrue($secondAddress->refresh()->is_main);
+    }
+
+    public function test_user_cannot_delete_address_linked_to_delivery(): void
+    {
+        $user = User::factory()->create();
+        $location = $this->createLocation();
+        $address = $user->addresses()->create([
+            'label' => 'Rumah',
+            'receiver_name' => 'Budi',
+            'receiver_phone' => '08123456789',
+            'full_address' => 'Jalan Mawar No. 10',
+            'province_id' => $location['province_id'],
+            'regency_id' => $location['regency_id'],
+            'district_id' => $location['district_id'],
+            'village_id' => $location['village_id'],
+            'postal_code' => '12345',
+            'is_main' => true,
+        ]);
+
+        $orderId = DB::table('orders')->insertGetId([
+            'user_id' => $user->id,
+            'order_number' => 'TEST-ADDRESS-DELETE',
+            'subtotal' => 100000,
+            'discount_amount' => 0,
+            'shipping_cost' => 0,
+            'shipping_cost_status' => 'fixed',
+            'total_amount' => 100000,
+            'shipping_name' => 'Budi',
+            'shipping_phone' => '08123456789',
+            'shipping_address' => 'Jalan Mawar No. 10',
+            'shipping_province' => 'DKI Jakarta',
+            'shipping_city' => 'Jakarta Selatan',
+            'shipping_district' => 'Kebayoran Baru',
+            'shipping_village' => 'Senayan',
+            'shipping_postal_code' => '12345',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('deliveries')->insert([
+            'order_id' => $orderId,
+            'address_id' => $address->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->delete("/profile/addresses/{$address->id}");
+
+        $response
+            ->assertRedirect('/profile')
+            ->assertSessionHas('status', 'address-delete-blocked');
+
+        $this->assertDatabaseHas('user_addresses', [
+            'id' => $address->id,
+        ]);
     }
 
     public function test_region_dropdown_endpoints_return_only_child_regions(): void
@@ -303,5 +467,18 @@ class ProfileTest extends TestCase
             'district_id' => 1,
             'village_id' => 1,
         ];
+    }
+
+    private function makeCustomer(): User
+    {
+        $role = Role::firstOrCreate(
+            ['name' => 'pelanggan'],
+            ['guard_name' => 'web']
+        );
+        $user = User::factory()->create();
+
+        $user->assignRole($role->name);
+
+        return $user;
     }
 }

@@ -3,9 +3,64 @@
     $selectedRegency = (string) old('regency_id', $editingAddress?->regency_id);
     $selectedDistrict = (string) old('district_id', $editingAddress?->district_id);
     $selectedVillage = (string) old('village_id', $editingAddress?->village_id);
+    $addressAlert = match (session('status')) {
+        'address-created' => [
+            'tone' => 'success',
+            'icon' => 'mdi:check-circle-outline',
+            'title' => 'Alamat berhasil ditambahkan',
+            'message' => 'Alamat baru sudah tersimpan dan siap digunakan saat checkout.',
+        ],
+        'address-updated' => [
+            'tone' => 'success',
+            'icon' => 'mdi:check-circle-outline',
+            'title' => 'Alamat berhasil diperbarui',
+            'message' => 'Perubahan alamat tersimpan dengan baik.',
+        ],
+        'address-deleted' => [
+            'tone' => 'success',
+            'icon' => 'mdi:trash-can-check-outline',
+            'title' => 'Alamat berhasil dihapus',
+            'message' => 'Daftar alamat tersimpan Anda sudah diperbarui.',
+        ],
+        'address-delete-blocked' => [
+            'tone' => 'danger',
+            'icon' => 'mdi:alert-circle-outline',
+            'title' => 'Alamat tidak dapat dihapus',
+            'message' => 'Alamat ini masih terhubung dengan data pengiriman. Tambahkan alamat baru atau pilih alamat lain sebagai alamat utama.',
+        ],
+        default => null,
+    };
 @endphp
 
-<section>
+<section
+    x-data="{
+        deleteModalOpen: false,
+        deleteSubmitting: false,
+        deleteFormAction: '',
+        deleteAddress: null,
+        openDeleteModal(address, action) {
+            this.deleteAddress = address;
+            this.deleteFormAction = action;
+            this.deleteSubmitting = false;
+            this.deleteModalOpen = true;
+            document.body.classList.add('overflow-hidden');
+        },
+        closeDeleteModal() {
+            if (this.deleteSubmitting) {
+                return;
+            }
+
+            this.deleteModalOpen = false;
+            this.deleteAddress = null;
+            this.deleteFormAction = '';
+            document.body.classList.remove('overflow-hidden');
+        },
+        submitDeleteForm() {
+            this.deleteSubmitting = true;
+        },
+    }"
+    x-on:keydown.escape.window="closeDeleteModal"
+>
     <header>
         <h2 class="text-lg font-medium text-gray-900">
             Alamat Pengiriman
@@ -16,12 +71,24 @@
         </p>
     </header>
 
-    @if (session('status') === 'address-created')
-        <p class="mt-4 text-sm font-medium text-green-600">Alamat berhasil ditambahkan.</p>
-    @elseif (session('status') === 'address-updated')
-        <p class="mt-4 text-sm font-medium text-green-600">Alamat berhasil diperbarui.</p>
-    @elseif (session('status') === 'address-deleted')
-        <p class="mt-4 text-sm font-medium text-green-600">Alamat berhasil dihapus.</p>
+    @if ($addressAlert)
+        <div
+            class="{{ $addressAlert['tone'] === 'danger' ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800' }} mt-5 flex items-start gap-3 border p-4"
+            x-data="{ visible: true }"
+            x-show="visible"
+            x-transition.opacity.duration.200ms
+        >
+            <div class="{{ $addressAlert['tone'] === 'danger' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700' }} flex h-10 w-10 shrink-0 items-center justify-center">
+                <iconify-icon icon="{{ $addressAlert['icon'] }}" class="text-xl"></iconify-icon>
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="text-sm font-black">{{ $addressAlert['title'] }}</p>
+                <p class="mt-1 text-sm font-medium opacity-90">{{ $addressAlert['message'] }}</p>
+            </div>
+            <button type="button" class="shrink-0 text-current opacity-70 hover:opacity-100" x-on:click="visible = false" aria-label="Tutup notifikasi">
+                <iconify-icon icon="mdi:close" class="text-lg"></iconify-icon>
+            </button>
+        </div>
     @endif
 
     @unless ($hasRegionData)
@@ -238,13 +305,27 @@
                     <a href="{{ route('profile.edit', ['address' => $address->id]) }}#address-form" class="text-sm font-bold uppercase tracking-wide text-indigo-600 hover:text-indigo-800">
                         Edit
                     </a>
-                    <form method="post" action="{{ route('profile.addresses.destroy', $address) }}" onsubmit="return confirm('Hapus alamat ini?')">
-                        @csrf
-                        @method('delete')
-                        <button type="submit" class="text-sm font-bold uppercase tracking-wide text-red-600 hover:text-red-800">
-                            Hapus
-                        </button>
-                    </form>
+                    <button
+                        type="button"
+                        class="text-sm font-bold uppercase tracking-wide text-red-600 hover:text-red-800"
+                        x-on:click="openDeleteModal(@js([
+                            'label' => $address->label,
+                            'receiver_name' => $address->receiver_name,
+                            'receiver_phone' => $address->receiver_phone,
+                            'full_address' => $address->full_address,
+                            'region' => collect([
+                                $address->village?->name,
+                                $address->district?->name,
+                                $address->regency?->name,
+                                $address->province?->name,
+                                $address->postal_code,
+                            ])->filter()->implode(', '),
+                            'is_main' => $address->is_main,
+                            'is_only_address' => $addresses->count() === 1,
+                        ]), @js(route('profile.addresses.destroy', $address)))"
+                    >
+                        Hapus
+                    </button>
                 </div>
             </div>
         @empty
@@ -252,5 +333,98 @@
                 Belum ada alamat tersimpan.
             </div>
         @endforelse
+    </div>
+
+    <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/60 px-4 py-6"
+        x-show="deleteModalOpen"
+        x-transition.opacity
+        x-cloak
+    >
+        <div class="absolute inset-0" x-on:click="closeDeleteModal"></div>
+
+        <div
+            class="relative max-h-[calc(100vh-3rem)] w-full max-w-lg overflow-y-auto bg-white p-6 shadow-2xl"
+            x-show="deleteModalOpen"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="translate-y-3 opacity-0"
+            x-transition:enter-end="translate-y-0 opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="translate-y-0 opacity-100"
+            x-transition:leave-end="translate-y-3 opacity-0"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-address-title"
+        >
+            <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center bg-red-50 text-red-700">
+                    <iconify-icon icon="mdi:trash-can-outline" class="text-2xl"></iconify-icon>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p id="delete-address-title" class="text-xl font-black text-[#8A1022]">Hapus alamat ini?</p>
+                    <p class="mt-2 text-sm font-medium leading-6 text-gray-600">
+                        Alamat ini akan dihapus dari daftar alamat tersimpan Anda. Riwayat pesanan yang sudah dibuat tidak akan berubah.
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    class="text-gray-400 hover:text-gray-700"
+                    x-on:click="closeDeleteModal"
+                    x-bind:disabled="deleteSubmitting"
+                    aria-label="Tutup modal"
+                >
+                    <iconify-icon icon="mdi:close" class="text-2xl"></iconify-icon>
+                </button>
+            </div>
+
+            <div class="mt-5 border border-gray-200 bg-gray-50 p-4">
+                <div class="flex flex-wrap items-center gap-2">
+                    <p class="font-black text-gray-900" x-text="deleteAddress?.label"></p>
+                    <template x-if="deleteAddress?.is_main">
+                        <span class="bg-green-100 px-2 py-1 text-xs font-black uppercase tracking-wide text-green-700">Utama</span>
+                    </template>
+                </div>
+                <p class="mt-3 text-sm font-bold text-gray-900">
+                    <span x-text="deleteAddress?.receiver_name"></span>
+                    <span x-show="deleteAddress?.receiver_phone"> - </span>
+                    <span x-text="deleteAddress?.receiver_phone"></span>
+                </p>
+                <p class="mt-2 break-words text-sm leading-6 text-gray-600" x-text="deleteAddress?.full_address"></p>
+                <p class="mt-2 break-words text-sm leading-6 text-gray-600" x-text="deleteAddress?.region"></p>
+            </div>
+
+            <template x-if="deleteAddress?.is_main">
+                <div class="mt-4 border border-amber-200 bg-amber-50 p-4 text-sm font-medium leading-6 text-amber-900">
+                    Alamat ini adalah alamat utama. Setelah dihapus, sistem akan memilih alamat terbaru lainnya sebagai alamat utama.
+                </div>
+            </template>
+
+            <template x-if="deleteAddress?.is_only_address">
+                <div class="mt-4 border border-blue-200 bg-blue-50 p-4 text-sm font-medium leading-6 text-blue-900">
+                    Ini satu-satunya alamat tersimpan. Checkout tetap bisa memakai input alamat manual.
+                </div>
+            </template>
+
+            <form method="post" x-bind:action="deleteFormAction" x-on:submit="submitDeleteForm" class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                @csrf
+                @method('delete')
+                <button
+                    type="button"
+                    class="inline-flex items-center justify-center border border-gray-300 px-4 py-2 text-xs font-black uppercase tracking-[.14em] text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    x-on:click="closeDeleteModal"
+                    x-bind:disabled="deleteSubmitting"
+                >
+                    Batal
+                </button>
+                <button
+                    type="submit"
+                    class="inline-flex items-center justify-center gap-2 bg-[#C8102E] px-4 py-2 text-xs font-black uppercase tracking-[.14em] text-white hover:bg-[#9F0D24] disabled:cursor-not-allowed disabled:opacity-70"
+                    x-bind:disabled="deleteSubmitting"
+                >
+                    <span x-show="deleteSubmitting" class="h-4 w-4 animate-spin border-2 border-white/40 border-t-white"></span>
+                    <span x-text="deleteSubmitting ? 'Menghapus...' : 'Ya, Hapus Alamat'"></span>
+                </button>
+            </form>
+        </div>
     </div>
 </section>

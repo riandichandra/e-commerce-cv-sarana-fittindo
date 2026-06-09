@@ -86,12 +86,12 @@
             </div>
         @endif
 
-        <div class="flex justify-between h-screen">
+        <div class="flex h-screen justify-between overflow-hidden">
             <div class="w-1/5 h-full">
                 @include('layouts.admin.navigation')
             </div>
             <!-- Page Content -->
-            <main class="w-4/5 p-9">
+            <main class="w-4/5 overflow-y-auto p-9">
                 {{ $slot }}
             </main>
         </div>

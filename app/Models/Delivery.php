@@ -9,6 +9,7 @@ class Delivery extends Model
 {
     protected $fillable = [
         'order_id',
+        'address_id',
         'address',
         'courier',
         'tracking_number',
@@ -46,6 +47,6 @@ class Delivery extends Model
 
     public function address(): BelongsTo
     {
-        return $this->belongsTo(UserAddress::class, 'address', 'id');
+        return $this->belongsTo(UserAddress::class, 'address_id');
     }
 }

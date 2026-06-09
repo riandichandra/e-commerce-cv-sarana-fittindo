@@ -1,3 +1,14 @@
+@php
+    $orderAlert = session('success') || session('error')
+        ? [
+            'type' => session('success') ? 'success' : 'error',
+            'title' => session('success') ? 'Pesanan berhasil diperbarui' : 'Aksi pesanan gagal',
+            'message' => session('success') ?? session('error'),
+            'icon' => session('success') ? 'mdi:check-circle-outline' : 'mdi:alert-circle-outline',
+        ]
+        : null;
+@endphp
+
 <x-pelanggan-layout>
     <section class="bg-[#071d33] px-8 py-14 text-white">
         <div class="mx-auto max-w-[1290px]">
@@ -8,9 +19,30 @@
 
     <section class="bg-[#f7faff] px-8 py-14">
         <div class="mx-auto grid max-w-[1290px] grid-cols-1 gap-8 xl:grid-cols-2">
-            @if (session('success') || session('error'))
-                <div class="border-l-4 {{ session('success') ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-500 bg-red-50 text-red-700' }} px-4 py-3 text-sm font-semibold xl:col-span-2">
-                    {{ session('success') ?? session('error') }}
+            @if ($orderAlert)
+                <div
+                    class="{{ $orderAlert['type'] === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-red-200 bg-red-50 text-red-900' }} xl:col-span-2 border p-5 shadow-sm"
+                    x-data="{ visible: true }"
+                    x-show="visible"
+                    x-transition.opacity.duration.200ms
+                >
+                    <div class="flex items-start gap-4">
+                        <div class="{{ $orderAlert['type'] === 'success' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }} flex h-12 w-12 shrink-0 items-center justify-center">
+                            <iconify-icon icon="{{ $orderAlert['icon'] }}" class="text-2xl"></iconify-icon>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-black uppercase tracking-[.14em]">{{ $orderAlert['title'] }}</p>
+                            <p class="mt-2 text-sm font-semibold leading-6 opacity-90">{{ $orderAlert['message'] }}</p>
+                            @if (session('success'))
+                                <p class="mt-3 text-xs font-black uppercase tracking-[.12em] text-emerald-700">
+                                    Status pesanan terbaru sudah tercatat di sistem.
+                                </p>
+                            @endif
+                        </div>
+                        <button type="button" class="shrink-0 text-current opacity-60 hover:opacity-100" x-on:click="visible = false" aria-label="Tutup notifikasi">
+                            <iconify-icon icon="mdi:close" class="text-xl"></iconify-icon>
+                        </button>
+                    </div>
                 </div>
             @endif
 

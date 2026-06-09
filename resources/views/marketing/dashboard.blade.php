@@ -47,11 +47,13 @@
             </div>
 
             <div class="grid grid-cols-2 gap-3 text-sm lg:min-w-[360px]">
-                <a href="{{ route('marketing.promotions.create') }}" class="flex items-center justify-between bg-white px-4 py-3 font-bold text-texthighlight shadow-sm hover:text-primary">
-                    <span>New Promo</span>
+                <a href="{{ route('marketing.promotions.create') }}"
+                    class="flex items-center justify-between bg-white px-4 py-3 font-bold text-texthighlight shadow-sm hover:text-primary">
+                    <span>Promo Terbaru</span>
                     <iconify-icon icon="mdi:plus"></iconify-icon>
                 </a>
-                <a href="{{ route('marketing.users.index') }}" class="flex items-center justify-between bg-white px-4 py-3 font-bold text-texthighlight shadow-sm hover:text-primary">
+                <a href="{{ route('marketing.users.index') }}"
+                    class="flex items-center justify-between bg-white px-4 py-3 font-bold text-texthighlight shadow-sm hover:text-primary">
                     <span>Pelanggan</span>
                     <iconify-icon icon="mdi:arrow-right"></iconify-icon>
                 </a>
@@ -63,7 +65,8 @@
                 <div class="bg-white p-5 shadow-sm">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <p class="text-xs font-black uppercase tracking-[.16em] text-gray-500">{{ $card['label'] }}</p>
+                            <p class="text-xs font-black uppercase tracking-[.16em] text-gray-500">{{ $card['label'] }}
+                            </p>
                             <p class="mt-3 text-3xl font-black text-texthighlight">{{ $card['value'] }}</p>
                             <p class="mt-2 text-sm font-semibold text-gray-500">{{ $card['meta'] }}</p>
                         </div>
@@ -131,32 +134,43 @@
                         <h2 class="text-xl font-black uppercase text-texthighlight">Promosi Terbaru</h2>
                         <p class="mt-1 text-sm font-medium text-gray-500">Promosi terbaru yang dibuat.</p>
                     </div>
-                    <a href="{{ route('marketing.promotions.index') }}" class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">Lihat Semua</a>
+                    <a href="{{ route('marketing.promotions.index') }}"
+                        class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">Lihat
+                        Semua</a>
                 </div>
 
                 <div class="divide-y divide-gray-100">
                     @forelse ($recentPromotions as $promotion)
                         @php
                             $today = today();
-                            $isRunning = $promotion->is_active && $promotion->start_date->lte($today) && $promotion->end_date->gte($today);
+                            $isRunning =
+                                $promotion->is_active &&
+                                $promotion->start_date->lte($today) &&
+                                $promotion->end_date->gte($today);
                             $isUpcoming = $promotion->is_active && $promotion->start_date->gt($today);
                             $isEnded = $promotion->is_active && $promotion->end_date->lt($today);
                             $statusClass = $isRunning
                                 ? 'bg-green-100 text-green-700'
                                 : ($isUpcoming
                                     ? 'bg-blue-100 text-blue-700'
-                                    : ($isEnded ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-200 text-gray-700'));
+                                    : ($isEnded
+                                        ? 'bg-yellow-100 text-yellow-700'
+                                        : 'bg-gray-200 text-gray-700'));
                             $statusText = $isRunning
                                 ? 'Berjalan'
                                 : ($isUpcoming
                                     ? 'Terjadwal'
-                                    : ($isEnded ? 'Berakhir' : 'Nonaktif'));
+                                    : ($isEnded
+                                        ? 'Berakhir'
+                                        : 'Nonaktif'));
                         @endphp
                         <div class="flex items-start justify-between gap-4 px-5 py-4 transition hover:bg-gray-50">
                             <div>
                                 <p class="font-black text-texthighlight">{{ $promotion->name }}</p>
                                 <p class="mt-1 text-xs font-semibold text-gray-500">
-                                    {{ $promotion->code ?: 'Tanpa kode' }} · {{ $promotion->start_date->format('d M Y') }} - {{ $promotion->end_date->format('d M Y') }}
+                                    {{ $promotion->code ?: 'Tanpa kode' }} ·
+                                    {{ $promotion->start_date->format('d M Y') }} -
+                                    {{ $promotion->end_date->format('d M Y') }}
                                 </p>
                             </div>
                             <span class="shrink-0 rounded-full px-3 py-1 text-xs font-bold {{ $statusClass }}">
@@ -165,7 +179,8 @@
                         </div>
                     @empty
                         <div class="px-5 py-12 text-center">
-                            <iconify-icon icon="mdi:loudspeaker-off-outline" class="text-4xl text-gray-300"></iconify-icon>
+                            <iconify-icon icon="mdi:loudspeaker-off-outline"
+                                class="text-4xl text-gray-300"></iconify-icon>
                             <p class="mt-2 text-sm font-semibold text-gray-500">Belum ada promosi.</p>
                         </div>
                     @endforelse
@@ -178,7 +193,9 @@
                         <h2 class="text-xl font-black uppercase text-texthighlight">Pelanggan Terbaru</h2>
                         <p class="mt-1 text-sm font-medium text-gray-500">Pelanggan terbaru dari role pelanggan.</p>
                     </div>
-                    <a href="{{ route('marketing.users.index') }}" class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">Lihat Semua</a>
+                    <a href="{{ route('marketing.users.index') }}"
+                        class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">Lihat
+                        Semua</a>
                 </div>
 
                 <div class="divide-y divide-gray-100">
@@ -187,15 +204,18 @@
                             <div>
                                 <p class="font-black text-texthighlight">{{ $customer->name }}</p>
                                 <p class="mt-1 text-sm font-semibold text-gray-600">{{ $customer->email }}</p>
-                                <p class="text-xs text-gray-500">{{ $customer->phone ?? 'Tanpa telepon' }} · {{ $customer->created_at->format('d M Y') }}</p>
+                                <p class="text-xs text-gray-500">{{ $customer->phone ?? 'Tanpa telepon' }} ·
+                                    {{ $customer->created_at->format('d M Y') }}</p>
                             </div>
-                            <span class="shrink-0 rounded-full px-3 py-1 text-xs font-bold {{ $customer->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
+                            <span
+                                class="shrink-0 rounded-full px-3 py-1 text-xs font-bold {{ $customer->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700' }}">
                                 {{ $customer->is_active ? 'Aktif' : 'Nonaktif' }}
                             </span>
                         </div>
                     @empty
                         <div class="px-5 py-12 text-center">
-                            <iconify-icon icon="mdi:account-search-outline" class="text-4xl text-gray-300"></iconify-icon>
+                            <iconify-icon icon="mdi:account-search-outline"
+                                class="text-4xl text-gray-300"></iconify-icon>
                             <p class="mt-2 text-sm font-semibold text-gray-500">Belum ada pelanggan.</p>
                         </div>
                     @endforelse

@@ -1,5 +1,5 @@
 <x-admin-layout>
-    <div class="flex flex-col gap-6">
+    <div class="flex h-full min-h-0 flex-col gap-6">
         <div class="flex items-center gap-1 text-xs">
             <p class="tracking-wider">ADMIN</p>
             <p>></p>
@@ -17,7 +17,7 @@
             </x-button>
         </div>
 
-        <div class="w-full overflow-hidden border border-[#f2c8d0] bg-white shadow-sm">
+        <div class="flex min-h-0 w-full flex-1 flex-col overflow-hidden border border-[#f2c8d0] bg-white shadow-sm">
             <div
                 class="flex flex-col gap-3 border-b border-[#f2c8d0] bg-[#fff7f8] p-5 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -37,7 +37,7 @@
                 </form>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="min-h-0 flex-1 overflow-auto">
                 <table class="w-full min-w-[900px]">
                     <thead>
                         <tr
@@ -113,7 +113,7 @@
             </div>
 
             @if ($users->hasPages())
-                <div class="border-t border-gray-100 px-5 py-4">
+                <div class="border-t border-gray-100 bg-white px-5 py-4">
                     {{ $users->links() }}
                 </div>
             @endif

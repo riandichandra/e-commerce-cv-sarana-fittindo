@@ -24,11 +24,11 @@
         </div>
 
         <div>
-            <label for="password" class="text-sm font-bold text-[#10233d]">Kata Sandi</label>
+            <label for="password" class="text-sm font-bold text-[#10233d]">Kata sandi</label>
             <div class="mt-2 flex items-center border border-[#f2c8d0] bg-[#fff7f8] px-4 focus-within:border-[#c8102e] focus-within:bg-white">
                 <iconify-icon icon="mdi:lock-outline" class="mr-3 text-[#6b7c91]"></iconify-icon>
                 <input id="password" type="password" name="password" required autocomplete="current-password"
-                    placeholder="Masukkan password"
+                    placeholder="Masukkan kata sandi"
                     class="h-12 w-full border-0 bg-transparent p-0 text-sm text-[#10233d] placeholder:text-[#8ea0b8] focus:ring-0">
             </div>
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
@@ -37,19 +37,19 @@
         <div class="flex items-center justify-between gap-4">
             <label for="remember_me" class="inline-flex items-center">
                 <input id="remember_me" type="checkbox" class="border-[#ef9aaa] text-[#c8102e] focus:ring-[#c8102e]" name="remember">
-                <span class="ms-2 text-sm font-medium text-[#657891]">Remember me</span>
+                <span class="ms-2 text-sm font-medium text-[#657891]">Ingat saya</span>
             </label>
 
             @if (Route::has('password.request'))
                 <a class="text-sm font-bold text-[#c8102e] hover:text-[#9f0d24]" href="{{ route('password.request') }}">
-                    Lupa password?
+                    Lupa kata sandi?
                 </a>
             @endif
         </div>
 
         <button type="submit"
             class="flex h-12 w-full items-center justify-center bg-[#c8102e] text-sm font-black uppercase tracking-[.18em] text-white transition hover:bg-[#9f0d24]">
-            Log In
+            Masuk
         </button>
 
         <p class="text-center text-sm text-[#657891]">

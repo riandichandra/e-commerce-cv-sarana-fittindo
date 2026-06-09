@@ -45,22 +45,22 @@
 
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
-                <label for="password" class="text-sm font-bold text-[#10233d]">Kata Sandi</label>
+                <label for="password" class="text-sm font-bold text-[#10233d]">Kata sandi</label>
                 <div class="mt-2 flex items-center border border-[#f2c8d0] bg-[#fff7f8] px-4 focus-within:border-[#c8102e] focus-within:bg-white">
                     <iconify-icon icon="mdi:lock-outline" class="mr-3 text-[#6b7c91]"></iconify-icon>
                     <input id="password" type="password" name="password" required autocomplete="new-password"
-                        placeholder="Kata Sandi"
+                        placeholder="Masukkan kata sandi"
                         class="h-12 w-full border-0 bg-transparent p-0 text-sm text-[#10233d] placeholder:text-[#8ea0b8] focus:ring-0">
                 </div>
                 <x-input-error :messages="$errors->get('password')" class="mt-2" />
             </div>
 
             <div>
-                <label for="password_confirmation" class="text-sm font-bold text-[#10233d]">Konfirmasi</label>
+                <label for="password_confirmation" class="text-sm font-bold text-[#10233d]">Konfirmasi kata sandi</label>
                 <div class="mt-2 flex items-center border border-[#f2c8d0] bg-[#fff7f8] px-4 focus-within:border-[#c8102e] focus-within:bg-white">
                     <iconify-icon icon="mdi:lock-check-outline" class="mr-3 text-[#6b7c91]"></iconify-icon>
                     <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password"
-                        placeholder="Ulangi password"
+                        placeholder="Ulangi kata sandi"
                         class="h-12 w-full border-0 bg-transparent p-0 text-sm text-[#10233d] placeholder:text-[#8ea0b8] focus:ring-0">
                 </div>
                 <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
@@ -74,7 +74,7 @@
 
         <p class="text-center text-sm text-[#657891]">
             Sudah memiliki akun?
-            <a href="{{ route('login') }}" class="font-black text-[#c8102e] hover:text-[#9f0d24]">Log In</a>
+            <a href="{{ route('login') }}" class="font-black text-[#c8102e] hover:text-[#9f0d24]">Masuk</a>
         </p>
     </form>
 </x-guest-layout>

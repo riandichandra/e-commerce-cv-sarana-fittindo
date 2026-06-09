@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UserAddress extends Model
 {
@@ -48,5 +49,10 @@ class UserAddress extends Model
     public function village(): BelongsTo
     {
         return $this->belongsTo(Village::class);
+    }
+
+    public function deliveries(): HasMany
+    {
+        return $this->hasMany(Delivery::class, 'address_id');
     }
 }
