@@ -1,24 +1,22 @@
 @php
     $selectedAddressId = (string) old('shipping_address_id', optional($addresses->firstWhere('is_main', true))->id);
+    $selectedProvinceId = (string) old('shipping_province_id');
+    $selectedCityId = (string) old('shipping_city_id');
+    $selectedDistrictId = (string) old('shipping_district_id');
+    $selectedVillageId = (string) old('shipping_village_id');
     $addressOptions = $addresses->map(fn ($address) => [
         'id' => (string) $address->id,
         'label' => $address->label,
         'receiver_name' => $address->receiver_name,
         'receiver_phone' => $address->receiver_phone,
         'full_address' => $address->full_address,
-        'province' => $address->province?->name,
-        'city' => $address->regency?->name,
-        'district' => $address->district?->name,
-        'village' => $address->village?->name,
+        'province' => $address->province_display_name,
+        'city' => $address->city_display_name,
+        'district' => $address->district_display_name,
+        'village' => $address->village_display_name,
         'postal_code' => $address->postal_code,
         'is_main' => $address->is_main,
-        'summary' => collect([
-            $address->village?->name,
-            $address->district?->name,
-            $address->regency?->name,
-            $address->province?->name,
-            $address->postal_code,
-        ])->filter()->join(', '),
+        'summary' => $address->region_summary,
     ])->values();
 @endphp
 
@@ -50,6 +48,8 @@
                 class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]"
                 x-data="{
                     addresses: @js($addressOptions),
+                    hasPaymentMethods: @js($paymentMethods->isNotEmpty()),
+                    rajaOngkirConfigured: @js($hasRajaOngkirConfig),
                     subtotalAfterDiscount: @js((float) $discountSummary['subtotal_after_discount']),
                     selectedAddressId: @js($selectedAddressId),
                     shippingNama: @js(old('shipping_name', auth()->user()->name)),
@@ -60,11 +60,68 @@
                     shippingDistrict: @js(old('shipping_district')),
                     shippingVillage: @js(old('shipping_village')),
                     shippingPostalCode: @js(old('shipping_postal_code')),
+                    shippingProvinceId: @js($selectedProvinceId),
+                    shippingCityId: @js($selectedCityId),
+                    shippingDistrictId: @js($selectedDistrictId),
+                    shippingVillageId: @js($selectedVillageId),
+                    provinces: [],
+                    regencies: [],
+                    districts: [],
+                    villages: [],
+                    regionError: '',
+                    loadingProvinces: false,
+                    loadingRegencies: false,
+                    loadingDistricts: false,
+                    loadingVillages: false,
+                    regionUrls: {
+                        provinces: @js(route('regions.provinces.index')),
+                        regencies: @js(route('regions.regencies.index', ['province' => '__province__'])),
+                        districts: @js(route('regions.districts.index', ['regency' => '__regency__'])),
+                        villages: @js(route('regions.villages.index', ['district' => '__district__'])),
+                    },
+                    async initCheckout() {
+                        this.applySelectedAddress(false);
+                        await this.initRegions();
+                    },
+                    async initRegions() {
+                        if (! this.rajaOngkirConfigured) {
+                            this.regionError = 'API key RajaOngkir belum dikonfigurasi.';
+                            return;
+                        }
+
+                        await this.loadProvinces();
+
+                        if (this.shippingProvinceId) {
+                            await this.loadRegencies();
+                        }
+
+                        if (this.shippingCityId) {
+                            await this.loadDistricts();
+                        }
+
+                        if (this.shippingDistrictId) {
+                            await this.loadVillages();
+                        }
+
+                        this.syncRegionNames();
+                    },
                     selectedAddress() {
                         return this.addresses.find((address) => address.id === this.selectedAddressId);
                     },
+                    manualShippingActive() {
+                        return ! Boolean(this.selectedAddressId);
+                    },
                     hasManualShipping() {
-                        return Boolean(this.shippingAddress || this.shippingProvince || this.shippingCity || this.shippingDistrict || this.shippingVillage || this.shippingPostalCode);
+                        return Boolean(this.shippingAddress || this.shippingProvince || this.shippingCity || this.shippingDistrict || this.shippingVillage || this.shippingPostalCode || this.shippingProvinceId || this.shippingCityId || this.shippingDistrictId || this.shippingVillageId);
+                    },
+                    addressSelectionChanged() {
+                        if (this.selectedAddressId) {
+                            this.applySelectedAddress(true);
+                            return;
+                        }
+
+                        this.shippingAddress = '';
+                        this.clearRegionSelection();
                     },
                     applySelectedAddress(force = true) {
                         const address = this.selectedAddress();
@@ -81,9 +138,165 @@
                         this.shippingDistrict = address.district || '';
                         this.shippingVillage = address.village || '';
                         this.shippingPostalCode = address.postal_code || '';
+                        this.clearRegionIds();
                     },
                     clearSelectedAddress() {
                         this.selectedAddressId = '';
+                    },
+                    clearRegionIds() {
+                        this.shippingProvinceId = '';
+                        this.shippingCityId = '';
+                        this.shippingDistrictId = '';
+                        this.shippingVillageId = '';
+                        this.regencies = [];
+                        this.districts = [];
+                        this.villages = [];
+                    },
+                    clearRegionSelection() {
+                        this.clearRegionIds();
+                        this.shippingProvince = '';
+                        this.shippingCity = '';
+                        this.shippingDistrict = '';
+                        this.shippingVillage = '';
+                        this.shippingPostalCode = '';
+                    },
+                    async fetchRegions(url) {
+                        this.regionError = '';
+
+                        try {
+                            const response = await fetch(url, {
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                            });
+                            const payload = await response.json().catch(() => null);
+
+                            if (! response.ok) {
+                                throw new Error(payload?.message || 'Gagal memuat data wilayah.');
+                            }
+
+                            return Array.isArray(payload) ? payload : [];
+                        } catch (error) {
+                            this.regionError = error.message || 'Gagal memuat data wilayah.';
+                            return [];
+                        }
+                    },
+                    regionById(items, id) {
+                        return items.find((item) => String(item.id) === String(id));
+                    },
+                    setRegionName(items, id, target) {
+                        const region = this.regionById(items, id);
+
+                        if (region) {
+                            this[target] = region.name || '';
+                        } else if (! id) {
+                            this[target] = '';
+                        }
+                    },
+                    syncRegionNames() {
+                        this.setRegionName(this.provinces, this.shippingProvinceId, 'shippingProvince');
+                        this.setRegionName(this.regencies, this.shippingCityId, 'shippingCity');
+                        this.setRegionName(this.districts, this.shippingDistrictId, 'shippingDistrict');
+                        this.setRegionName(this.villages, this.shippingVillageId, 'shippingVillage');
+                    },
+                    async loadProvinces() {
+                        this.loadingProvinces = true;
+                        this.provinces = await this.fetchRegions(this.regionUrls.provinces);
+                        this.loadingProvinces = false;
+                        this.setRegionName(this.provinces, this.shippingProvinceId, 'shippingProvince');
+                    },
+                    async provinceChanged() {
+                        this.clearSelectedAddress();
+                        this.shippingCityId = '';
+                        this.shippingDistrictId = '';
+                        this.shippingVillageId = '';
+                        this.regencies = [];
+                        this.districts = [];
+                        this.villages = [];
+                        this.shippingCity = '';
+                        this.shippingDistrict = '';
+                        this.shippingVillage = '';
+                        this.shippingPostalCode = '';
+                        this.setRegionName(this.provinces, this.shippingProvinceId, 'shippingProvince');
+
+                        if (! this.shippingProvinceId) {
+                            this.shippingProvince = '';
+                            return;
+                        }
+
+                        await this.loadRegencies();
+                    },
+                    async loadRegencies() {
+                        this.loadingRegencies = true;
+                        this.regencies = await this.fetchRegions(this.regionUrls.regencies.replace('__province__', this.shippingProvinceId));
+                        this.loadingRegencies = false;
+                        this.setRegionName(this.regencies, this.shippingCityId, 'shippingCity');
+                    },
+                    async regencyChanged() {
+                        this.clearSelectedAddress();
+                        this.shippingDistrictId = '';
+                        this.shippingVillageId = '';
+                        this.districts = [];
+                        this.villages = [];
+                        this.shippingDistrict = '';
+                        this.shippingVillage = '';
+                        this.shippingPostalCode = '';
+                        this.setRegionName(this.regencies, this.shippingCityId, 'shippingCity');
+
+                        if (! this.shippingCityId) {
+                            this.shippingCity = '';
+                            return;
+                        }
+
+                        await this.loadDistricts();
+                    },
+                    async loadDistricts() {
+                        this.loadingDistricts = true;
+                        this.districts = await this.fetchRegions(this.regionUrls.districts.replace('__regency__', this.shippingCityId));
+                        this.loadingDistricts = false;
+                        this.setRegionName(this.districts, this.shippingDistrictId, 'shippingDistrict');
+                    },
+                    async districtChanged() {
+                        this.clearSelectedAddress();
+                        this.shippingVillageId = '';
+                        this.villages = [];
+                        this.shippingVillage = '';
+                        this.shippingPostalCode = '';
+                        this.setRegionName(this.districts, this.shippingDistrictId, 'shippingDistrict');
+
+                        if (! this.shippingDistrictId) {
+                            this.shippingDistrict = '';
+                            return;
+                        }
+
+                        await this.loadVillages();
+                    },
+                    async loadVillages() {
+                        this.loadingVillages = true;
+                        this.villages = await this.fetchRegions(this.regionUrls.villages.replace('__district__', this.shippingDistrictId));
+                        this.loadingVillages = false;
+                        this.setRegionName(this.villages, this.shippingVillageId, 'shippingVillage');
+                    },
+                    villageChanged() {
+                        this.clearSelectedAddress();
+                        const village = this.regionById(this.villages, this.shippingVillageId);
+                        this.shippingVillage = village?.name || '';
+                        this.shippingPostalCode = village?.postal_code || '';
+                    },
+                    isRegionBusy() {
+                        return this.loadingProvinces || this.loadingRegencies || this.loadingDistricts || this.loadingVillages;
+                    },
+                    canSubmit() {
+                        if (! this.hasPaymentMethods) {
+                            return false;
+                        }
+
+                        if (this.selectedAddressId) {
+                            return true;
+                        }
+
+                        return this.rajaOngkirConfigured && ! this.isRegionBusy();
                     },
                     isPalembangCity() {
                         const city = (this.shippingCity || '').toLowerCase().replace('kota ', '').replace('kabupaten ', '').trim();
@@ -92,7 +305,7 @@
                     },
                     shippingCostLabel() {
                         if (! this.shippingCity) {
-                            return 'Pilih atau isi kota pengiriman';
+                            return 'Pilih kota pengiriman';
                         }
 
                         return this.isPalembangCity() ? 'Rp 20.000' : 'Menunggu konfirmasi admin';
@@ -103,7 +316,7 @@
                         return new Intl.NumberFormat('id-ID').format(total);
                     },
                 }"
-                x-init="applySelectedAddress(false)"
+                x-init="initCheckout()"
             >
                 @csrf
 
@@ -114,7 +327,7 @@
                         <div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
                             <div class="md:col-span-2">
                                 <label for="shipping_address_id" class="text-sm font-bold text-[#10233d]">Pilih alamat tersimpan</label>
-                                <select id="shipping_address_id" name="shipping_address_id" x-model="selectedAddressId" x-on:change="applySelectedAddress(true)"
+                                <select id="shipping_address_id" name="shipping_address_id" x-model="selectedAddressId" x-on:change="addressSelectionChanged()"
                                     class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
                                     <option value="">Isi alamat manual</option>
                                     <template x-for="address in addresses" :key="address.id">
@@ -125,6 +338,9 @@
                                 @if ($addresses->isEmpty())
                                     <p class="mt-2 text-xs font-semibold text-[#657891]">Belum ada alamat tersimpan di profil. Anda tetap bisa mengisi alamat secara manual.</p>
                                 @endif
+                                @unless ($hasRajaOngkirConfig)
+                                    <p class="mt-2 text-xs font-semibold text-red-700">API key RajaOngkir belum dikonfigurasi. Alamat manual belum dapat digunakan sampai variabel RAJAONGKIR_API_KEY diisi.</p>
+                                @endunless
                             </div>
 
                             <div>
@@ -148,32 +364,69 @@
                                 <x-input-error :messages="$errors->get('shipping_address')" class="mt-2" />
                             </div>
 
-                            <div>
-                                <label for="shipping_province" class="text-sm font-bold text-[#10233d]">Provinsi</label>
-                                <input id="shipping_province" name="shipping_province" type="text" x-model="shippingProvince" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
-                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
-                                <x-input-error :messages="$errors->get('shipping_province')" class="mt-2" />
+                            <input type="hidden" name="shipping_province" x-model="shippingProvince">
+                            <input type="hidden" name="shipping_city" x-model="shippingCity">
+                            <input type="hidden" name="shipping_district" x-model="shippingDistrict">
+                            <input type="hidden" name="shipping_village" x-model="shippingVillage">
+
+                            <div x-show="manualShippingActive() && regionError" x-cloak class="border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700 md:col-span-2">
+                                <span x-text="regionError"></span>
                             </div>
 
                             <div>
-                                <label for="shipping_city" class="text-sm font-bold text-[#10233d]">Kota/Kabupaten</label>
-                                <input id="shipping_city" name="shipping_city" type="text" x-model="shippingCity" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
-                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
-                                <x-input-error :messages="$errors->get('shipping_city')" class="mt-2" />
+                                <label for="shipping_province_id" class="text-sm font-bold text-[#10233d]">Provinsi</label>
+                                <input type="text" x-show="selectedAddressId" x-cloak x-model="shippingProvince" readonly
+                                    class="mt-2 w-full border-[#d8e2f0] bg-[#f7faff] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
+                                <select id="shipping_province_id" name="shipping_province_id" x-show="! selectedAddressId" x-model="shippingProvinceId" x-on:change="provinceChanged()" x-bind:required="manualShippingActive()" x-bind:disabled="! rajaOngkirConfigured || loadingProvinces"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] disabled:bg-[#f7faff]">
+                                    <option value="" x-text="loadingProvinces ? 'Memuat provinsi...' : 'Pilih provinsi'"></option>
+                                    <template x-for="province in provinces" :key="province.id">
+                                        <option :value="province.id" x-text="province.name"></option>
+                                    </template>
+                                </select>
+                                <x-input-error :messages="$errors->get('shipping_province_id')" class="mt-2" />
                             </div>
 
                             <div>
-                                <label for="shipping_district" class="text-sm font-bold text-[#10233d]">Kecamatan</label>
-                                <input id="shipping_district" name="shipping_district" type="text" x-model="shippingDistrict" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
-                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
-                                <x-input-error :messages="$errors->get('shipping_district')" class="mt-2" />
+                                <label for="shipping_city_id" class="text-sm font-bold text-[#10233d]">Kota/Kabupaten</label>
+                                <input type="text" x-show="selectedAddressId" x-cloak x-model="shippingCity" readonly
+                                    class="mt-2 w-full border-[#d8e2f0] bg-[#f7faff] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
+                                <select id="shipping_city_id" name="shipping_city_id" x-show="! selectedAddressId" x-model="shippingCityId" x-on:change="regencyChanged()" x-bind:required="manualShippingActive()" x-bind:disabled="! rajaOngkirConfigured || ! shippingProvinceId || loadingRegencies"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] disabled:bg-[#f7faff]">
+                                    <option value="" x-text="loadingRegencies ? 'Memuat kabupaten/kota...' : 'Pilih kabupaten/kota'"></option>
+                                    <template x-for="regency in regencies" :key="regency.id">
+                                        <option :value="regency.id" x-text="regency.name"></option>
+                                    </template>
+                                </select>
+                                <x-input-error :messages="$errors->get('shipping_city_id')" class="mt-2" />
                             </div>
 
                             <div>
-                                <label for="shipping_village" class="text-sm font-bold text-[#10233d]">Desa/Kelurahan</label>
-                                <input id="shipping_village" name="shipping_village" type="text" x-model="shippingVillage" x-bind:readonly="Boolean(selectedAddressId)" x-on:input="clearSelectedAddress()"
-                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] read-only:bg-[#f7faff]">
-                                <x-input-error :messages="$errors->get('shipping_village')" class="mt-2" />
+                                <label for="shipping_district_id" class="text-sm font-bold text-[#10233d]">Kecamatan</label>
+                                <input type="text" x-show="selectedAddressId" x-cloak x-model="shippingDistrict" readonly
+                                    class="mt-2 w-full border-[#d8e2f0] bg-[#f7faff] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
+                                <select id="shipping_district_id" name="shipping_district_id" x-show="! selectedAddressId" x-model="shippingDistrictId" x-on:change="districtChanged()" x-bind:required="manualShippingActive()" x-bind:disabled="! rajaOngkirConfigured || ! shippingCityId || loadingDistricts"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] disabled:bg-[#f7faff]">
+                                    <option value="" x-text="loadingDistricts ? 'Memuat kecamatan...' : 'Pilih kecamatan'"></option>
+                                    <template x-for="district in districts" :key="district.id">
+                                        <option :value="district.id" x-text="district.name"></option>
+                                    </template>
+                                </select>
+                                <x-input-error :messages="$errors->get('shipping_district_id')" class="mt-2" />
+                            </div>
+
+                            <div>
+                                <label for="shipping_village_id" class="text-sm font-bold text-[#10233d]">Desa/Kelurahan</label>
+                                <input type="text" x-show="selectedAddressId" x-cloak x-model="shippingVillage" readonly
+                                    class="mt-2 w-full border-[#d8e2f0] bg-[#f7faff] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
+                                <select id="shipping_village_id" name="shipping_village_id" x-show="! selectedAddressId" x-model="shippingVillageId" x-on:change="villageChanged()" x-bind:required="manualShippingActive()" x-bind:disabled="! rajaOngkirConfigured || ! shippingDistrictId || loadingVillages"
+                                    class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e] disabled:bg-[#f7faff]">
+                                    <option value="" x-text="loadingVillages ? 'Memuat desa/kelurahan...' : 'Pilih desa/kelurahan'"></option>
+                                    <template x-for="village in villages" :key="village.id">
+                                        <option :value="village.id" x-text="village.name"></option>
+                                    </template>
+                                </select>
+                                <x-input-error :messages="$errors->get('shipping_village_id')" class="mt-2" />
                             </div>
 
                             <div>
@@ -286,7 +539,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" @disabled($paymentMethods->isEmpty())
+                    <button type="submit" x-bind:disabled="! canSubmit()" @disabled($paymentMethods->isEmpty() || (! $hasRajaOngkirConfig && $selectedAddressId === ''))
                         class="mt-7 flex h-11 w-full items-center justify-center bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24] disabled:cursor-not-allowed disabled:bg-gray-400">
                         Checkout
                     </button>

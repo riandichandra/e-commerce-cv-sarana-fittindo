@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Services\RajaOngkirService;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -103,6 +104,7 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create();
         $location = $this->createLocation();
+        $this->mockRajaOngkirRegions();
 
         $createResponse = $this
             ->actingAs($user)
@@ -126,6 +128,11 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($address);
         $this->assertTrue($address->is_main);
+        $this->assertSame('DKI Jakarta', $address->province_name);
+        $this->assertSame('Jakarta Selatan', $address->city_name);
+        $this->assertSame('Kebayoran Baru', $address->district_name);
+        $this->assertSame('Senayan', $address->village_name);
+        $this->assertSame('rajaongkir', $address->region_source);
 
         $updateResponse = $this
             ->actingAs($user)
@@ -260,6 +267,7 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create();
         $location = $this->createLocation();
+        $this->mockRajaOngkirRegions();
         $firstAddress = $user->addresses()->create([
             'label' => 'Rumah',
             'receiver_name' => 'Budi',
@@ -413,24 +421,17 @@ class ProfileTest extends TestCase
     public function test_region_dropdown_endpoints_return_only_child_regions(): void
     {
         $user = User::factory()->create();
-        $location = $this->createLocation();
-
-        DB::table('provinces')->insert(['id' => 2, 'name' => 'Jawa Barat']);
-        DB::table('regencies')->insert([
-            ['id' => 2, 'province_id' => $location['province_id'], 'name' => 'Jakarta Timur'],
-            ['id' => 3, 'province_id' => 2, 'name' => 'Bandung'],
-        ]);
-        DB::table('districts')->insert([
-            ['id' => 2, 'regency_id' => $location['regency_id'], 'name' => 'Setiabudi'],
-            ['id' => 3, 'regency_id' => 3, 'name' => 'Coblong'],
-        ]);
-        DB::table('villages')->insert([
-            ['id' => 2, 'district_id' => $location['district_id'], 'name' => 'Gandaria Utara'],
-            ['id' => 3, 'district_id' => 3, 'name' => 'Dago'],
-        ]);
+        $this->mockRajaOngkirRegions();
 
         $this->actingAs($user)
-            ->getJson("/regions/provinces/{$location['province_id']}/regencies")
+            ->getJson('/regions/provinces')
+            ->assertOk()
+            ->assertJsonCount(2)
+            ->assertJsonFragment(['name' => 'DKI Jakarta'])
+            ->assertJsonFragment(['name' => 'Jawa Barat']);
+
+        $this->actingAs($user)
+            ->getJson('/regions/provinces/1/regencies')
             ->assertOk()
             ->assertJsonCount(2)
             ->assertJsonFragment(['name' => 'Jakarta Selatan'])
@@ -438,7 +439,7 @@ class ProfileTest extends TestCase
             ->assertJsonMissing(['name' => 'Bandung']);
 
         $this->actingAs($user)
-            ->getJson("/regions/regencies/{$location['regency_id']}/districts")
+            ->getJson('/regions/regencies/1/districts')
             ->assertOk()
             ->assertJsonCount(2)
             ->assertJsonFragment(['name' => 'Kebayoran Baru'])
@@ -446,7 +447,7 @@ class ProfileTest extends TestCase
             ->assertJsonMissing(['name' => 'Coblong']);
 
         $this->actingAs($user)
-            ->getJson("/regions/districts/{$location['district_id']}/villages")
+            ->getJson('/regions/districts/1/villages')
             ->assertOk()
             ->assertJsonCount(2)
             ->assertJsonFragment(['name' => 'Senayan'])
@@ -467,6 +468,49 @@ class ProfileTest extends TestCase
             'district_id' => 1,
             'village_id' => 1,
         ];
+    }
+
+    private function mockRajaOngkirRegions(): void
+    {
+        $this->mock(RajaOngkirService::class, function ($mock): void {
+            $mock->shouldReceive('isConfigured')->zeroOrMoreTimes()->andReturn(true);
+            $mock->shouldReceive('provinces')->zeroOrMoreTimes()->andReturn([
+                ['id' => '1', 'name' => 'DKI Jakarta', 'postal_code' => null],
+                ['id' => '2', 'name' => 'Jawa Barat', 'postal_code' => null],
+            ]);
+            $mock->shouldReceive('cities')->zeroOrMoreTimes()->with('1')->andReturn([
+                ['id' => '1', 'name' => 'Jakarta Selatan', 'postal_code' => null],
+                ['id' => '2', 'name' => 'Jakarta Timur', 'postal_code' => null],
+            ]);
+            $mock->shouldReceive('districts')->zeroOrMoreTimes()->with('1')->andReturn([
+                ['id' => '1', 'name' => 'Kebayoran Baru', 'postal_code' => null],
+                ['id' => '2', 'name' => 'Setiabudi', 'postal_code' => null],
+            ]);
+            $mock->shouldReceive('subdistricts')->zeroOrMoreTimes()->with('1')->andReturn([
+                ['id' => '1', 'name' => 'Senayan', 'postal_code' => '12345'],
+                ['id' => '2', 'name' => 'Gandaria Utara', 'postal_code' => '12140'],
+            ]);
+            $mock->shouldReceive('findProvince')->zeroOrMoreTimes()->with('1')->andReturn([
+                'id' => '1',
+                'name' => 'DKI Jakarta',
+                'postal_code' => null,
+            ]);
+            $mock->shouldReceive('findCity')->zeroOrMoreTimes()->with('1', '1')->andReturn([
+                'id' => '1',
+                'name' => 'Jakarta Selatan',
+                'postal_code' => null,
+            ]);
+            $mock->shouldReceive('findDistrict')->zeroOrMoreTimes()->with('1', '1')->andReturn([
+                'id' => '1',
+                'name' => 'Kebayoran Baru',
+                'postal_code' => null,
+            ]);
+            $mock->shouldReceive('findSubdistrict')->zeroOrMoreTimes()->with('1', '1')->andReturn([
+                'id' => '1',
+                'name' => 'Senayan',
+                'postal_code' => '12345',
+            ]);
+        });
     }
 
     private function makeCustomer(): User

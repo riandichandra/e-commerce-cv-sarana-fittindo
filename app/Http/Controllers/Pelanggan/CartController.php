@@ -10,9 +10,12 @@ use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Services\PromotionDiscountService;
+use App\Services\RajaOngkirService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class CartController extends Controller
 {
@@ -90,7 +93,7 @@ class CartController extends Controller
         return back()->with('success', 'Produk berhasil dihapus dari keranjang.');
     }
 
-    public function checkoutForm(Request $request, PromotionDiscountService $promotionDiscountService)
+    public function checkoutForm(Request $request, PromotionDiscountService $promotionDiscountService, RajaOngkirService $rajaOngkir)
     {
         $cart = Cart::getForUser($request->user());
         $cart->load(['items.product.images', 'items.product.category']);
@@ -114,31 +117,14 @@ class CartController extends Controller
             ->get();
 
         $discountSummary = $promotionDiscountService->bestForSubtotal((float) $cart->subtotal);
+        $hasRajaOngkirConfig = $rajaOngkir->isConfigured();
 
-        return view('pelanggan.cart.checkout', compact('cart', 'paymentMethods', 'addresses', 'discountSummary'));
+        return view('pelanggan.cart.checkout', compact('cart', 'paymentMethods', 'addresses', 'discountSummary', 'hasRajaOngkirConfig'));
     }
 
     public function checkout(Request $request)
     {
-        $validated = $request->validate([
-            'shipping_address_id' => [
-                'nullable',
-                Rule::exists('user_addresses', 'id')->where('user_id', $request->user()->id),
-            ],
-            'shipping_name' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:100'],
-            'shipping_phone' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:20'],
-            'shipping_address' => ['required_without:shipping_address_id', 'nullable', 'string'],
-            'shipping_province' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:100'],
-            'shipping_city' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:100'],
-            'shipping_district' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:100'],
-            'shipping_village' => ['nullable', 'string', 'max:100'],
-            'shipping_postal_code' => ['nullable', 'string', 'max:10'],
-            'payment_method_id' => [
-                'required',
-                Rule::exists('payment_methods', 'id')->where('is_active', true),
-            ],
-            'notes' => ['nullable', 'string'],
-        ]);
+        $validated = $this->validateCheckout($request);
 
         $cart = Cart::getForUser($request->user());
         $cart->load('items.product');
@@ -160,10 +146,10 @@ class CartController extends Controller
                 'shipping_name' => $selectedAddress->receiver_name,
                 'shipping_phone' => $selectedAddress->receiver_phone,
                 'shipping_address' => $selectedAddress->full_address,
-                'shipping_province' => $selectedAddress->province?->name,
-                'shipping_city' => $selectedAddress->regency?->name,
-                'shipping_district' => $selectedAddress->district?->name,
-                'shipping_village' => $selectedAddress->village?->name,
+                'shipping_province' => $selectedAddress->province_display_name,
+                'shipping_city' => $selectedAddress->city_display_name,
+                'shipping_district' => $selectedAddress->district_display_name,
+                'shipping_village' => $selectedAddress->village_display_name,
                 'shipping_postal_code' => $selectedAddress->postal_code,
             ];
         }
@@ -269,5 +255,97 @@ class CartController extends Controller
         return redirect()
             ->route('pelanggan.orders.show', $order)
             ->with('success', $message);
+    }
+
+    private function validateCheckout(Request $request): array
+    {
+        $regionSnapshot = [];
+
+        $validator = Validator::make($request->all(), [
+            'shipping_address_id' => [
+                'nullable',
+                Rule::exists('user_addresses', 'id')->where('user_id', $request->user()->id),
+            ],
+            'shipping_name' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:100'],
+            'shipping_phone' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:20'],
+            'shipping_address' => ['required_without:shipping_address_id', 'nullable', 'string'],
+            'shipping_province_id' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:32'],
+            'shipping_city_id' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:32'],
+            'shipping_district_id' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:32'],
+            'shipping_village_id' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:32'],
+            'shipping_province' => ['nullable', 'string', 'max:100'],
+            'shipping_city' => ['nullable', 'string', 'max:100'],
+            'shipping_district' => ['nullable', 'string', 'max:100'],
+            'shipping_village' => ['nullable', 'string', 'max:100'],
+            'shipping_postal_code' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:10'],
+            'payment_method_id' => [
+                'required',
+                Rule::exists('payment_methods', 'id')->where('is_active', true),
+            ],
+            'notes' => ['nullable', 'string'],
+        ]);
+
+        $validator->after(function ($validator) use ($request, &$regionSnapshot) {
+            if ($validator->errors()->any() || $request->filled('shipping_address_id')) {
+                return;
+            }
+
+            $rajaOngkir = app(RajaOngkirService::class);
+
+            if (! $rajaOngkir->isConfigured()) {
+                $validator->errors()->add('shipping_province_id', 'API key RajaOngkir belum dikonfigurasi.');
+
+                return;
+            }
+
+            try {
+                $regions = $rajaOngkir->resolveRegionChain(
+                    (string) $request->input('shipping_province_id'),
+                    (string) $request->input('shipping_city_id'),
+                    (string) $request->input('shipping_district_id'),
+                    (string) $request->input('shipping_village_id'),
+                );
+
+                if (! $regions['province']) {
+                    $validator->errors()->add('shipping_province_id', 'Provinsi tidak ditemukan di RajaOngkir.');
+                }
+
+                if (! $regions['city']) {
+                    $validator->errors()->add('shipping_city_id', 'Kabupaten/kota tidak sesuai dengan provinsi.');
+                }
+
+                if (! $regions['district']) {
+                    $validator->errors()->add('shipping_district_id', 'Kecamatan tidak sesuai dengan kabupaten/kota.');
+                }
+
+                if (! $regions['subdistrict']) {
+                    $validator->errors()->add('shipping_village_id', 'Desa/kelurahan tidak sesuai dengan kecamatan.');
+                }
+
+                if ($validator->errors()->any()) {
+                    return;
+                }
+
+                $postalCode = $regions['subdistrict']['postal_code'] ?? null;
+
+                $regionSnapshot = [
+                    'shipping_province' => $regions['province']['name'],
+                    'shipping_city' => $regions['city']['name'],
+                    'shipping_district' => $regions['district']['name'],
+                    'shipping_village' => $regions['subdistrict']['name'],
+                ];
+
+                if (filled($postalCode)) {
+                    $regionSnapshot['shipping_postal_code'] = (string) $postalCode;
+                }
+            } catch (Throwable) {
+                $validator->errors()->add('shipping_province_id', 'Gagal memvalidasi wilayah ke RajaOngkir. Coba beberapa saat lagi.');
+            }
+        });
+
+        return [
+            ...$validator->validate(),
+            ...$regionSnapshot,
+        ];
     }
 }

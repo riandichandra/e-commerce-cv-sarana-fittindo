@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\ProductCategory;
+use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
@@ -13,7 +12,26 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        ProductCategory::insert([
+        $legacySlugs = [
+            'pelapis' => 'laminate',
+            'perekat' => 'adhesives',
+        ];
+
+        foreach ($legacySlugs as $legacySlug => $currentSlug) {
+            if (
+                DB::table('product_categories')->where('slug', $legacySlug)->exists()
+                && ! DB::table('product_categories')->where('slug', $currentSlug)->exists()
+            ) {
+                DB::table('product_categories')
+                    ->where('slug', $legacySlug)
+                    ->update([
+                        'slug' => $currentSlug,
+                        'updated_at' => now(),
+                    ]);
+            }
+        }
+
+        $categories = [
             [
                 "name" => "HPL",
                 "slug" => "hpl",
@@ -32,7 +50,7 @@ class CategorySeeder extends Seeder
             ],
             [
                 "name" => "Pelapis",
-                "slug" => "pelapis",
+                "slug" => "laminate",
                 "description" => "Pelapis",
                 "is_active" => 1,
                 "created_at" => now(),
@@ -40,12 +58,19 @@ class CategorySeeder extends Seeder
             ],
             [
                 "name" => "Perekat",
-                "slug" => "perekat",
+                "slug" => "adhesives",
                 "description" => "Perekat",
                 "is_active" => 1,
                 "created_at" => now(),
                 "updated_at" => now(),
             ],
-        ]);
+        ];
+
+        foreach ($categories as $category) {
+            DB::table('product_categories')->updateOrInsert(
+                ['slug' => $category['slug']],
+                $category
+            );
+        }
     }
 }

@@ -1,8 +1,11 @@
 @php
-    $selectedProvince = (string) old('province_id', $editingAddress?->province_id);
-    $selectedRegency = (string) old('regency_id', $editingAddress?->regency_id);
-    $selectedDistrict = (string) old('district_id', $editingAddress?->district_id);
-    $selectedVillage = (string) old('village_id', $editingAddress?->village_id);
+    $storedRegionIsRajaOngkir = $editingAddress?->region_source === 'rajaongkir';
+    $selectedProvince = (string) old('province_id', $storedRegionIsRajaOngkir ? $editingAddress?->province_id : '');
+    $selectedRegency = (string) old('regency_id', $storedRegionIsRajaOngkir ? $editingAddress?->regency_id : '');
+    $selectedDistrict = (string) old('district_id', $storedRegionIsRajaOngkir ? $editingAddress?->district_id : '');
+    $selectedVillage = (string) old('village_id', $storedRegionIsRajaOngkir ? $editingAddress?->village_id : '');
+    $needsRegionReselect = $editingAddress && ! $storedRegionIsRajaOngkir && ! session()->hasOldInput('province_id');
+    $editingRegionSummary = $editingAddress?->region_summary;
     $addressAlert = match (session('status')) {
         'address-created' => [
             'tone' => 'success',
@@ -91,11 +94,17 @@
         </div>
     @endif
 
-    @unless ($hasRegionData)
+    @unless ($hasRajaOngkirConfig)
         <div class="mt-6 border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
-            Data provinsi, kabupaten/kota, kecamatan, dan desa/kelurahan belum lengkap. Lengkapi data wilayah terlebih dahulu agar alamat bisa disimpan.
+            API key RajaOngkir belum dikonfigurasi. Isi variabel <span class="font-bold">RAJAONGKIR_API_KEY</span> di file .env agar data wilayah dapat dimuat.
         </div>
     @endunless
+
+    @if ($needsRegionReselect)
+        <div class="mt-6 border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+            Alamat ini masih memakai data wilayah lama: <span class="font-bold">{{ $editingRegionSummary }}</span>. Pilih ulang provinsi sampai desa/kelurahan dari RajaOngkir sebelum menyimpan perubahan.
+        </div>
+    @endif
 
     <form
         method="post"
@@ -103,35 +112,73 @@
         action="{{ $editingAddress ? route('profile.addresses.update', $editingAddress) : route('profile.addresses.store') }}"
         class="mt-6 space-y-6"
         x-data="{
-            provinces: @js($provinces->map(fn ($province) => ['id' => $province->id, 'name' => $province->name])->values()),
-            regencies: @js($regencies->map(fn ($regency) => ['id' => $regency->id, 'name' => $regency->name])->values()),
-            districts: @js($districts->map(fn ($district) => ['id' => $district->id, 'name' => $district->name])->values()),
-            villages: @js($villages->map(fn ($village) => ['id' => $village->id, 'name' => $village->name])->values()),
+            rajaOngkirConfigured: @js($hasRajaOngkirConfig),
+            provinces: [],
+            regencies: [],
+            districts: [],
+            villages: [],
             provinceId: @js($selectedProvince),
             regencyId: @js($selectedRegency),
             districtId: @js($selectedDistrict),
             villageId: @js($selectedVillage),
+            postalCode: @js(old('postal_code', $editingAddress?->postal_code)),
+            regionError: '',
+            loadingProvinces: false,
             loadingRegencies: false,
             loadingDistricts: false,
             loadingVillages: false,
             regionUrls: {
+                provinces: @js(route('regions.provinces.index')),
                 regencies: @js(route('regions.regencies.index', ['province' => '__province__'])),
                 districts: @js(route('regions.districts.index', ['regency' => '__regency__'])),
                 villages: @js(route('regions.villages.index', ['district' => '__district__'])),
             },
-            async fetchRegions(url) {
-                const response = await fetch(url, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                });
-
-                if (! response.ok) {
-                    return [];
+            async initRegions() {
+                if (! this.rajaOngkirConfigured) {
+                    this.regionError = 'API key RajaOngkir belum dikonfigurasi.';
+                    return;
                 }
 
-                return await response.json();
+                await this.loadProvinces();
+
+                if (this.provinceId) {
+                    await this.loadRegencies();
+                }
+
+                if (this.regencyId) {
+                    await this.loadDistricts();
+                }
+
+                if (this.districtId) {
+                    await this.loadVillages();
+                }
+            },
+            async fetchRegions(url) {
+                this.regionError = '';
+
+                try {
+                    const response = await fetch(url, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                    const payload = await response.json().catch(() => null);
+
+                    if (! response.ok) {
+                        throw new Error(payload?.message || 'Gagal memuat data wilayah.');
+                    }
+
+                    return Array.isArray(payload) ? payload : [];
+                } catch (error) {
+                    this.regionError = error.message || 'Gagal memuat data wilayah.';
+                    return [];
+                }
+            },
+            async loadProvinces() {
+                this.loadingProvinces = true;
+                this.provinces = await this.fetchRegions(this.regionUrls.provinces);
+                this.loadingProvinces = false;
             },
             async provinceChanged() {
                 this.regencyId = '';
@@ -145,6 +192,9 @@
                     return;
                 }
 
+                await this.loadRegencies();
+            },
+            async loadRegencies() {
                 this.loadingRegencies = true;
                 this.regencies = await this.fetchRegions(this.regionUrls.regencies.replace('__province__', this.provinceId));
                 this.loadingRegencies = false;
@@ -159,6 +209,9 @@
                     return;
                 }
 
+                await this.loadDistricts();
+            },
+            async loadDistricts() {
                 this.loadingDistricts = true;
                 this.districts = await this.fetchRegions(this.regionUrls.districts.replace('__regency__', this.regencyId));
                 this.loadingDistricts = false;
@@ -171,11 +224,28 @@
                     return;
                 }
 
+                await this.loadVillages();
+            },
+            async loadVillages() {
                 this.loadingVillages = true;
                 this.villages = await this.fetchRegions(this.regionUrls.villages.replace('__district__', this.districtId));
                 this.loadingVillages = false;
             },
+            villageChanged() {
+                const village = this.villages.find((item) => String(item.id) === String(this.villageId));
+
+                if (village?.postal_code) {
+                    this.postalCode = village.postal_code;
+                }
+            },
+            isRegionBusy() {
+                return this.loadingProvinces || this.loadingRegencies || this.loadingDistricts || this.loadingVillages;
+            },
+            canSubmit() {
+                return this.rajaOngkirConfigured && ! this.isRegionBusy();
+            },
         }"
+        x-init="initRegions()"
     >
         @csrf
         @if ($editingAddress)
@@ -203,7 +273,7 @@
 
             <div>
                 <x-input-label for="postal_code" value="Kode Pos" />
-                <x-text-input id="postal_code" name="postal_code" type="text" class="mt-1 block w-full" :value="old('postal_code', $editingAddress?->postal_code)" required />
+                <x-text-input id="postal_code" name="postal_code" type="text" class="mt-1 block w-full" x-model="postalCode" required />
                 <x-input-error class="mt-2" :messages="$errors->get('postal_code')" />
             </div>
         </div>
@@ -214,11 +284,15 @@
             <x-input-error class="mt-2" :messages="$errors->get('full_address')" />
         </div>
 
+        <div x-show="regionError" x-cloak class="border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
+            <span x-text="regionError"></span>
+        </div>
+
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
                 <x-input-label for="province_id" value="Provinsi" />
-                <select id="province_id" name="province_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="provinceId" x-on:change="provinceChanged" required>
-                    <option value="">Pilih provinsi</option>
+                <select id="province_id" name="province_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="provinceId" x-on:change="provinceChanged()" x-bind:disabled="! rajaOngkirConfigured || loadingProvinces" required>
+                    <option value="" x-text="loadingProvinces ? 'Memuat provinsi...' : 'Pilih provinsi'"></option>
                     <template x-for="province in provinces" :key="province.id">
                         <option :value="province.id" x-text="province.name"></option>
                     </template>
@@ -228,7 +302,7 @@
 
             <div>
                 <x-input-label for="regency_id" value="Kabupaten/Kota" />
-                <select id="regency_id" name="regency_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="regencyId" x-on:change="regencyChanged" x-bind:disabled="! provinceId || loadingRegencies" required>
+                <select id="regency_id" name="regency_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="regencyId" x-on:change="regencyChanged()" x-bind:disabled="! rajaOngkirConfigured || ! provinceId || loadingRegencies" required>
                     <option value="" x-text="loadingRegencies ? 'Memuat kabupaten/kota...' : 'Pilih kabupaten/kota'"></option>
                     <template x-for="regency in regencies" :key="regency.id">
                         <option :value="regency.id" x-text="regency.name"></option>
@@ -239,7 +313,7 @@
 
             <div>
                 <x-input-label for="district_id" value="Kecamatan" />
-                <select id="district_id" name="district_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="districtId" x-on:change="districtChanged" x-bind:disabled="! regencyId || loadingDistricts" required>
+                <select id="district_id" name="district_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="districtId" x-on:change="districtChanged()" x-bind:disabled="! rajaOngkirConfigured || ! regencyId || loadingDistricts" required>
                     <option value="" x-text="loadingDistricts ? 'Memuat kecamatan...' : 'Pilih kecamatan'"></option>
                     <template x-for="district in districts" :key="district.id">
                         <option :value="district.id" x-text="district.name"></option>
@@ -250,7 +324,7 @@
 
             <div>
                 <x-input-label for="village_id" value="Desa/Kelurahan" />
-                <select id="village_id" name="village_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="villageId" x-bind:disabled="! districtId || loadingVillages" required>
+                <select id="village_id" name="village_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="villageId" x-on:change="villageChanged()" x-bind:disabled="! rajaOngkirConfigured || ! districtId || loadingVillages" required>
                     <option value="" x-text="loadingVillages ? 'Memuat desa/kelurahan...' : 'Pilih desa/kelurahan'"></option>
                     <template x-for="village in villages" :key="village.id">
                         <option :value="village.id" x-text="village.name"></option>
@@ -266,7 +340,7 @@
         </label>
 
         <div class="flex flex-wrap items-center gap-3">
-            <x-primary-button :disabled="! $hasRegionData">
+            <x-primary-button x-bind:disabled="! canSubmit()" x-bind:class="{ 'opacity-60 cursor-not-allowed': ! canSubmit() }">
                 {{ $editingAddress ? 'Perbarui Alamat' : 'Tambah Alamat' }}
             </x-primary-button>
 
@@ -292,11 +366,7 @@
                         <p class="mt-2 text-sm font-medium text-gray-900">{{ $address->receiver_name }} - {{ $address->receiver_phone }}</p>
                         <p class="mt-2 text-sm text-gray-600">{{ $address->full_address }}</p>
                         <p class="mt-2 text-sm text-gray-600">
-                            {{ $address->village?->name }},
-                            {{ $address->district?->name }},
-                            {{ $address->regency?->name }},
-                            {{ $address->province?->name }}
-                            {{ $address->postal_code }}
+                            {{ $address->region_summary }}
                         </p>
                     </div>
                 </div>
@@ -313,13 +383,7 @@
                             'receiver_name' => $address->receiver_name,
                             'receiver_phone' => $address->receiver_phone,
                             'full_address' => $address->full_address,
-                            'region' => collect([
-                                $address->village?->name,
-                                $address->district?->name,
-                                $address->regency?->name,
-                                $address->province?->name,
-                                $address->postal_code,
-                            ])->filter()->implode(', '),
+                            'region' => $address->region_summary,
                             'is_main' => $address->is_main,
                             'is_only_address' => $addresses->count() === 1,
                         ]), @js(route('profile.addresses.destroy', $address)))"

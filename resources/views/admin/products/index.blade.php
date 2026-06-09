@@ -115,8 +115,7 @@
                                     </p>
                                 </td>
                                 <td class="px-5 py-4">
-                                    <p class="font-black text-texthighlight">Rp
-                                        {{ number_format($product->price, 0, ',', '.') }}</p>
+                                    <p class="font-black text-texthighlight">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
                                     <p class="mt-1 text-xs text-gray-500">
                                         {{ number_format($product->weight, 0, ',', '.') }} gram</p>
                                 </td>

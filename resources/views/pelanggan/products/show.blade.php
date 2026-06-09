@@ -81,8 +81,7 @@
                     <div class="mt-5 flex flex-wrap items-end justify-between gap-4 border-b border-[#d8e2f0] pb-5">
                         <div>
                             <p class="text-xs font-black uppercase tracking-[.18em] text-[#6e84a3]">Harga</p>
-                            <p class="mt-1 text-3xl font-black text-[#10233d]">Rp
-                                {{ number_format($product->price, 0, ',', '.') }}</p>
+                            <p class="mt-1 text-3xl font-black text-[#10233d]">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
                         </div>
                         <div class="text-right">
                             <span
@@ -171,6 +170,14 @@
                             <p class="mt-1 text-sm font-bold text-[#10233d]">{{ filled($value) ? $value : '-' }}</p>
                         </div>
                     @endforeach
+                    @foreach ($specifications as $label => $value)
+                        <div class="rounded-md bg-[#f5f8fc] p-4">
+                            <p class="text-xs font-black uppercase tracking-[.14em] text-[#6e84a3]">
+                                {{ ucwords(str_replace('_', ' ', $label)) }}
+                            </p>
+                            <p class="mt-1 text-sm font-bold text-[#10233d]">{{ $value }}</p>
+                        </div>
+                    @endforeach
                 </div>
             </div>
 
@@ -252,8 +259,7 @@
                                             <p class="mt-1 text-xs font-semibold text-[#6e84a3]">
                                                 {{ $related->brand->name }}</p>
                                         @endif
-                                        <p class="mt-3 text-lg font-black text-[#10233d]">Rp
-                                            {{ number_format($related->price, 0, ',', '.') }}</p>
+                                        <p class="mt-3 text-lg font-black text-[#10233d]">Rp {{ number_format($related->price, 0, ',', '.') }}</p>
 
                                         <div class="mt-auto pt-4">
                                             @if ($related->isAvailable())

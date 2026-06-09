@@ -9,6 +9,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Marketing;
 use App\Http\Controllers\Pelanggan;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RajaOngkirRegionController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
@@ -92,9 +93,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/profile/addresses', [ProfileController::class, 'storeAddress'])->name('profile.addresses.store');
     Route::patch('/profile/addresses/{address}', [ProfileController::class, 'updateAddress'])->name('profile.addresses.update');
     Route::delete('/profile/addresses/{address}', [ProfileController::class, 'destroyAddress'])->name('profile.addresses.destroy');
-    Route::get('/regions/provinces/{province}/regencies', [ProfileController::class, 'regenciesByProvince'])->name('regions.regencies.index');
-    Route::get('/regions/regencies/{regency}/districts', [ProfileController::class, 'districtsByRegency'])->name('regions.districts.index');
-    Route::get('/regions/districts/{district}/villages', [ProfileController::class, 'villagesByDistrict'])->name('regions.villages.index');
+    Route::get('/regions/provinces', [RajaOngkirRegionController::class, 'provinces'])->name('regions.provinces.index');
+    Route::get('/regions/provinces/{province}/regencies', [RajaOngkirRegionController::class, 'regencies'])->name('regions.regencies.index');
+    Route::get('/regions/regencies/{regency}/districts', [RajaOngkirRegionController::class, 'districts'])->name('regions.districts.index');
+    Route::get('/regions/districts/{district}/villages', [RajaOngkirRegionController::class, 'villages'])->name('regions.villages.index');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

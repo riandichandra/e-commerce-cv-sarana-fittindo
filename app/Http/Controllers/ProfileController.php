@@ -3,12 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Models\District;
-use App\Models\Province;
-use App\Models\Regency;
 use App\Models\UserAddress;
-use App\Models\Village;
-use Illuminate\Http\JsonResponse;
+use App\Services\RajaOngkirService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +13,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
+use Throwable;
 
 class ProfileController extends Controller
 {
@@ -54,10 +51,6 @@ class ProfileController extends Controller
                 ->first();
         }
 
-        $selectedProvince = $request->old('province_id', $editingAddress?->province_id);
-        $selectedRegency = $request->old('regency_id', $editingAddress?->regency_id);
-        $selectedDistrict = $request->old('district_id', $editingAddress?->district_id);
-
         return view('profile.edit', [
             'user' => $user,
             'isCustomer' => $isCustomer,
@@ -66,45 +59,8 @@ class ProfileController extends Controller
             'wishlistItems' => $wishlistItems,
             'addresses' => $addresses,
             'editingAddress' => $editingAddress,
-            'provinces' => Province::orderBy('name')->get(),
-            'regencies' => $selectedProvince
-                ? Regency::where('province_id', $selectedProvince)->orderBy('name')->get()
-                : collect(),
-            'districts' => $selectedRegency
-                ? District::where('regency_id', $selectedRegency)->orderBy('name')->get()
-                : collect(),
-            'villages' => $selectedDistrict
-                ? Village::where('district_id', $selectedDistrict)->orderBy('name')->get()
-                : collect(),
-            'hasRegionData' => Province::exists() && Regency::exists() && District::exists() && Village::exists(),
+            'hasRajaOngkirConfig' => app(RajaOngkirService::class)->isConfigured(),
         ]);
-    }
-
-    public function regenciesByProvince(Province $province): JsonResponse
-    {
-        return response()->json(
-            $province->regencies()
-                ->orderBy('name')
-                ->get(['id', 'name'])
-        );
-    }
-
-    public function districtsByRegency(Regency $regency): JsonResponse
-    {
-        return response()->json(
-            $regency->districts()
-                ->orderBy('name')
-                ->get(['id', 'name'])
-        );
-    }
-
-    public function villagesByDistrict(District $district): JsonResponse
-    {
-        return response()->json(
-            $district->villages()
-                ->orderBy('name')
-                ->get(['id', 'name'])
-        );
     }
 
     /**
@@ -217,44 +173,96 @@ class ProfileController extends Controller
 
     private function validateAddress(Request $request): array
     {
+        $regionSnapshot = [];
+
         $validator = Validator::make($request->all(), [
             'label' => ['required', 'string', 'max:50'],
             'receiver_name' => ['required', 'string', 'max:100'],
             'receiver_phone' => ['required', 'string', 'max:20'],
             'full_address' => ['required', 'string'],
-            'province_id' => ['required', 'integer', 'exists:provinces,id'],
-            'regency_id' => ['required', 'integer', 'exists:regencies,id'],
-            'district_id' => ['required', 'integer', 'exists:districts,id'],
-            'village_id' => ['required', 'integer', 'exists:villages,id'],
+            'province_id' => ['required'],
+            'regency_id' => ['required'],
+            'district_id' => ['required'],
+            'village_id' => ['required'],
             'postal_code' => ['required', 'string', 'max:10'],
             'is_main' => ['nullable', 'boolean'],
         ]);
 
-        $validator->after(function ($validator) use ($request) {
-            $regencyBelongsToProvince = Regency::whereKey($request->integer('regency_id'))
-                ->where('province_id', $request->integer('province_id'))
-                ->exists();
-            $districtBelongsToRegency = District::whereKey($request->integer('district_id'))
-                ->where('regency_id', $request->integer('regency_id'))
-                ->exists();
-            $villageBelongsToDistrict = Village::whereKey($request->integer('village_id'))
-                ->where('district_id', $request->integer('district_id'))
-                ->exists();
-
-            if (! $regencyBelongsToProvince) {
-                $validator->errors()->add('regency_id', 'Kabupaten/kota tidak sesuai dengan provinsi.');
+        $validator->after(function ($validator) use ($request, &$regionSnapshot) {
+            if ($validator->errors()->any()) {
+                return;
             }
 
-            if (! $districtBelongsToRegency) {
-                $validator->errors()->add('district_id', 'Kecamatan tidak sesuai dengan kabupaten/kota.');
+            $rajaOngkir = app(RajaOngkirService::class);
+
+            if (! $rajaOngkir->isConfigured()) {
+                $validator->errors()->add('province_id', 'API key RajaOngkir belum dikonfigurasi.');
+
+                return;
             }
 
-            if (! $villageBelongsToDistrict) {
-                $validator->errors()->add('village_id', 'Desa/kelurahan tidak sesuai dengan kecamatan.');
+            try {
+                $provinceId = (string) $request->input('province_id');
+                $regencyId = (string) $request->input('regency_id');
+                $districtId = (string) $request->input('district_id');
+                $villageId = (string) $request->input('village_id');
+
+                foreach ([
+                    'province_id' => $provinceId,
+                    'regency_id' => $regencyId,
+                    'district_id' => $districtId,
+                    'village_id' => $villageId,
+                ] as $field => $value) {
+                    if (strlen($value) > 32) {
+                        $validator->errors()->add($field, 'ID wilayah tidak valid.');
+                    }
+                }
+
+                if ($validator->errors()->any()) {
+                    return;
+                }
+
+                $province = $rajaOngkir->findProvince($provinceId);
+                $regency = $province ? $rajaOngkir->findCity($provinceId, $regencyId) : null;
+                $district = $regency ? $rajaOngkir->findDistrict($regencyId, $districtId) : null;
+                $village = $district ? $rajaOngkir->findSubdistrict($districtId, $villageId) : null;
+
+                if (! $province) {
+                    $validator->errors()->add('province_id', 'Provinsi tidak ditemukan di RajaOngkir.');
+                }
+
+                if (! $regency) {
+                    $validator->errors()->add('regency_id', 'Kabupaten/kota tidak sesuai dengan provinsi.');
+                }
+
+                if (! $district) {
+                    $validator->errors()->add('district_id', 'Kecamatan tidak sesuai dengan kabupaten/kota.');
+                }
+
+                if (! $village) {
+                    $validator->errors()->add('village_id', 'Desa/kelurahan tidak sesuai dengan kecamatan.');
+                }
+
+                if ($validator->errors()->any()) {
+                    return;
+                }
+
+                $regionSnapshot = [
+                    'province_name' => $province['name'],
+                    'city_name' => $regency['name'],
+                    'district_name' => $district['name'],
+                    'village_name' => $village['name'],
+                    'region_source' => 'rajaongkir',
+                ];
+            } catch (Throwable) {
+                $validator->errors()->add('province_id', 'Gagal memvalidasi wilayah ke RajaOngkir. Coba beberapa saat lagi.');
             }
         });
 
-        return $validator->validate();
+        return [
+            ...$validator->validate(),
+            ...$regionSnapshot,
+        ];
     }
 
     private function ensureAddressOwner(Request $request, UserAddress $address): void

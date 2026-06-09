@@ -106,14 +106,34 @@ class DummyDataSeeder extends Seeder
             ['name' => 'Super Glue Sealant', 'slug' => 'super-glue-sealant', 'category' => 'adhesives', 'brand' => 'Ultra Adhesives', 'price' => 76000],
         ];
 
+        $missingCategories = collect($items)
+            ->pluck('category')
+            ->unique()
+            ->reject(fn (string $slug): bool => array_key_exists($slug, $categories))
+            ->values();
+
+        if ($missingCategories->isNotEmpty()) {
+            throw new \RuntimeException('Kategori produk dummy belum tersedia: ' . $missingCategories->join(', '));
+        }
+
+        $missingBrands = collect($items)
+            ->pluck('brand')
+            ->unique()
+            ->reject(fn (string $name): bool => array_key_exists($name, $brands))
+            ->values();
+
+        if ($missingBrands->isNotEmpty()) {
+            throw new \RuntimeException('Brand produk dummy belum tersedia: ' . $missingBrands->join(', '));
+        }
+
         $products = collect();
 
         foreach ($items as $item) {
             $products->push(Product::updateOrCreate([
                 'slug' => $item['slug'],
             ], [
-                'category_id' => $categories[$item['category']] ?? null,
-                'brand_id' => $brands[$item['brand']] ?? null,
+                'category_id' => $categories[$item['category']],
+                'brand_id' => $brands[$item['brand']],
                 'name' => $item['name'],
                 'description' => $faker->sentence(12),
                 'price' => $item['price'],
