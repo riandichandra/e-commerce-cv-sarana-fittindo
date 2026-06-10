@@ -88,6 +88,24 @@
                             <p class="mt-1 font-black text-[#10233d]">{{ $order->shipping_name }}</p>
                             <p class="mt-1 text-[#657891]">{{ $order->shipping_phone }}</p>
                         </div>
+                        @if ($order->shipped_at)
+                            <div>
+                                <p class="text-[#657891]">Dikirim pada</p>
+                                <p class="mt-1 font-black text-[#10233d]">{{ $order->shipped_at->format('d M Y H:i') }}</p>
+                                @if ($order->status === 'dikirim')
+                                    <p class="mt-1 text-[#657891]">Otomatis selesai pada {{ $order->shipped_at->copy()->addDays(3)->format('d M Y H:i') }}</p>
+                                @endif
+                            </div>
+                        @endif
+                        @if ($order->completed_at)
+                            <div>
+                                <p class="text-[#657891]">Selesai pada</p>
+                                <p class="mt-1 font-black text-[#10233d]">{{ $order->completed_at->format('d M Y H:i') }}</p>
+                                <p class="mt-1 text-[#657891]">
+                                    {{ $order->completion_source === 'system' ? 'Selesai otomatis oleh sistem.' : 'Diselesaikan oleh pelanggan.' }}
+                                </p>
+                            </div>
+                        @endif
                         <div>
                             <p class="text-[#657891]">{{ $order->isWaitingForShippingCost() ? 'Total sementara' : 'Total pembayaran' }}</p>
                             <p class="mt-1 text-lg font-black text-[#c8102e]">Rp
@@ -98,6 +116,12 @@
                     @if ($order->isWaitingForShippingCost())
                         <div class="mt-5 border-l-4 border-orange-400 bg-orange-50 px-4 py-3 text-sm font-semibold leading-6 text-orange-800">
                             Ongkos kirim untuk alamat Anda sedang menunggu konfirmasi admin. Silakan tunggu total pembayaran final sebelum mengunggah bukti pembayaran.
+                        </div>
+                    @endif
+
+                    @if ($order->completion_notes)
+                        <div class="mt-5 border-l-4 border-blue-400 bg-blue-50 px-4 py-3 text-sm font-semibold leading-6 text-blue-800">
+                            {{ $order->completion_notes }}
                         </div>
                     @endif
 

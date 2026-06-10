@@ -17,10 +17,10 @@
             ],
             [
                 'label' => 'Pesanan',
-                'value' => $selesaiOrders . ' / ' . $totalOrders,
+                'value' => $totalOrders,
                 'icon' => 'mdi:shopping',
                 'tone' => 'bg-rose-50 text-primary',
-                'meta' => $diprosesOrders . ' pesanan sedang berjalan',
+                'meta' => $totalOrders . ' pesanan ' . $cardOrderStatusLabel,
             ],
             [
                 'label' => 'Pelanggan',
@@ -59,6 +59,17 @@
             11 => 'Nov',
             12 => 'Des',
         ];
+
+        $topResetQuery = [
+            'year' => $selectedYear,
+            'month' => $selectedMonth,
+            'card_order_start_date' => $cardOrderFilters['card_order_start_date'],
+            'card_order_end_date' => $cardOrderFilters['card_order_end_date'],
+        ];
+
+        if ($cardOrderFilters['card_order_status']) {
+            $topResetQuery['card_order_status'] = $cardOrderFilters['card_order_status'];
+        }
     @endphp
 
     <div class="space-y-7">
@@ -83,7 +94,7 @@
                 </a>
                 <a href="{{ route('gm.reports.download') }}"
                     class="flex items-center justify-between bg-white px-4 py-3 font-bold text-texthighlight shadow-sm hover:text-primary">
-                    <span>Unduh Excel</span>
+                    <span>Download Laporan</span>
                     <iconify-icon icon="mdi:download"></iconify-icon>
                 </a>
             </div>
@@ -117,15 +128,26 @@
                         </div>
                     </div>
                     <input type="hidden" name="month" value="{{ $selectedMonth }}">
+                    <input type="hidden" name="top_start_date" value="{{ $topFilters['top_start_date'] }}">
+                    <input type="hidden" name="top_end_date" value="{{ $topFilters['top_end_date'] }}">
+                    <input type="hidden" name="card_order_start_date" value="{{ $cardOrderFilters['card_order_start_date'] }}">
+                    <input type="hidden" name="card_order_end_date" value="{{ $cardOrderFilters['card_order_end_date'] }}">
+                    <input type="hidden" name="card_order_status" value="{{ $cardOrderFilters['card_order_status'] }}">
                 </form>
             </div>
 
             <div class="bg-white p-5 shadow-sm">
                 <form method="GET" action="{{ route('gm.dashboard') }}">
                     <input type="hidden" name="year" value="{{ $selectedYear }}">
+                    <input type="hidden" name="top_start_date" value="{{ $topFilters['top_start_date'] }}">
+                    <input type="hidden" name="top_end_date" value="{{ $topFilters['top_end_date'] }}">
+                    <input type="hidden" name="card_order_start_date" value="{{ $cardOrderFilters['card_order_start_date'] }}">
+                    <input type="hidden" name="card_order_end_date" value="{{ $cardOrderFilters['card_order_end_date'] }}">
+                    <input type="hidden" name="card_order_status" value="{{ $cardOrderFilters['card_order_status'] }}">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <p class="text-xs font-black uppercase tracking-[.16em] text-gray-500">Pendapatan Bulanan</p>
+                            <p class="text-xs font-black uppercase tracking-[.16em] text-gray-500">Pendapatan Bulanan
+                            </p>
                             <p class="mt-3 text-3xl font-black text-texthighlight">Rp
                                 {{ number_format($monthlyRevenue, 0, ',', '.') }}</p>
                             <div class="mt-4 flex flex-col gap-2 text-sm text-gray-500">
@@ -152,18 +174,63 @@
             </div>
 
             <div class="bg-white p-5 shadow-sm">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <p class="text-xs font-black uppercase tracking-[.16em] text-gray-500">Pesanan</p>
-                        <p class="mt-3 text-3xl font-black text-texthighlight">{{ $selesaiOrders }} /
-                            {{ $totalOrders }}</p>
-                        <p class="mt-2 text-sm font-semibold text-gray-500">{{ $diprosesOrders }} pesanan sedang
-                            berjalan</p>
+                <form method="GET" action="{{ route('gm.dashboard') }}">
+                    <input type="hidden" name="year" value="{{ $selectedYear }}">
+                    <input type="hidden" name="month" value="{{ $selectedMonth }}">
+                    <input type="hidden" name="top_start_date" value="{{ $topFilters['top_start_date'] }}">
+                    <input type="hidden" name="top_end_date" value="{{ $topFilters['top_end_date'] }}">
+
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-xs font-black uppercase tracking-[.16em] text-gray-500">Pesanan</p>
+                            <p class="mt-3 text-3xl font-black text-texthighlight">{{ $totalOrders }}</p>
+                            <p class="mt-2 text-sm font-semibold text-gray-500">{{ $totalOrders }} pesanan {{ $cardOrderStatusLabel }}</p>
+                            <p class="mt-1 text-xs font-semibold text-gray-400">
+                                Periode: {{ $cardOrderStartDate->format('d M Y') }} - {{ $cardOrderEndDate->format('d M Y') }}
+                            </p>
+                            <p class="mt-1 text-xs font-semibold text-gray-400">
+                                Status:
+                                {{ $cardOrderFilters['card_order_status']
+                                    ? \App\Models\Order::make(['status' => $cardOrderFilters['card_order_status']])->status_label
+                                    : 'Semua Status' }}
+                            </p>
+                        </div>
+                        <div class="flex h-12 w-12 items-center justify-center bg-rose-50 text-primary">
+                            <iconify-icon icon="mdi:shopping" class="fs-4"></iconify-icon>
+                        </div>
                     </div>
-                    <div class="flex h-12 w-12 items-center justify-center bg-rose-50 text-primary">
-                        <iconify-icon icon="mdi:shopping" class="fs-4"></iconify-icon>
+
+                    <div class="mt-4 grid grid-cols-1 gap-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="date" name="card_order_start_date"
+                                value="{{ $cardOrderFilters['card_order_start_date'] }}"
+                                class="w-full rounded border border-gray-200 bg-white px-2 py-2 text-xs font-semibold text-gray-700">
+                            <input type="date" name="card_order_end_date"
+                                value="{{ $cardOrderFilters['card_order_end_date'] }}"
+                                class="w-full rounded border border-gray-200 bg-white px-2 py-2 text-xs font-semibold text-gray-700">
+                        </div>
+                        <select name="card_order_status"
+                            class="w-full rounded border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700">
+                            <option value="">Semua Status</option>
+                            @foreach ($orderStatuses as $status)
+                                <option value="{{ $status }}" @selected($cardOrderFilters['card_order_status'] === $status)>
+                                    {{ \App\Models\Order::make(['status' => $status])->status_label }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="submit"
+                                class="inline-flex h-9 items-center justify-center gap-1 rounded bg-primary px-3 text-xs font-black uppercase tracking-[.12em] text-white hover:bg-primary-dark">
+                                <iconify-icon icon="mdi:filter" class="fs-6"></iconify-icon>
+                                Filter
+                            </button>
+                            <a href="{{ route('gm.dashboard', ['year' => $selectedYear, 'month' => $selectedMonth]) }}"
+                                class="inline-flex h-9 items-center justify-center rounded border border-gray-200 bg-white px-3 text-xs font-black uppercase tracking-[.12em] text-texthighlight hover:border-primary hover:text-primary">
+                                Reset
+                            </a>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
 
             <div class="bg-white p-5 shadow-sm">
@@ -185,7 +252,8 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-xl font-black uppercase text-texthighlight">Tren Pendapatan</h2>
-                        <p class="mt-1 text-sm font-medium text-gray-500">Pembayaran terverifikasi dalam 6 bulan terakhir.
+                        <p class="mt-1 text-sm font-medium text-gray-500">Pembayaran terverifikasi dalam 6 bulan
+                            terakhir.
                         </p>
                     </div>
                     <p class="text-sm font-black text-primary">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
@@ -223,7 +291,7 @@
                         <div>
                             <div class="flex items-center justify-between text-sm">
                                 <span
-                                    class="font-bold uppercase tracking-[.12em]">{{ \App\Models\Payment::make(['status' => $status])->status_label }}</span>
+                                    class="font-bold uppercase tracking-[.12em]">{{ \App\Models\Order::make(['status' => $status])->status_label }}</span>
                                 <span>{{ $count }}</span>
                             </div>
                             <div class="mt-2 h-2 bg-white/15">
@@ -238,16 +306,47 @@
         </div>
 
         <section class="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
-            <div class="border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
-                <h2 class="text-xl font-black uppercase text-texthighlight">Top Pelanggan</h2>
-                <p class="mt-1 text-sm font-medium text-gray-500">Pelanggan dengan jumlah pesanan terbanyak pada
-                    {{ $monthNamas[$selectedMonth] ?? $selectedMonth }} {{ $selectedYear }}.</p>
+            <div class="grid gap-4 border-b border-gray-200 bg-[#FFF7F8] px-5 py-4 lg:grid-cols-[minmax(0,1fr)_180px] lg:items-end">
+                <div class="lg:self-end">
+                    <h2 class="text-xl font-black uppercase text-texthighlight">Top Pelanggan</h2>
+                    <p class="mt-1 text-sm font-medium text-gray-500">
+                        Pelanggan dengan jumlah pesanan terbanyak dari {{ $topStartDate->format('d M Y') }} sampai {{ $topEndDate->format('d M Y') }}.
+                    </p>
+                </div>
+
+                <form method="GET" action="{{ route('gm.dashboard') }}" class="grid gap-2">
+                    <input type="hidden" name="year" value="{{ $selectedYear }}">
+                    <input type="hidden" name="month" value="{{ $selectedMonth }}">
+                    <input type="hidden" name="card_order_start_date" value="{{ $cardOrderFilters['card_order_start_date'] }}">
+                    <input type="hidden" name="card_order_end_date" value="{{ $cardOrderFilters['card_order_end_date'] }}">
+                    <input type="hidden" name="card_order_status" value="{{ $cardOrderFilters['card_order_status'] }}">
+                    <label class="block text-xs font-semibold text-gray-500">
+                        <span>Dari</span>
+                        <input type="date" name="top_start_date" value="{{ $topFilters['top_start_date'] }}"
+                            class="mt-1 h-9 w-full rounded border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700">
+                    </label>
+                    <label class="block text-xs font-semibold text-gray-500">
+                        <span>Sampai</span>
+                        <input type="date" name="top_end_date" value="{{ $topFilters['top_end_date'] }}"
+                            class="mt-1 h-9 w-full rounded border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700">
+                    </label>
+                    <button type="submit"
+                        class="inline-flex h-9 w-full items-center justify-center gap-1 rounded bg-primary px-4 text-xs font-black uppercase tracking-[.12em] text-white hover:bg-primary-dark">
+                        <iconify-icon icon="mdi:filter" class="fs-6"></iconify-icon>
+                        Filter
+                    </button>
+                    <a href="{{ route('gm.dashboard', $topResetQuery) }}"
+                        class="inline-flex h-9 w-full items-center justify-center rounded border border-gray-200 bg-white px-4 text-xs font-black uppercase tracking-[.12em] text-texthighlight hover:border-primary hover:text-primary">
+                        Reset
+                    </a>
+                </form>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[760px] text-left">
                     <thead>
-                        <tr class="border-b border-gray-200 bg-gray-50 text-xs font-bold uppercase tracking-[.08em] text-gray-500">
+                        <tr
+                            class="border-b border-gray-200 bg-gray-50 text-xs font-bold uppercase tracking-[.08em] text-gray-500">
                             <th class="w-16 px-5 py-3">No.</th>
                             <th class="px-5 py-3">Pelanggan</th>
                             <th class="px-5 py-3">Pesanan</th>
@@ -258,15 +357,20 @@
                     <tbody class="divide-y divide-gray-100 text-sm">
                         @forelse ($topCustomers as $customer)
                             <tr class="transition hover:bg-gray-50">
-                                <td class="px-5 py-4 font-semibold text-gray-500">{{ $topCustomers->firstItem() + $loop->index }}</td>
-                                <td class="px-5 py-4 font-bold text-texthighlight">{{ $customer->user?->name ?? 'Tidak diketahui' }}</td>
+                                <td class="px-5 py-4 font-semibold text-gray-500">
+                                    {{ $topCustomers->firstItem() + $loop->index }}</td>
+                                <td class="px-5 py-4 font-bold text-texthighlight">
+                                    {{ $customer->user?->name ?? 'Tidak diketahui' }}</td>
                                 <td class="px-5 py-4 text-gray-600">{{ $customer->order_count }}</td>
-                                <td class="px-5 py-4 font-bold text-texthighlight">Rp {{ number_format($customer->total_spent, 0, ',', '.') }}</td>
-                                <td class="px-5 py-4 text-gray-600">Rp {{ number_format((float) $customer->avg_order_value, 0, ',', '.') }}</td>
+                                <td class="px-5 py-4 font-bold text-texthighlight">Rp
+                                    {{ number_format($customer->total_spent, 0, ',', '.') }}</td>
+                                <td class="px-5 py-4 text-gray-600">Rp
+                                    {{ number_format((float) $customer->avg_order_value, 0, ',', '.') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-5 py-12 text-center text-sm text-gray-500">Belum ada data pelanggan untuk periode ini.</td>
+                                <td colspan="5" class="px-5 py-12 text-center text-sm text-gray-500">Belum ada data
+                                    pelanggan untuk periode ini.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -282,19 +386,19 @@
 
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_420px]">
             <section class="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
-                <div class="flex items-center justify-between border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
+                <div class="border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
                     <div>
-                        <h2 class="text-xl font-black uppercase text-texthighlight">Pesanan Terbaru</h2>
-                        <p class="mt-1 text-sm font-medium text-gray-500">{{ $totalOrders }} total pesanan tercatat.</p>
+                        <h2 class="text-xl font-black uppercase text-texthighlight">Detail Pesanan</h2>
+                        <p class="mt-1 text-sm font-medium text-gray-500">Daftar pesanan terbaru sebagai detail operasional dashboard.
+                        </p>
                     </div>
-                    <a href="{{ route('gm.reports.index') }}"
-                        class="text-xs font-black uppercase tracking-[.14em] text-primary hover:text-primary-dark">Lihat Laporan</a>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full min-w-[760px] text-left">
                         <thead>
-                            <tr class="border-b border-gray-200 bg-gray-50 text-xs font-bold uppercase tracking-[.08em] text-gray-500">
+                            <tr
+                                class="border-b border-gray-200 bg-gray-50 text-xs font-bold uppercase tracking-[.08em] text-gray-500">
                                 <th class="w-16 px-5 py-3">No.</th>
                                 <th class="px-5 py-3">Pesanan</th>
                                 <th class="px-5 py-3">Pelanggan</th>
@@ -304,54 +408,78 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 text-sm">
-                            @forelse ($recentOrders as $order)
+                            @forelse ($detailOrders as $order)
                                 <tr class="align-top transition hover:bg-gray-50">
-                                    <td class="px-5 py-4 font-semibold text-gray-500">{{ $recentOrders->firstItem() + $loop->index }}</td>
+                                    <td class="px-5 py-4 font-semibold text-gray-500">
+                                        {{ $detailOrders->firstItem() + $loop->index }}</td>
                                     <td class="px-5 py-4">
                                         <div class="font-black text-texthighlight">{{ $order->order_number }}</div>
-                                        <div class="mt-1 text-xs text-gray-500">{{ $order->created_at->format('d M Y') }}</div>
+                                        <div class="mt-1 text-xs text-gray-500">
+                                            {{ $order->created_at->format('d M Y') }}</div>
                                     </td>
-                                    <td class="px-5 py-4 font-bold text-gray-800">{{ $order->user?->name ?? $order->shipping_name }}</td>
+                                    <td class="px-5 py-4 font-bold text-gray-800">
+                                        {{ $order->user?->name ?? $order->shipping_name }}</td>
                                     <td class="px-5 py-4 text-gray-600">{{ $order->items_count }}</td>
-                                    <td class="px-5 py-4 font-bold text-texthighlight">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                                    <td class="px-5 py-4 font-bold text-texthighlight">Rp
+                                        {{ number_format($order->total_amount, 0, ',', '.') }}</td>
                                     <td class="px-5 py-4">
-                                        <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $statusClass($order->status) }}">
+                                        <span
+                                            class="inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $statusClass($order->status) }}">
                                             {{ $order->status_label }}
                                         </span>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-5 py-12 text-center text-sm font-semibold text-gray-500">Belum ada pesanan.</td>
+                                    <td colspan="6"
+                                        class="px-5 py-12 text-center text-sm font-semibold text-gray-500">Tidak ada pesanan pada filter ini.</td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
 
-                @if ($recentOrders->hasPages())
+                @if ($detailOrders->hasPages())
                     <div class="border-t border-gray-200 px-5 py-4">
-                        {{ $recentOrders->links() }}
+                        {{ $detailOrders->links() }}
                     </div>
                 @endif
             </section>
 
             <section class="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
-                <div class="flex items-center justify-between gap-4 border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
+                <div class="flex flex-col gap-4 border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
                     <div>
                         <h2 class="text-xl font-black uppercase text-texthighlight">Produk Teratas</h2>
-                        <p class="mt-1 text-sm font-medium text-gray-500">Produk terlaris berdasarkan jumlah pesanan.</p>
+                        <p class="mt-1 text-sm font-medium text-gray-500">
+                            Produk terlaris dari {{ $topStartDate->format('d M Y') }} sampai {{ $topEndDate->format('d M Y') }}.
+                        </p>
                     </div>
 
-                    <form method="GET" action="{{ route('gm.dashboard') }}" class="flex items-center gap-3">
-                        <label class="text-xs font-semibold text-gray-500">Tahun</label>
-                        <select name="year" class="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
-                            onchange="this.form.submit()">
-                            @foreach ($availableYears as $year)
-                                <option value="{{ $year }}" @selected($year === $selectedYear)>{{ $year }}</option>
-                            @endforeach
-                        </select>
+                    <form method="GET" action="{{ route('gm.dashboard') }}" class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <input type="hidden" name="year" value="{{ $selectedYear }}">
                         <input type="hidden" name="month" value="{{ $selectedMonth }}">
+                        <input type="hidden" name="card_order_start_date" value="{{ $cardOrderFilters['card_order_start_date'] }}">
+                        <input type="hidden" name="card_order_end_date" value="{{ $cardOrderFilters['card_order_end_date'] }}">
+                        <input type="hidden" name="card_order_status" value="{{ $cardOrderFilters['card_order_status'] }}">
+                        <label class="text-xs font-semibold text-gray-500">
+                            <span>Dari</span>
+                            <input type="date" name="top_start_date" value="{{ $topFilters['top_start_date'] }}"
+                                class="mt-1 w-full rounded border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700">
+                        </label>
+                        <label class="text-xs font-semibold text-gray-500">
+                            <span>Sampai</span>
+                            <input type="date" name="top_end_date" value="{{ $topFilters['top_end_date'] }}"
+                                class="mt-1 w-full rounded border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700">
+                        </label>
+                        <button type="submit"
+                            class="inline-flex h-10 items-center justify-center gap-1 rounded bg-primary px-4 text-xs font-black uppercase tracking-[.12em] text-white hover:bg-primary-dark">
+                            <iconify-icon icon="mdi:filter" class="fs-6"></iconify-icon>
+                            Filter
+                        </button>
+                        <a href="{{ route('gm.dashboard', $topResetQuery) }}"
+                            class="inline-flex h-10 items-center justify-center rounded border border-gray-200 bg-white px-4 text-xs font-black uppercase tracking-[.12em] text-texthighlight hover:border-primary hover:text-primary">
+                            Reset
+                        </a>
                     </form>
                 </div>
 
@@ -361,13 +489,16 @@
                             <div class="flex items-start justify-between gap-4">
                                 <div>
                                     <p class="font-black text-texthighlight">{{ $product->product_name }}</p>
-                                    <p class="mt-1 text-sm font-semibold text-gray-600">{{ $product->total_quantity }} item terjual</p>
+                                    <p class="mt-1 text-sm font-semibold text-gray-600">{{ $product->total_quantity }}
+                                        item terjual</p>
                                 </div>
-                                <p class="text-sm font-black text-primary">Rp {{ number_format($product->total_sales, 0, ',', '.') }}</p>
+                                <p class="text-sm font-black text-primary">Rp
+                                    {{ number_format($product->total_sales, 0, ',', '.') }}</p>
                             </div>
                         </div>
                     @empty
-                        <div class="px-5 py-12 text-center text-sm font-semibold text-gray-500">Belum ada produk terjual.</div>
+                        <div class="px-5 py-12 text-center text-sm font-semibold text-gray-500">Belum ada produk
+                            terjual pada periode ini.</div>
                     @endforelse
                 </div>
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
@@ -26,13 +27,20 @@ class ReportController extends Controller
             'total_orders' => (clone $ordersQuery)->count(),
             'total_revenue' => (clone $ordersQuery)->sum('total_amount'),
             'total_discount' => (clone $ordersQuery)->sum('discount_amount'),
-            'verified_revenue' => Payment::where('status', 'terverifikasi')
-                ->when($filters['start_date'], fn ($query, $date) => $query->whereDate('verified_at', '>=', $date))
-                ->when($filters['end_date'], fn ($query, $date) => $query->whereDate('verified_at', '<=', $date))
-                ->sum('amount'),
+            'verified_revenue' => (clone $ordersQuery)
+                ->whereHas('payment', fn ($query) => $query->where('status', 'terverifikasi'))
+                ->with('payment')
+                ->get()
+                ->sum(fn (Order $order) => (float) ($order->payment?->amount ?? 0)),
         ];
 
-        return view('gm.reports.index', compact('pagePath', 'pageName', 'orders', 'filters', 'summary'));
+        return view('gm.reports.index', compact(
+            'pagePath',
+            'pageName',
+            'orders',
+            'filters',
+            'summary',
+        ));
     }
 
     public function download(Request $request): StreamedResponse
@@ -41,14 +49,16 @@ class ReportController extends Controller
         $orders = $this->reportQuery($filters)
             ->latest()
             ->get();
+        $header = $this->reportHeader($filters);
 
-        $filename = 'laporan-gm-'.now()->format('Ymd-His').'.xls';
+        $filename = 'laporan-kuantitas-penjualan-'.now()->format('Ymd-His').'.xls';
 
-        return response()->streamDownload(function () use ($orders, $filters) {
+        return response()->streamDownload(function () use ($orders, $filters, $header) {
             echo view('gm.reports.excel', [
                 'orders' => $orders,
                 'filters' => $filters,
                 'generatedAt' => now(),
+                'header' => $header,
             ])->render();
         }, $filename, [
             'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
@@ -81,5 +91,85 @@ class ReportController extends Controller
             ->when($filters['payment_status'], function ($query, $status) {
                 $query->whereHas('payment', fn ($query) => $query->where('status', $status));
             });
+    }
+
+    private function reportHeader(array $filters): array
+    {
+        return [
+            'title' => 'Laporan Kuantitas Penjualan',
+            'branch' => 'CV. SARANA FITTINDO',
+            'period' => $this->periodLabel($filters['start_date'], $filters['end_date']),
+            'order_status' => $this->orderStatusLabel($filters['status']),
+            'payment_status' => $this->paymentStatusLabel($filters['payment_status']),
+        ];
+    }
+
+    private function orderStatusLabel(?string $status): string
+    {
+        if (! $status) {
+            return 'Semua';
+        }
+
+        return [
+            'menunggu_konfirmasi_ongkir' => 'Menunggu Konfirmasi Ongkir',
+            'belum_dibayar' => 'Belum Dibayar',
+            'menunggu_verifikasi_pembayaran' => 'Menunggu Verifikasi Pembayaran',
+            'pembayaran_dikonfirmasi' => 'Pembayaran Dikonfirmasi',
+            'diproses' => 'Diproses',
+            'dikirim' => 'Dikirim',
+            'selesai' => 'Selesai',
+            'dibatalkan' => 'Dibatalkan',
+        ][$status] ?? ucwords(str_replace('_', ' ', $status));
+    }
+
+    private function paymentStatusLabel(?string $status): string
+    {
+        if (! $status) {
+            return 'Semua';
+        }
+
+        return [
+            'menunggu' => 'Menunggu',
+            'terverifikasi' => 'Terverifikasi',
+            'ditolak' => 'Ditolak',
+        ][$status] ?? ucwords(str_replace('_', ' ', $status));
+    }
+
+    private function periodLabel(?string $startDate, ?string $endDate): string
+    {
+        $start = $this->formatIndonesianDate($startDate) ?? 'Semua';
+        $end = $this->formatIndonesianDate($endDate) ?? 'Semua';
+
+        if ($start === 'Semua' && $end === 'Semua') {
+            return 'Semua';
+        }
+
+        return $start . ' - ' . $end;
+    }
+
+    private function formatIndonesianDate(?string $date): ?string
+    {
+        if (! $date) {
+            return null;
+        }
+
+        $months = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember',
+        ];
+
+        $parsedDate = Carbon::parse($date);
+
+        return $parsedDate->day . ' ' . $months[$parsedDate->month] . ' ' . $parsedDate->year;
     }
 }

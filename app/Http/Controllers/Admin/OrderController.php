@@ -68,7 +68,13 @@ class OrderController extends Controller
             'status' => ['required', Rule::in(['diproses', 'dikirim'])],
         ]);
 
-        $order->update(['status' => $validated['status']]);
+        $updates = ['status' => $validated['status']];
+
+        if ($validated['status'] === 'dikirim' && ! $order->shipped_at) {
+            $updates['shipped_at'] = now();
+        }
+
+        $order->update($updates);
 
         return redirect()->route('admin.orders.index')->with('success', 'Status order berhasil diperbarui menjadi ' . ucwords(str_replace('_', ' ', $validated['status'])) . '.');
     }

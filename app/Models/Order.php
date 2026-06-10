@@ -49,6 +49,11 @@ class Order extends Model
         'cancellation_reason',
         'cancelled_at',
         'received_image',
+        'shipped_at',
+        'completed_at',
+        'auto_completed_at',
+        'completion_source',
+        'completion_notes',
         'stock_restored_at',
         'stock_restored_by',
     ];
@@ -62,6 +67,9 @@ class Order extends Model
         'shipping_rate_snapshot' => 'array',
         'shipping_cost_confirmed_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'shipped_at' => 'datetime',
+        'completed_at' => 'datetime',
+        'auto_completed_at' => 'datetime',
         'stock_restored_at' => 'datetime',
     ];
 
@@ -174,6 +182,13 @@ class Order extends Model
     public function hasFinalShippingCost(): bool
     {
         return ! $this->isWaitingForShippingCost();
+    }
+
+    public function isEligibleForAutoCompletion(): bool
+    {
+        return $this->status === 'dikirim'
+            && $this->shipped_at
+            && $this->shipped_at->lte(now()->subDays(3));
     }
 
     public function getShippingServiceLabelAttribute(): ?string

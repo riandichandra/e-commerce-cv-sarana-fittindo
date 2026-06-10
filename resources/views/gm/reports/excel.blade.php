@@ -6,18 +6,37 @@
 <body>
     <table>
         <tr>
-            <th colspan="16">Laporan GM CV Sarana Fittindo</th>
+            <th colspan="16" style="font-size: 18px; font-weight: bold; text-align: center;">
+                {{ $header['title'] }}
+            </th>
         </tr>
         <tr>
-            <td colspan="16">Generated: {{ $generatedAt->format('d M Y H:i') }}</td>
+            <th colspan="16" style="font-size: 12px; font-weight: bold; text-align: center;">
+                Cabang {{ $header['branch'] }}
+            </th>
         </tr>
         <tr>
-            <td colspan="16">
-                Periode:
-                {{ $filters['start_date'] ?: '-' }}
-                sampai
-                {{ $filters['end_date'] ?: '-' }}
+            <th colspan="16" style="font-size: 12px; font-weight: bold; text-align: center;">
+                Periode: {{ $header['period'] }}
+            </th>
+        </tr>
+        <tr>
+            <th colspan="16" style="font-size: 12px; font-weight: bold; text-align: center;">
+                Status Pesanan : {{ $header['order_status'] }}
+            </th>
+        </tr>
+        <tr>
+            <th colspan="16" style="font-size: 12px; font-weight: bold; text-align: center;">
+                Status Pembayaran : {{ $header['payment_status'] }}
+            </th>
+        </tr>
+        <tr>
+            <td colspan="16" style="font-size: 10px; text-align: right;">
+                Dicetak: {{ $generatedAt->format('d M Y H:i') }}
             </td>
+        </tr>
+        <tr>
+            <td colspan="16">&nbsp;</td>
         </tr>
     </table>
 

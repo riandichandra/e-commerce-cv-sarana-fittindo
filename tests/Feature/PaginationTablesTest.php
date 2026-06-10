@@ -117,6 +117,32 @@ class PaginationTablesTest extends TestCase
         }
     }
 
+    private function createOrderItem(Order $order, string $productName): void
+    {
+        $category = \App\Models\ProductCategory::firstOrCreate(
+            ['name' => 'Pagination Category'],
+            ['slug' => 'pagination-category', 'is_active' => true]
+        );
+
+        $product = \App\Models\Product::create([
+            'category_id' => $category->id,
+            'name' => $productName,
+            'slug' => 'pagination-product-' . uniqid(),
+            'price' => 10000,
+            'weight' => 1000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $productName,
+            'product_price' => 10000,
+            'quantity' => 1,
+            'subtotal' => 10000,
+        ]);
+    }
+
     public function test_gm_dashboard_has_pagination_links(): void
     {
         $gm = $this->createUserWithRole('gm');
@@ -127,7 +153,7 @@ class PaginationTablesTest extends TestCase
         $response = $this->actingAs($gm)->get(route('gm.dashboard'));
 
         $response->assertOk();
-        $response->assertSee('recent_orders_page=2');
+        $response->assertSee('detail_orders_page=2');
     }
 
     public function test_gm_dashboard_retains_year_month_on_pagination(): void
@@ -144,6 +170,53 @@ class PaginationTablesTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('year=' . now()->year);
+    }
+
+    public function test_gm_dashboard_detail_order_pagination_keeps_filters(): void
+    {
+        $gm = $this->createUserWithRole('gm');
+
+        $pelanggan = User::factory()->create();
+        $this->createOrders(10, $pelanggan);
+
+        $response = $this->actingAs($gm)->get(route('gm.dashboard', [
+            'card_order_start_date' => now()->startOfMonth()->toDateString(),
+            'card_order_end_date' => now()->endOfMonth()->toDateString(),
+            'card_order_status' => 'selesai',
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('detail_orders_page=2');
+        $response->assertSee('href="' . route('gm.dashboard', ['detail_orders_page' => 2]) . '"', false);
+        $response->assertDontSee('detail_orders_page=2&amp;card_order_status=selesai', false);
+        $response->assertDontSee('detail_orders_page=2&amp;card_order_start_date=' . now()->startOfMonth()->toDateString(), false);
+    }
+
+    public function test_gm_dashboard_top_pagination_keeps_period_filters(): void
+    {
+        $gm = $this->createUserWithRole('gm');
+
+        for ($i = 0; $i < 6; $i++) {
+            $pelanggan = User::factory()->create();
+            $day = str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT);
+            $order = $this->createOrder($pelanggan, [
+                'created_at' => '2026-06-' . $day . ' 10:00:00',
+                'updated_at' => '2026-06-' . $day . ' 10:00:00',
+            ]);
+
+            $this->createOrderItem($order, 'Produk Top ' . $i);
+        }
+
+        $response = $this->actingAs($gm)->get(route('gm.dashboard', [
+            'top_start_date' => '2026-06-01',
+            'top_end_date' => '2026-06-30',
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('top_customers_page=2');
+        $response->assertSee('top_products_page=2');
+        $response->assertSee('top_start_date=2026-06-01');
+        $response->assertSee('top_end_date=2026-06-30');
     }
 
     public function test_direktur_dashboard_has_pagination_links(): void

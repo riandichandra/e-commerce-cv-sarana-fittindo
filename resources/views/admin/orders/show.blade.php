@@ -72,6 +72,21 @@
                             <p class="font-semibold text-orange-700">Ongkos kirim belum dikonfirmasi.</p>
                         @endif
                         <p>Item: {{ $order->items()->sum('quantity') }}</p>
+                        @if ($order->shipped_at)
+                            <p>Dikirim pada: <span class="font-semibold text-texthighlight">{{ $order->shipped_at->format('d M Y H:i') }}</span></p>
+                            @if ($order->status === 'dikirim')
+                                <p class="font-semibold text-purple-700">Otomatis selesai pada {{ $order->shipped_at->copy()->addDays(3)->format('d M Y H:i') }}.</p>
+                            @endif
+                        @endif
+                        @if ($order->completed_at)
+                            <p>Selesai pada: <span class="font-semibold text-texthighlight">{{ $order->completed_at->format('d M Y H:i') }}</span></p>
+                            <p class="font-semibold text-green-700">
+                                {{ $order->completion_source === 'system' ? 'Selesai otomatis oleh sistem.' : 'Diselesaikan oleh pelanggan.' }}
+                            </p>
+                        @endif
+                        @if ($order->completion_notes)
+                            <p class="text-xs text-gray-500">{{ $order->completion_notes }}</p>
+                        @endif
                     </div>
                 </div>
 
@@ -302,9 +317,11 @@
                             </div>
                             <p class="mt-4 font-bold text-texthighlight">Bukti barang diterima belum tersedia.</p>
                             <p class="mt-2 text-sm text-gray-500">
-                                {{ $order->status === 'selesai'
+                                {{ $order->completion_source === 'system'
+                                    ? 'Pesanan selesai otomatis setelah 3 hari sejak dikirim, tanpa foto bukti dari pelanggan.'
+                                    : ($order->status === 'selesai'
                                     ? 'Pesanan selesai, tetapi foto bukti belum tersimpan.'
-                                    : 'Bukti akan tersedia setelah pelanggan menandai pesanan selesai.' }}
+                                    : 'Bukti akan tersedia setelah pelanggan menandai pesanan selesai.') }}
                             </p>
                         </div>
                     @endif

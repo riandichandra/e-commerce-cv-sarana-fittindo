@@ -102,8 +102,13 @@ class OrderListTest extends TestCase
         $response
             ->assertRedirect(route('pelanggan.orders.index'))
             ->assertSessionHas('success', 'Pesanan berhasil ditandai selesai dan foto produk diterima tersimpan.');
-        $this->assertSame('selesai', $order->fresh()->status);
-        Storage::disk('public')->assertExists($order->fresh()->received_image);
+        $order->refresh();
+
+        $this->assertSame('selesai', $order->status);
+        $this->assertNotNull($order->completed_at);
+        $this->assertSame('customer', $order->completion_source);
+        $this->assertSame('Diselesaikan manual oleh pelanggan.', $order->completion_notes);
+        Storage::disk('public')->assertExists($order->received_image);
 
         $this->actingAs($customer)
             ->withSession(['success' => 'Pesanan berhasil ditandai selesai dan foto produk diterima tersimpan.'])

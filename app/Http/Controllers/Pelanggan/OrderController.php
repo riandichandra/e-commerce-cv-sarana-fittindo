@@ -115,6 +115,9 @@ class OrderController extends Controller
         $order->update([
             'status' => 'selesai',
             'received_image' => $receivedImagePath,
+            'completed_at' => now(),
+            'completion_source' => 'customer',
+            'completion_notes' => 'Diselesaikan manual oleh pelanggan.',
         ]);
 
         return redirect()

@@ -41,6 +41,26 @@ class OrderFilterTest extends TestCase
         $response->assertDontSee($otherOrder->order_number);
     }
 
+    public function test_admin_update_order_to_dikirim_sets_shipped_at(): void
+    {
+        $admin = $this->makeUser('admin');
+        $customer = $this->makeUser('pelanggan', ['name' => 'Budi Customer', 'phone' => '08123456789']);
+        $paymentMethod = $this->makePaymentMethod();
+        $product = $this->makeProduct();
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'terverifikasi', 'diproses');
+
+        $response = $this->actingAs($admin)->patch(route('admin.orders.update', $order), [
+            'status' => 'dikirim',
+        ]);
+
+        $response->assertRedirect(route('admin.orders.index'));
+
+        $order->refresh();
+
+        $this->assertSame('dikirim', $order->status);
+        $this->assertNotNull($order->shipped_at);
+    }
+
     private function makeUser(string $roleName, array $attributes = []): User
     {
         $role = Role::firstOrCreate(
