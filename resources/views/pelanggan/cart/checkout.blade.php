@@ -15,6 +15,8 @@
         'district' => $address->district_display_name,
         'village' => $address->village_display_name,
         'postal_code' => $address->postal_code,
+        'region_source' => $address->region_source,
+        'district_id' => (string) $address->district_id,
         'is_main' => $address->is_main,
         'summary' => $address->region_summary,
     ])->values();
@@ -73,6 +75,14 @@
                     loadingRegencies: false,
                     loadingDistricts: false,
                     loadingVillages: false,
+                    shippingQuoteUrl: @js(route('pelanggan.shipping.domestic-cost')),
+                    csrfToken: @js(csrf_token()),
+                    shippingOptions: [],
+                    selectedShippingQuoteToken: @js(old('shipping_quote_token')),
+                    shippingFallback: @js(old('shipping_fallback')),
+                    shippingLoading: false,
+                    shippingError: '',
+                    shippingMeta: null,
                     regionUrls: {
                         provinces: @js(route('regions.provinces.index')),
                         regencies: @js(route('regions.regencies.index', ['province' => '__province__'])),
@@ -82,6 +92,7 @@
                     async initCheckout() {
                         this.applySelectedAddress(false);
                         await this.initRegions();
+                        await this.refreshShippingOptions();
                     },
                     async initRegions() {
                         if (! this.rajaOngkirConfigured) {
@@ -117,11 +128,13 @@
                     addressSelectionChanged() {
                         if (this.selectedAddressId) {
                             this.applySelectedAddress(true);
+                            this.refreshShippingOptions();
                             return;
                         }
 
                         this.shippingAddress = '';
                         this.clearRegionSelection();
+                        this.clearShippingQuote();
                     },
                     applySelectedAddress(force = true) {
                         const address = this.selectedAddress();
@@ -141,7 +154,10 @@
                         this.clearRegionIds();
                     },
                     clearSelectedAddress() {
-                        this.selectedAddressId = '';
+                        if (this.selectedAddressId) {
+                            this.selectedAddressId = '';
+                            this.clearShippingQuote();
+                        }
                     },
                     clearRegionIds() {
                         this.shippingProvinceId = '';
@@ -208,6 +224,7 @@
                     },
                     async provinceChanged() {
                         this.clearSelectedAddress();
+                        this.clearShippingQuote();
                         this.shippingCityId = '';
                         this.shippingDistrictId = '';
                         this.shippingVillageId = '';
@@ -235,6 +252,7 @@
                     },
                     async regencyChanged() {
                         this.clearSelectedAddress();
+                        this.clearShippingQuote();
                         this.shippingDistrictId = '';
                         this.shippingVillageId = '';
                         this.districts = [];
@@ -259,6 +277,7 @@
                     },
                     async districtChanged() {
                         this.clearSelectedAddress();
+                        this.clearShippingQuote();
                         this.shippingVillageId = '';
                         this.villages = [];
                         this.shippingVillage = '';
@@ -283,42 +302,136 @@
                         const village = this.regionById(this.villages, this.shippingVillageId);
                         this.shippingVillage = village?.name || '';
                         this.shippingPostalCode = village?.postal_code || '';
+                        this.refreshShippingOptions();
                     },
                     isRegionBusy() {
                         return this.loadingProvinces || this.loadingRegencies || this.loadingDistricts || this.loadingVillages;
+                    },
+                    manualRegionReady() {
+                        return Boolean(this.shippingProvinceId && this.shippingCityId && this.shippingDistrictId && this.shippingVillageId);
+                    },
+                    shippingDestinationReady() {
+                        return Boolean(this.selectedAddressId) || this.manualRegionReady();
+                    },
+                    selectedShippingOption() {
+                        return this.shippingOptions.find((option) => option.quote_token === this.selectedShippingQuoteToken);
+                    },
+                    clearShippingQuote() {
+                        this.shippingOptions = [];
+                        this.selectedShippingQuoteToken = '';
+                        this.shippingFallback = '';
+                        this.shippingLoading = false;
+                        this.shippingError = '';
+                        this.shippingMeta = null;
+                    },
+                    async refreshShippingOptions() {
+                        this.shippingOptions = [];
+                        this.selectedShippingQuoteToken = '';
+                        this.shippingFallback = '';
+                        this.shippingError = '';
+                        this.shippingMeta = null;
+
+                        if (! this.shippingDestinationReady()) {
+                            return;
+                        }
+
+                        this.shippingLoading = true;
+
+                        try {
+                            const response = await fetch(this.shippingQuoteUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'X-CSRF-TOKEN': this.csrfToken,
+                                },
+                                body: JSON.stringify({
+                                    shipping_address_id: this.selectedAddressId || null,
+                                    shipping_province_id: this.shippingProvinceId || null,
+                                    shipping_city_id: this.shippingCityId || null,
+                                    shipping_district_id: this.shippingDistrictId || null,
+                                    shipping_village_id: this.shippingVillageId || null,
+                                }),
+                            });
+                            const payload = await response.json().catch(() => null);
+
+                            if (! response.ok) {
+                                throw new Error(payload?.message || 'Gagal menghitung ongkos kirim.');
+                            }
+
+                            this.shippingOptions = Array.isArray(payload?.data) ? payload.data : [];
+                            this.shippingMeta = payload?.meta || null;
+
+                            if (! this.shippingOptions.length) {
+                                this.shippingError = 'Tidak ada layanan pengiriman tersedia untuk alamat ini.';
+                            }
+                        } catch (error) {
+                            this.shippingError = error.message || 'Gagal menghitung ongkos kirim.';
+                        } finally {
+                            this.shippingLoading = false;
+                        }
+                    },
+                    useAdminFallback() {
+                        this.selectedShippingQuoteToken = '';
+                        this.shippingFallback = 'admin_manual';
+                    },
+                    formatRupiah(value) {
+                        return new Intl.NumberFormat('id-ID').format(Number(value || 0));
                     },
                     canSubmit() {
                         if (! this.hasPaymentMethods) {
                             return false;
                         }
 
-                        if (this.selectedAddressId) {
-                            return true;
+                        if (this.shippingLoading) {
+                            return false;
                         }
 
-                        return this.rajaOngkirConfigured && ! this.isRegionBusy();
-                    },
-                    isPalembangCity() {
-                        const city = (this.shippingCity || '').toLowerCase().replace('kota ', '').replace('kabupaten ', '').trim();
+                        const addressReady = this.selectedAddressId
+                            ? true
+                            : this.rajaOngkirConfigured && this.manualRegionReady() && ! this.isRegionBusy();
 
-                        return city === 'palembang';
+                        return addressReady && (Boolean(this.selectedShippingQuoteToken) || this.shippingFallback === 'admin_manual');
                     },
                     shippingCostLabel() {
-                        if (! this.shippingCity) {
-                            return 'Pilih kota pengiriman';
+                        const option = this.selectedShippingOption();
+
+                        if (option) {
+                            return `Rp ${this.formatRupiah(option.cost)}`;
                         }
 
-                        return this.isPalembangCity() ? 'Rp 20.000' : 'Menunggu konfirmasi admin';
+                        if (this.shippingFallback === 'admin_manual') {
+                            return 'Menunggu konfirmasi admin';
+                        }
+
+                        if (this.shippingLoading) {
+                            return 'Memuat ongkir...';
+                        }
+
+                        if (! this.shippingDestinationReady()) {
+                            return 'Lengkapi alamat';
+                        }
+
+                        return 'Pilih layanan';
                     },
                     totalPaymentLabel() {
-                        const total = this.subtotalAfterDiscount + (this.isPalembangCity() ? 20000 : 0);
+                        const option = this.selectedShippingOption();
+                        const total = this.subtotalAfterDiscount + Number(option?.cost || 0);
 
-                        return new Intl.NumberFormat('id-ID').format(total);
+                        return this.formatRupiah(total);
+                    },
+                    totalPaymentTitle() {
+                        return this.shippingFallback === 'admin_manual' || ! this.selectedShippingOption()
+                            ? 'Total sementara'
+                            : 'Total pembayaran';
                     },
                 }"
                 x-init="initCheckout()"
             >
                 @csrf
+                <input type="hidden" name="shipping_quote_token" x-model="selectedShippingQuoteToken">
+                <input type="hidden" name="shipping_fallback" x-model="shippingFallback">
 
                 <div class="space-y-6">
                     <div class="bg-white p-6 shadow-sm">
@@ -446,6 +559,56 @@
                     </div>
 
                     <div class="bg-white p-6 shadow-sm">
+                        <h2 class="text-xl font-black uppercase text-[#10233d]">Layanan Pengiriman</h2>
+                        <x-input-error :messages="$errors->get('shipping_quote_token')" class="mt-3" />
+
+                        <div class="mt-5 space-y-4">
+                            <div x-show="! shippingDestinationReady()" class="border border-[#d8e2f0] bg-[#f7faff] p-4 text-sm font-semibold text-[#657891]">
+                                Lengkapi alamat pengiriman untuk melihat layanan kurir.
+                            </div>
+
+                            <div x-show="shippingLoading" x-cloak class="border border-[#d8e2f0] bg-[#f7faff] p-4 text-sm font-semibold text-[#10233d]">
+                                Memuat ongkos kirim...
+                            </div>
+
+                            <div x-show="shippingError" x-cloak class="border border-orange-200 bg-orange-50 p-4 text-sm font-semibold leading-6 text-orange-800">
+                                <p x-text="shippingError"></p>
+                                <button type="button" x-on:click="useAdminFallback()"
+                                    class="mt-3 inline-flex h-10 items-center justify-center bg-[#10233d] px-4 text-xs font-black uppercase tracking-[.12em] text-white hover:bg-[#071d33]">
+                                    Konfirmasi Ongkir Admin
+                                </button>
+                            </div>
+
+                            <div x-show="shippingFallback === 'admin_manual'" x-cloak class="border border-orange-200 bg-orange-50 p-4 text-sm font-semibold leading-6 text-orange-800">
+                                Ongkos kirim akan dikonfirmasi admin sebelum pembayaran.
+                            </div>
+
+                            <div x-show="shippingOptions.length" x-cloak class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                <template x-for="option in shippingOptions" :key="option.quote_token">
+                                    <label class="block cursor-pointer border border-[#d8e2f0] p-4 transition hover:border-[#c8102e]"
+                                        x-bind:class="selectedShippingQuoteToken === option.quote_token ? 'border-[#c8102e] bg-[#fff7f8]' : 'bg-white'">
+                                        <div class="flex items-start gap-3">
+                                            <input type="radio" name="shipping_quote_choice" x-model="selectedShippingQuoteToken" x-bind:value="option.quote_token" x-on:change="shippingFallback = ''"
+                                                class="mt-1 border-[#d8e2f0] text-[#c8102e] focus:ring-[#c8102e]">
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex items-start justify-between gap-3">
+                                                    <div>
+                                                        <p class="font-black text-[#10233d]" x-text="option.courier_name"></p>
+                                                        <p class="mt-1 text-xs font-black uppercase tracking-[.12em] text-[#657891]" x-text="option.service"></p>
+                                                    </div>
+                                                    <p class="shrink-0 font-black text-[#c8102e]">Rp <span x-text="formatRupiah(option.cost)"></span></p>
+                                                </div>
+                                                <p class="mt-2 text-sm text-[#657891]" x-text="option.description"></p>
+                                                <p class="mt-2 text-xs font-semibold text-[#10233d]" x-show="option.etd">Estimasi <span x-text="option.etd"></span></p>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 shadow-sm">
                         <h2 class="text-xl font-black uppercase text-[#10233d]">Metode Pembayaran</h2>
                         <x-input-error :messages="$errors->get('payment_method_id')" class="mt-3" />
 
@@ -528,18 +691,18 @@
                             <span class="text-right font-black text-[#10233d]" x-text="shippingCostLabel()"></span>
                         </div>
                         <div class="flex justify-between border-t border-[#e8eef7] pt-4">
-                            <span class="text-[#657891]" x-text="shippingCity && ! isPalembangCity() ? 'Total sementara' : 'Total pembayaran'"></span>
+                            <span class="text-[#657891]" x-text="totalPaymentTitle()"></span>
                             <span class="font-black text-[#c8102e]">Rp <span x-text="totalPaymentLabel()"></span></span>
                         </div>
-                        <div class="border-l-4 border-orange-400 bg-orange-50 px-4 py-3 text-xs font-semibold leading-5 text-orange-800" x-show="shippingCity && ! isPalembangCity()">
-                            Ongkos kirim untuk alamat di luar Kota Palembang akan dikonfirmasi oleh admin. Anda dapat membayar setelah total pembayaran final.
+                        <div class="border-l-4 border-orange-400 bg-orange-50 px-4 py-3 text-xs font-semibold leading-5 text-orange-800" x-show="shippingFallback === 'admin_manual'">
+                            Ongkos kirim akan dikonfirmasi admin. Anda dapat membayar setelah total pembayaran final.
                         </div>
-                        <div class="border-l-4 border-green-400 bg-green-50 px-4 py-3 text-xs font-semibold leading-5 text-green-800" x-show="shippingCity && isPalembangCity()">
-                            Ongkos kirim Kota Palembang otomatis Rp 20.000.
+                        <div class="border-l-4 border-green-400 bg-green-50 px-4 py-3 text-xs font-semibold leading-5 text-green-800" x-show="selectedShippingOption()">
+                            Total pembayaran sudah termasuk layanan pengiriman yang dipilih.
                         </div>
                     </div>
 
-                    <button type="submit" x-bind:disabled="! canSubmit()" @disabled($paymentMethods->isEmpty() || (! $hasRajaOngkirConfig && $selectedAddressId === ''))
+                    <button type="submit" x-bind:disabled="! canSubmit()" @disabled($paymentMethods->isEmpty())
                         class="mt-7 flex h-11 w-full items-center justify-center bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24] disabled:cursor-not-allowed disabled:bg-gray-400">
                         Checkout
                     </button>

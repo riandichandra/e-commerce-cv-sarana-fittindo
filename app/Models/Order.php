@@ -22,6 +22,16 @@ class Order extends Model
         'promotion_value',
         'shipping_cost',
         'shipping_cost_status',
+        'shipping_cost_source',
+        'shipping_origin_district_id',
+        'shipping_destination_district_id',
+        'shipping_weight_gram',
+        'shipping_courier_code',
+        'shipping_courier_name',
+        'shipping_service',
+        'shipping_service_description',
+        'shipping_etd',
+        'shipping_rate_snapshot',
         'shipping_cost_confirmed_at',
         'shipping_cost_confirmed_by',
         'total_amount',
@@ -39,6 +49,8 @@ class Order extends Model
         'cancellation_reason',
         'cancelled_at',
         'received_image',
+        'stock_restored_at',
+        'stock_restored_by',
     ];
 
     protected $casts = [
@@ -47,8 +59,10 @@ class Order extends Model
         'promotion_value' => 'decimal:2',
         'shipping_cost' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'shipping_rate_snapshot' => 'array',
         'shipping_cost_confirmed_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'stock_restored_at' => 'datetime',
     ];
 
     protected $enumStatuses = [
@@ -95,6 +109,11 @@ class Order extends Model
     public function shippingCostConfirmedBy() : BelongsTo
     {
         return $this->belongsTo(User::class, 'shipping_cost_confirmed_by');
+    }
+
+    public function stockRestoredBy() : BelongsTo
+    {
+        return $this->belongsTo(User::class, 'stock_restored_by');
     }
 
     public function statusHistory() : HasMany
@@ -155,6 +174,18 @@ class Order extends Model
     public function hasFinalShippingCost(): bool
     {
         return ! $this->isWaitingForShippingCost();
+    }
+
+    public function getShippingServiceLabelAttribute(): ?string
+    {
+        if (! $this->shipping_courier_name && ! $this->shipping_service) {
+            return null;
+        }
+
+        return collect([
+            $this->shipping_courier_name,
+            $this->shipping_service,
+        ])->filter()->join(' - ');
     }
 
     public static function isPalembangShippingCity(?string $city): bool

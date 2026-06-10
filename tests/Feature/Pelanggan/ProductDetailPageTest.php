@@ -32,11 +32,11 @@ class ProductDetailPageTest extends TestCase
         $response->assertOk();
         $response->assertSee($product->name);
         $response->assertSee('Rp 250.000');
-        $response->assertSee('Spesifikasi Produk');
+        $response->assertSee('Detail Produk');
         $response->assertSee('Berat');
         $response->assertSee('Ketebalan');
         $response->assertSee('Dimensi');
-        $response->assertSee('Finishing');
+        $response->assertDontSee('Finishing');
         $response->assertSee('Tambah ke Keranjang');
         $response->assertSee('name="quantity"', false);
         $response->assertSee($related->name);

@@ -71,6 +71,12 @@ class OrderController extends Controller
 
         $order->load(['items', 'payment', 'paymentMethod']);
 
+        if ($order->status === 'dibatalkan' || $order->payment?->status === 'ditolak') {
+            return redirect()
+                ->route('pelanggan.orders.show', $order)
+                ->with('error', 'Pesanan sudah dibatalkan karena pembayaran ditolak. Silakan buat pesanan baru.');
+        }
+
         if ($order->isWaitingForShippingCost()) {
             return redirect()
                 ->route('pelanggan.orders.show', $order)
@@ -143,6 +149,12 @@ class OrderController extends Controller
         abort_unless($order->user_id === $request->user()->id, 403);
 
         $order->load('payment');
+
+        if ($order->status === 'dibatalkan' || $order->payment?->status === 'ditolak') {
+            return redirect()
+                ->route('pelanggan.orders.show', $order)
+                ->with('error', 'Pesanan sudah dibatalkan karena pembayaran ditolak. Silakan buat pesanan baru.');
+        }
 
         if ($order->isWaitingForShippingCost()) {
             return redirect()

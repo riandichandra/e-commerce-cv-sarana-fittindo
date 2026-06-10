@@ -11,10 +11,12 @@ use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Services\PromotionDiscountService;
 use App\Services\RajaOngkirService;
+use App\Services\ShippingQuoteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use RuntimeException;
 use Throwable;
 
 class CartController extends Controller
@@ -122,7 +124,7 @@ class CartController extends Controller
         return view('pelanggan.cart.checkout', compact('cart', 'paymentMethods', 'addresses', 'discountSummary', 'hasRajaOngkirConfig'));
     }
 
-    public function checkout(Request $request)
+    public function checkout(Request $request, ShippingQuoteService $shippingQuotes)
     {
         $validated = $this->validateCheckout($request);
 
@@ -134,6 +136,8 @@ class CartController extends Controller
                 ->route('pelanggan.cart.index')
                 ->with('error', 'Keranjang masih kosong.');
         }
+
+        $selectedAddress = null;
 
         if (! empty($validated['shipping_address_id'])) {
             $selectedAddress = $request->user()
@@ -154,8 +158,43 @@ class CartController extends Controller
             ];
         }
 
+        $usesAdminFallback = ($validated['shipping_fallback'] ?? null) === 'admin_manual';
+        $destinationDistrictId = $selectedAddress
+            ? (filled($selectedAddress->district_id) ? (string) $selectedAddress->district_id : null)
+            : (isset($validated['shipping_district_id']) ? (string) $validated['shipping_district_id'] : null);
+
         try {
-            $order = DB::transaction(function () use ($request, $cart, $validated) {
+            $currentWeightGram = $shippingQuotes->weightForCart($cart);
+        } catch (RuntimeException $exception) {
+            return back()
+                ->withInput()
+                ->with('error', $exception->getMessage());
+        }
+
+        $shippingQuote = null;
+
+        if (! $usesAdminFallback) {
+            if (! filled($destinationDistrictId)) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'shipping_quote_token' => 'Alamat tersimpan perlu diperbarui ke data RajaOngkir sebelum ongkir otomatis dapat dihitung.',
+                    ]);
+            }
+
+            $shippingQuote = $shippingQuotes->getQuote($validated['shipping_quote_token'] ?? null);
+
+            if (! $shippingQuote || ! $shippingQuotes->matchesCart($shippingQuote, $request->user(), $cart, $currentWeightGram, $destinationDistrictId)) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'shipping_quote_token' => 'Pilihan ongkir sudah tidak valid atau kedaluwarsa. Silakan pilih layanan pengiriman ulang.',
+                    ]);
+            }
+        }
+
+        try {
+            $order = DB::transaction(function () use ($request, $cart, $validated, $shippingQuote, $destinationDistrictId) {
                 $items = $cart->items;
                 $products = Product::whereIn('id', $items->pluck('product_id'))
                     ->lockForUpdate()
@@ -170,6 +209,20 @@ class CartController extends Controller
                     }
                 }
 
+                $lockedWeightGram = $items->sum(function (CartItem $item) use ($products): int {
+                    $product = $products->get($item->product_id);
+
+                    if (! $product || (float) $product->weight <= 0) {
+                        throw new \RuntimeException('Berat produk ' . ($product?->name ?? 'tidak diketahui') . ' belum valid.');
+                    }
+
+                    return (int) ceil((float) $product->weight * (int) $item->quantity);
+                });
+
+                if ($shippingQuote && (int) ($shippingQuote['weight_gram'] ?? 0) !== (int) $lockedWeightGram) {
+                    throw new \RuntimeException('Pilihan ongkir sudah tidak sesuai dengan berat keranjang terbaru. Silakan pilih layanan pengiriman ulang.');
+                }
+
                 $subtotal = $items->sum(function (CartItem $item) use ($products) {
                     $product = $products->get($item->product_id);
 
@@ -180,11 +233,11 @@ class CartController extends Controller
                 $promotion = $discountSummary['promotion'];
                 $discountAmount = (float) $discountSummary['discount_amount'];
                 $subtotalAfterDiscount = (float) $discountSummary['subtotal_after_discount'];
-                $isPalembang = Order::isPalembangShippingCity($validated['shipping_city'] ?? null);
-                $shippingCost = $isPalembang ? 20000 : 0;
+                $shippingCost = $shippingQuote ? (float) ($shippingQuote['cost'] ?? 0) : 0;
                 $totalAmount = $subtotalAfterDiscount + $shippingCost;
-                $shippingCostStatus = $isPalembang ? 'fixed' : 'waiting_admin';
-                $orderStatus = $isPalembang ? 'belum_dibayar' : 'menunggu_konfirmasi_ongkir';
+                $shippingCostStatus = $shippingQuote ? 'calculated' : 'waiting_admin';
+                $shippingCostSource = $shippingQuote ? 'rajaongkir' : 'admin_manual';
+                $orderStatus = $shippingQuote ? 'belum_dibayar' : 'menunggu_konfirmasi_ongkir';
 
                 $user = $request->user();
                 $order = Order::create([
@@ -200,7 +253,17 @@ class CartController extends Controller
                     'promotion_value' => $promotion?->value,
                     'shipping_cost' => $shippingCost,
                     'shipping_cost_status' => $shippingCostStatus,
-                    'shipping_cost_confirmed_at' => $isPalembang ? now() : null,
+                    'shipping_cost_source' => $shippingCostSource,
+                    'shipping_origin_district_id' => $shippingQuote['origin_district_id'] ?? null,
+                    'shipping_destination_district_id' => $shippingQuote['destination_district_id'] ?? $destinationDistrictId,
+                    'shipping_weight_gram' => $shippingQuote['weight_gram'] ?? $lockedWeightGram,
+                    'shipping_courier_code' => $shippingQuote['courier_code'] ?? null,
+                    'shipping_courier_name' => $shippingQuote['courier_name'] ?? null,
+                    'shipping_service' => $shippingQuote['service'] ?? null,
+                    'shipping_service_description' => $shippingQuote['description'] ?? null,
+                    'shipping_etd' => $shippingQuote['etd'] ?? null,
+                    'shipping_rate_snapshot' => $shippingQuote['rate_snapshot'] ?? null,
+                    'shipping_cost_confirmed_at' => $shippingQuote ? now() : null,
                     'total_amount' => $totalAmount,
                     'payment_method_id' => $validated['payment_method_id'],
                     'shipping_name' => $validated['shipping_name'],
@@ -235,7 +298,7 @@ class CartController extends Controller
                     'payment_method_id' => $validated['payment_method_id'],
                     'amount' => $totalAmount,
                     'status' => 'menunggu',
-                    'notes' => $isPalembang
+                    'notes' => $shippingQuote
                         ? 'Menunggu konfirmasi pembayaran pelanggan.'
                         : 'Menunggu konfirmasi ongkos kirim admin.',
                 ]);
@@ -246,6 +309,10 @@ class CartController extends Controller
             });
         } catch (\RuntimeException $exception) {
             return back()->with('error', $exception->getMessage());
+        }
+
+        if ($shippingQuote) {
+            $shippingQuotes->forgetQuote($validated['shipping_quote_token'] ?? null);
         }
 
         $message = $order->isWaitingForShippingCost()
@@ -282,6 +349,8 @@ class CartController extends Controller
                 'required',
                 Rule::exists('payment_methods', 'id')->where('is_active', true),
             ],
+            'shipping_quote_token' => ['required_unless:shipping_fallback,admin_manual', 'nullable', 'string', 'max:120'],
+            'shipping_fallback' => ['nullable', Rule::in(['admin_manual'])],
             'notes' => ['nullable', 'string'],
         ]);
 

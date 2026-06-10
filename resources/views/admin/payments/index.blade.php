@@ -13,6 +13,13 @@
             </div>
         </div>
 
+        @if (session('success') || session('error') || $errors->any())
+            <div
+                class="border-l-4 {{ session('success') ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-500 bg-red-50 text-red-700' }} px-4 py-3 text-sm font-semibold">
+                {{ session('success') ?? session('error') ?? $errors->first() }}
+            </div>
+        @endif
+
         <div class="w-full overflow-hidden border border-[#f2c8d0] bg-white shadow-sm">
             <div class="border-b border-[#f2c8d0] bg-[#fff7f8] p-5">
                 <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -113,6 +120,12 @@
                                     <span class="px-2.5 py-1 text-xs font-bold {{ $statusClass }}">
                                         {{ $payment->status_label }}
                                     </span>
+                                    @if ($payment->rejection_reason)
+                                        <div class="mt-3 max-w-[220px] border-l-4 border-red-300 bg-red-50 px-3 py-2 text-xs leading-5 text-red-800">
+                                            <p class="font-bold uppercase tracking-wide">Keterangan</p>
+                                            <p class="mt-1">{{ $payment->rejection_reason }}</p>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-5 py-4">
                                     <p class="font-semibold text-gray-800">{{ $payment->verifiedBy?->name ?? '-' }}</p>
@@ -123,7 +136,7 @@
                                 </td>
                                 <td class="px-5 py-4 text-right">
                                     @if ($payment->status === 'menunggu')
-                                        <div class="flex flex-col gap-2">
+                                        <div class="flex flex-col gap-2" x-data="{ rejectOpen: false }">
                                             <form action="{{ route('admin.payments.verify', $payment) }}"
                                                 method="POST">
                                                 @csrf
@@ -134,15 +147,57 @@
                                                 </button>
                                             </form>
 
-                                            <form action="{{ route('admin.payments.reject', $payment) }}"
-                                                method="POST">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button type="submit"
-                                                    class="inline-flex w-full items-center justify-center gap-2 bg-red-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-red-700">
-                                                    Tolak
-                                                </button>
-                                            </form>
+                                            <button type="button"
+                                                class="inline-flex w-full items-center justify-center gap-2 bg-red-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-red-700"
+                                                x-on:click="rejectOpen = true; $nextTick(() => $refs.rejectionReason?.focus())">
+                                                Tolak
+                                            </button>
+
+                                            <div x-cloak x-show="rejectOpen" x-transition.opacity
+                                                x-on:keydown.escape.window="rejectOpen = false"
+                                                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
+                                                <div class="w-full max-w-lg border border-red-100 bg-white text-left shadow-2xl"
+                                                    x-on:click.outside="rejectOpen = false">
+                                                    <div class="border-b border-red-100 bg-red-50 px-6 py-4">
+                                                        <p class="text-xs font-black uppercase tracking-[.16em] text-red-700">
+                                                            Tolak Pembayaran</p>
+                                                        <h3 class="mt-1 text-xl font-black text-texthighlight">
+                                                            {{ $payment->order?->order_number ?? 'Pesanan' }}
+                                                        </h3>
+                                                        <p class="mt-2 text-sm leading-6 text-red-800">
+                                                            Masukkan keterangan yang jelas agar pelanggan memahami alasan pembayaran ditolak.
+                                                        </p>
+                                                    </div>
+
+                                                    <form action="{{ route('admin.payments.reject', $payment) }}"
+                                                        method="POST" class="space-y-4 px-6 py-5">
+                                                        @csrf
+                                                        @method('PATCH')
+
+                                                        <div>
+                                                            <label for="rejection_reason_{{ $payment->id }}"
+                                                                class="text-sm font-bold text-texthighlight">Keterangan Penolakan</label>
+                                                            <textarea id="rejection_reason_{{ $payment->id }}" name="rejection_reason" rows="5" maxlength="1000"
+                                                                class="mt-2 w-full border border-red-200 bg-red-50 px-3 py-2 text-sm leading-6 text-red-900 placeholder-red-300 shadow-sm focus:border-red-500 focus:outline-none"
+                                                                placeholder="Contoh: Nominal transfer tidak sesuai dengan total pembayaran." required
+                                                                x-ref="rejectionReason">{{ old('rejection_reason') }}</textarea>
+                                                            <x-input-error :messages="$errors->get('rejection_reason')" class="mt-2" />
+                                                        </div>
+
+                                                        <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                                                            <button type="button"
+                                                                class="inline-flex h-10 items-center justify-center border border-gray-300 bg-white px-4 text-xs font-bold text-gray-700 transition hover:bg-gray-50"
+                                                                x-on:click="rejectOpen = false">
+                                                                Batal
+                                                            </button>
+                                                            <button type="submit"
+                                                                class="inline-flex h-10 items-center justify-center bg-red-600 px-4 text-xs font-bold text-white transition hover:bg-red-700">
+                                                                Tolak Pembayaran
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </div>
                                     @else
                                         <span class="text-xs text-gray-500">-</span>

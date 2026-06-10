@@ -101,22 +101,37 @@
                             </div>
                         </div>
 
+                        @if ($order->payment?->status === 'ditolak')
+                            <div class="mt-4 border-l-4 border-red-400 bg-red-50 px-4 py-3 text-sm font-semibold leading-6 text-red-800">
+                                <p class="font-black uppercase tracking-[.12em]">Pembayaran Ditolak</p>
+                                <p class="mt-2">{{ $order->payment->rejection_reason ?: 'Pembayaran ditolak oleh admin.' }}</p>
+                            </div>
+                        @endif
+
                         <div class="mt-5 grid gap-3 sm:grid-cols-2">
                             <a href="{{ route('pelanggan.orders.show', $order) }}"
                                 class="flex h-11 items-center justify-center gap-2 border border-[#d8e2f0] text-xs font-black uppercase tracking-[.16em] text-[#10233d] hover:border-[#c8102e] hover:text-[#c8102e]">
                                 <iconify-icon icon="mdi:eye-outline"></iconify-icon>
                                 Detail
                             </a>
-                            @if ($order->isWaitingForShippingCost())
+                            @if ($order->status === 'dibatalkan')
+                                <div class="flex min-h-11 items-center justify-center bg-red-50 px-3 text-center text-xs font-black uppercase tracking-[.12em] text-red-800">
+                                    Pesanan Dibatalkan
+                                </div>
+                            @elseif ($order->isWaitingForShippingCost())
                                 <div class="flex min-h-11 items-center justify-center bg-orange-50 px-3 text-center text-xs font-black uppercase tracking-[.12em] text-orange-800">
                                     Menunggu Ongkir
                                 </div>
-                            @else
+                            @elseif ($order->payment?->status !== 'ditolak')
                                 <a href="{{ route('pelanggan.orders.payment-proof', $order) }}"
                                     class="flex h-11 items-center justify-center gap-2 bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
-                                    <iconify-icon icon="mdi:upload-outline"></iconify-icon>
-                                    Unggah Bukti
+                                    <iconify-icon icon="mdi:cash-fast"></iconify-icon>
+                                    Bayar
                                 </a>
+                            @else
+                                <div class="flex min-h-11 items-center justify-center bg-red-50 px-3 text-center text-xs font-black uppercase tracking-[.12em] text-red-800">
+                                    Pembayaran Ditolak
+                                </div>
                             @endif
                         </div>
                     </article>

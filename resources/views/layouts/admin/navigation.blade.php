@@ -23,10 +23,16 @@
                 <li
                     class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.orders.*') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
                     <iconify-icon icon="mdi:shopping" class="nav-small-cap-icon fs-5"></iconify-icon>
-                    <p>PESANAN</p>
+                    <p class="flex-1">PESANAN</p>
+                    @if ($paidUnprocessedOrderCount > 0)
+                        <span data-testid="paid-unprocessed-order-count" aria-label="Pesanan sudah bayar belum diproses"
+                            class="flex items-center justify-center h-5 min-w-[20px] px-1.5 text-xs font-bold text-white bg-primary rounded-full">
+                            {{ $paidUnprocessedOrderCount }}
+                        </span>
+                    @endif
                 </li>
             </a>
-            <a href="{{ route('admin.pending-shipping-costs.index') }}">
+            {{-- <a href="{{ route('admin.pending-shipping-costs.index') }}">
                 <li
                     class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.pending-shipping-costs.*') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
                     <iconify-icon icon="mdi:truck-delivery-outline" class="nav-small-cap-icon fs-5"></iconify-icon>
@@ -37,7 +43,7 @@
                         </span>
                     @endif
                 </li>
-            </a>
+            </a> --}}
             <a href="{{ route('admin.payments.index') }}">
                 <li
                     class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.payments.*') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">

@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -58,17 +60,68 @@ class PaymentController extends Controller
             return redirect()->route('admin.payments.index')->with('error', 'Payment sudah diproses.');
         }
 
-        $payment->update([
-            'status' => 'ditolak',
-            'verified_by' => auth()->id(),
-            'verified_at' => now(),
-            'rejection_reason' => $request->input('rejection_reason'),
+        $validated = $request->validate([
+            'rejection_reason' => ['required', 'string', 'max:1000'],
         ]);
 
-        if ($payment->order) {
-            $payment->order->update(['status' => 'dibatalkan']);
+        $isRejected = DB::transaction(function () use ($payment, $validated): bool {
+            $lockedPayment = Payment::whereKey($payment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedPayment->status !== 'menunggu') {
+                return false;
+            }
+
+            $order = $lockedPayment->order()
+                ->lockForUpdate()
+                ->first();
+
+            $lockedPayment->update([
+                'status' => 'ditolak',
+                'verified_by' => auth()->id(),
+                'verified_at' => now(),
+                'rejection_reason' => $validated['rejection_reason'],
+            ]);
+
+            if ($order) {
+                if (! $order->stock_restored_at) {
+                    $items = $order->items()->get();
+                    $products = Product::withTrashed()
+                        ->whereIn('id', $items->pluck('product_id')->filter()->unique())
+                        ->lockForUpdate()
+                        ->get()
+                        ->keyBy('id');
+
+                    foreach ($items as $item) {
+                        $product = $products->get($item->product_id);
+
+                        if (! $product) {
+                            continue;
+                        }
+
+                        $product->restoreStock((int) $item->quantity);
+                        $product->save();
+                    }
+
+                    $order->stock_restored_at = now();
+                    $order->stock_restored_by = auth()->id();
+                }
+
+                $order->status = 'dibatalkan';
+                $order->cancelled_by = auth()->id();
+                $order->cancellation_reason = 'Pembayaran ditolak: ' . $validated['rejection_reason'];
+                $order->cancelled_at = now();
+                $order->save();
+            }
+
+            return true;
+        });
+
+        if (! $isRejected) {
+            return redirect()->route('admin.payments.index')->with('error', 'Payment sudah diproses.');
         }
 
-        return redirect()->route('admin.payments.index')->with('success', 'Pembayaran ditolak dan status order diubah menjadi dibatalkan.');
+        return redirect()->route('admin.payments.index')->with('success', 'Pembayaran ditolak, stok dikembalikan, dan status order diubah menjadi dibatalkan.');
     }
 }

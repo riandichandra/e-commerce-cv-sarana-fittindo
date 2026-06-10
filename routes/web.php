@@ -10,6 +10,7 @@ use App\Http\Controllers\Marketing;
 use App\Http\Controllers\Pelanggan;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RajaOngkirRegionController;
+use App\Http\Controllers\RajaOngkirShippingController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
@@ -33,6 +34,7 @@ Route::middleware(['auth', 'role:pelanggan', 'verified'])->prefix('pelanggan')->
     Route::get('/cart', [Pelanggan\CartController::class, 'index'])->name('cart.index');
     Route::get('/cart/checkout', [Pelanggan\CartController::class, 'checkoutForm'])->name('cart.checkout');
     Route::post('/cart/checkout', [Pelanggan\CartController::class, 'checkout'])->name('cart.checkout.process');
+    Route::post('/shipping/domestic-cost', [RajaOngkirShippingController::class, 'domesticCost'])->name('shipping.domestic-cost');
     Route::post('/cart/{product}', [Pelanggan\CartController::class, 'store'])->name('cart.store');
     Route::patch('/cart/items/{cartItem}', [Pelanggan\CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/items/{cartItem}', [Pelanggan\CartController::class, 'destroy'])->name('cart.destroy');

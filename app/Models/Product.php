@@ -108,6 +108,16 @@ class Product extends Model
         $this->syncStatusFromStock();
     }
 
+    public function restoreStock(int $quantity): void
+    {
+        if ($quantity <= 0) {
+            return;
+        }
+
+        $this->stock = (int) $this->stock + $quantity;
+        $this->syncStatusFromStock();
+    }
+
     // Generate slug and keep status in sync
     protected static function boot()
     {

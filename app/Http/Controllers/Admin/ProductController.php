@@ -58,10 +58,9 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'weight' => 'required|numeric|min:0',
+            'weight' => 'required|numeric|min:1',
             'thickness' => 'nullable|string|max:50',
             'dimensions' => 'nullable|string|max:100',
-            'specifications' => 'nullable|string',
             'is_featured' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
             'images' => 'nullable|array|max:8',
@@ -71,7 +70,6 @@ class ProductController extends Controller
 
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_active'] = $request->boolean('is_active');
-        $validated['specifications'] = $this->formatSpecifications($request->input('specifications'));
         unset($validated['images'], $validated['primary_image']);
 
         $product = Product::create($validated);
@@ -114,10 +112,9 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'weight' => 'required|numeric|min:0',
+            'weight' => 'required|numeric|min:1',
             'thickness' => 'nullable|string|max:50',
             'dimensions' => 'nullable|string|max:100',
-            'specifications' => 'nullable|string',
             'is_featured' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
             'images' => 'nullable|array|max:8',
@@ -127,7 +124,6 @@ class ProductController extends Controller
 
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_active'] = $request->boolean('is_active');
-        $validated['specifications'] = $this->formatSpecifications($request->input('specifications'));
         unset($validated['images'], $validated['primary_image']);
 
         $product->update($validated);
@@ -151,16 +147,4 @@ class ProductController extends Controller
             ->with('success', 'Produk berhasil diperbarui.');
     }
 
-    private function formatSpecifications(?string $specifications): ?array
-    {
-        if (!$specifications) {
-            return null;
-        }
-
-        return collect(preg_split('/\r\n|\r|\n/', $specifications))
-            ->map(fn ($line) => trim($line))
-            ->filter()
-            ->values()
-            ->all();
-    }
 }

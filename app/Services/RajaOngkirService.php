@@ -13,6 +13,37 @@ class RajaOngkirService
         return filled($this->apiKey());
     }
 
+    public function canCalculateShipping(): bool
+    {
+        return $this->isConfigured() && filled($this->originDistrictId());
+    }
+
+    public function originDistrictId(): ?string
+    {
+        $originDistrictId = config('services.rajaongkir.origin_district_id');
+
+        return filled($originDistrictId) ? (string) $originDistrictId : null;
+    }
+
+    public function originLabel(): string
+    {
+        return filled(config('services.rajaongkir.origin_label'))
+            ? (string) config('services.rajaongkir.origin_label')
+            : 'Gudang utama';
+    }
+
+    public function defaultCouriers(): string
+    {
+        return filled(config('services.rajaongkir.default_couriers'))
+            ? (string) config('services.rajaongkir.default_couriers')
+            : 'jne:sicepat:jnt:tiki:pos';
+    }
+
+    public function shippingQuoteTtl(): int
+    {
+        return max(60, (int) config('services.rajaongkir.shipping_quote_ttl', 600));
+    }
+
     public function provinces(): array
     {
         return $this->remember('provinces', fn () => $this->getRegions('destination/province'));
@@ -68,6 +99,83 @@ class RajaOngkirService
         ];
     }
 
+    public function calculateDistrictDomesticCost(
+        string $originDistrictId,
+        string $destinationDistrictId,
+        int $weightGram,
+        ?string $couriers = null,
+        string $price = 'lowest'
+    ): array {
+        if (! $this->isConfigured()) {
+            throw new RuntimeException('API key RajaOngkir belum dikonfigurasi.');
+        }
+
+        if (! filled($originDistrictId)) {
+            throw new RuntimeException('Origin district RajaOngkir belum dikonfigurasi.');
+        }
+
+        if (! filled($destinationDistrictId)) {
+            throw new RuntimeException('Destination district RajaOngkir belum tersedia.');
+        }
+
+        if ($weightGram < 1) {
+            throw new RuntimeException('Berat pengiriman harus lebih dari 0 gram.');
+        }
+
+        $response = Http::baseUrl($this->baseUrl())
+            ->acceptJson()
+            ->asForm()
+            ->withHeaders(['key' => $this->apiKey()])
+            ->timeout($this->timeout())
+            ->retry(2, 200, null, false)
+            ->post('calculate/district/domestic-cost', [
+                'origin' => $originDistrictId,
+                'destination' => $destinationDistrictId,
+                'weight' => $weightGram,
+                'courier' => $couriers ?: $this->defaultCouriers(),
+                'price' => $price,
+            ]);
+
+        $payload = $response->json();
+        $metaCode = data_get($payload, 'meta.code');
+
+        if (! $response->successful() || ($metaCode && (int) $metaCode >= 400)) {
+            $message = data_get($payload, 'meta.message', 'Gagal menghitung ongkos kirim RajaOngkir.');
+
+            throw new RuntimeException($message, $response->status());
+        }
+
+        $data = data_get($payload, 'data', []);
+
+        if (! is_array($data)) {
+            return [];
+        }
+
+        return $this->normalizeShippingOptions($data);
+    }
+
+    public function normalizeShippingOptions(array $options): array
+    {
+        return collect($options)
+            ->map(function (array $option): array {
+                return [
+                    'courier_name' => (string) ($option['name'] ?? ''),
+                    'courier_code' => (string) ($option['code'] ?? ''),
+                    'service' => (string) ($option['service'] ?? ''),
+                    'description' => (string) ($option['description'] ?? ''),
+                    'cost' => (int) ($option['cost'] ?? 0),
+                    'etd' => isset($option['etd']) ? (string) $option['etd'] : null,
+                ];
+            })
+            ->filter(function (array $option): bool {
+                return $option['courier_code'] !== ''
+                    && $option['service'] !== ''
+                    && $option['cost'] >= 0;
+            })
+            ->values()
+            ->all();
+    }
+
     private function getRegions(string $path): array
     {
         if (! $this->isConfigured()) {
@@ -78,7 +186,7 @@ class RajaOngkirService
             ->acceptJson()
             ->withHeaders(['key' => $this->apiKey()])
             ->timeout($this->timeout())
-            ->retry(2, 200)
+            ->retry(2, 200, null, false)
             ->get($path);
 
         $payload = $response->json();

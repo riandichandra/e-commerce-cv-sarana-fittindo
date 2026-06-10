@@ -43,6 +43,8 @@ class OrderListTest extends TestCase
         $response->assertSee('Pembayaran Dikonfirmasi');
         $response->assertSee($dikirimOrder->order_number);
         $response->assertSee('Dikirim');
+        $response->assertSee('Bayar');
+        $response->assertDontSee('Unggah Bukti');
         $response->assertDontSee($otherOrder->order_number);
     }
 
@@ -63,6 +65,25 @@ class OrderListTest extends TestCase
         $response->assertSeeText('Foto Produk Sudah Sampai');
         $response->assertSee('Selesai');
         $response->assertSee('Dibatalkan');
+    }
+
+    public function test_customer_can_see_payment_method_details_on_unpaid_order_detail(): void
+    {
+        $customer = $this->makeCustomer();
+        $paymentMethod = $this->makePaymentMethod();
+        $product = $this->makeProduct();
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'menunggu');
+
+        $response = $this->actingAs($customer)->get(route('pelanggan.orders.show', $order));
+
+        $response->assertOk();
+        $response->assertSee('Detail Pembayaran');
+        $response->assertSee('Transfer Bank BCA');
+        $response->assertSee('BCA');
+        $response->assertSee('1234567890');
+        $response->assertSee('CV Sarana Fittindo');
+        $response->assertSee('Transfer sesuai total pembayaran.');
+        $response->assertSee('Bayar');
     }
 
     public function test_customer_can_mark_dikirim_order_as_selesai(): void
@@ -208,6 +229,7 @@ class OrderListTest extends TestCase
             'account_number' => '1234567890',
             'account_name' => 'CV Sarana Fittindo',
             'bank_name' => 'BCA',
+            'instructions' => 'Transfer sesuai total pembayaran.',
             'is_active' => true,
             'sort_order' => 1,
         ]);

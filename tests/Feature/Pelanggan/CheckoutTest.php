@@ -13,6 +13,7 @@ use App\Models\Promotion;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\RajaOngkirService;
+use App\Services\ShippingQuoteService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -30,6 +31,7 @@ class CheckoutTest extends TestCase
         $response->assertOk();
         $response->assertSee('Detail Pemesanan');
         $response->assertSee('Detail Pengiriman');
+        $response->assertSee('Layanan Pengiriman');
         $response->assertSee('Metode Pembayaran');
         $response->assertSee('Produk Dipesan');
     }
@@ -45,6 +47,46 @@ class CheckoutTest extends TestCase
         $response->assertSee('Pilih alamat tersimpan');
         $response->assertSee($address->label);
         $response->assertSee($address->full_address);
+    }
+
+    public function test_customer_can_fetch_rajaongkir_shipping_options(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $this->mockCheckoutRegion(cityName: 'Bandung');
+
+        $response = $this->actingAs($user)->postJson(route('pelanggan.shipping.domestic-cost'), [
+            'shipping_province_id' => '1',
+            'shipping_city_id' => '2',
+            'shipping_district_id' => '3',
+            'shipping_village_id' => '4',
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('data.0.courier_code', 'jne');
+        $response->assertJsonPath('data.0.service', 'REG');
+        $response->assertJsonPath('data.0.cost', 45000);
+        $response->assertJsonPath('data.0.weight_gram', 2000);
+        $this->assertNotEmpty($response->json('data.0.quote_token'));
+    }
+
+    public function test_shipping_quote_endpoint_requires_origin_configuration(): void
+    {
+        $user = $this->makeCustomerWithCart();
+
+        $this->mock(RajaOngkirService::class, function ($mock): void {
+            $mock->shouldReceive('isConfigured')->once()->andReturn(true);
+            $mock->shouldReceive('canCalculateShipping')->once()->andReturn(false);
+        });
+
+        $response = $this->actingAs($user)->postJson(route('pelanggan.shipping.domestic-cost'), [
+            'shipping_province_id' => '1',
+            'shipping_city_id' => '2',
+            'shipping_district_id' => '3',
+            'shipping_village_id' => '4',
+        ]);
+
+        $response->assertStatus(503);
+        $response->assertJsonPath('message', 'Origin pengiriman RajaOngkir belum dikonfigurasi.');
     }
 
     public function test_customer_can_checkout_with_shipping_detail_and_payment_method(): void
@@ -72,9 +114,14 @@ class CheckoutTest extends TestCase
             'shipping_village' => 'Dago',
             'shipping_postal_code' => '40135',
             'notes' => 'Kirim pagi.',
-            'status' => 'menunggu_konfirmasi_ongkir',
-            'shipping_cost_status' => 'waiting_admin',
-            'shipping_cost' => 0,
+            'status' => 'belum_dibayar',
+            'shipping_cost_status' => 'calculated',
+            'shipping_cost_source' => 'rajaongkir',
+            'shipping_cost' => 45000,
+            'shipping_courier_code' => 'jne',
+            'shipping_service' => 'REG',
+            'shipping_weight_gram' => 2000,
+            'total_amount' => 345000,
         ]);
 
         $order = Order::first();
@@ -90,7 +137,7 @@ class CheckoutTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'order_id' => $order->id,
             'payment_method_id' => $paymentMethod->id,
-            'amount' => 300000,
+            'amount' => 345000,
             'status' => 'menunggu',
         ]);
 
@@ -107,6 +154,7 @@ class CheckoutTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod, [
             'shipping_postal_code' => '30111',
+            '_shipping_cost' => 20000,
         ]));
 
         $order = Order::first();
@@ -116,7 +164,8 @@ class CheckoutTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'status' => 'belum_dibayar',
-            'shipping_cost_status' => 'fixed',
+            'shipping_cost_status' => 'calculated',
+            'shipping_cost_source' => 'rajaongkir',
             'shipping_cost' => 20000,
             'total_amount' => 320000,
         ]);
@@ -253,7 +302,7 @@ class CheckoutTest extends TestCase
         ]);
     }
 
-    public function test_checkout_outside_palembang_uses_discounted_subtotal_until_shipping_is_confirmed(): void
+    public function test_checkout_outside_palembang_uses_rajaongkir_shipping_quote_in_total(): void
     {
         $user = $this->makeCustomerWithCart();
         $paymentMethod = PaymentMethod::first();
@@ -266,16 +315,17 @@ class CheckoutTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'status' => 'menunggu_konfirmasi_ongkir',
-            'shipping_cost_status' => 'waiting_admin',
-            'shipping_cost' => 0,
+            'status' => 'belum_dibayar',
+            'shipping_cost_status' => 'calculated',
+            'shipping_cost_source' => 'rajaongkir',
+            'shipping_cost' => 45000,
             'discount_amount' => 50000,
-            'total_amount' => 250000,
+            'total_amount' => 295000,
         ]);
 
         $this->assertDatabaseHas('payments', [
             'order_id' => $order->id,
-            'amount' => 250000,
+            'amount' => 295000,
         ]);
     }
 
@@ -340,6 +390,7 @@ class CheckoutTest extends TestCase
         $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), [
             'shipping_address_id' => $address->id,
             'payment_method_id' => $paymentMethod->id,
+            'shipping_quote_token' => $this->shippingQuoteToken($user, destinationDistrictId: (string) $address->district_id),
         ]);
 
         $order = Order::first();
@@ -356,8 +407,9 @@ class CheckoutTest extends TestCase
             'shipping_district' => 'Kebayoran Baru',
             'shipping_village' => 'Senayan',
             'shipping_postal_code' => $address->postal_code,
-            'status' => 'menunggu_konfirmasi_ongkir',
-            'shipping_cost_status' => 'waiting_admin',
+            'status' => 'belum_dibayar',
+            'shipping_cost_status' => 'calculated',
+            'shipping_cost' => 45000,
         ]);
     }
 
@@ -367,7 +419,10 @@ class CheckoutTest extends TestCase
         $paymentMethod = PaymentMethod::first();
         $this->mockCheckoutRegion(cityName: 'Bandung');
 
-        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod));
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod, [
+            'shipping_fallback' => 'admin_manual',
+            'shipping_quote_token' => null,
+        ]));
 
         $order = Order::first();
 
@@ -419,6 +474,35 @@ class CheckoutTest extends TestCase
         $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod));
 
         $response->assertSessionHasErrors('shipping_province_id');
+        $this->assertSame(0, Order::count());
+    }
+
+    public function test_customer_cannot_checkout_with_invalid_shipping_quote_token(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+        $this->mockCheckoutRegion(cityName: 'Bandung');
+
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod, [
+            'shipping_quote_token' => 'invalid-token',
+        ]));
+
+        $response->assertSessionHasErrors('shipping_quote_token');
+        $this->assertSame(0, Order::count());
+    }
+
+    public function test_customer_cannot_checkout_when_cart_weight_changed_after_shipping_quote(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+        $this->mockCheckoutRegion(cityName: 'Bandung');
+        $payload = $this->manualCheckoutPayload($paymentMethod);
+
+        $user->cart()->first()->items()->first()->update(['quantity' => 1]);
+
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $payload);
+
+        $response->assertSessionHasErrors('shipping_quote_token');
         $this->assertSame(0, Order::count());
     }
 
@@ -480,10 +564,15 @@ class CheckoutTest extends TestCase
             'receiver_name' => 'Budi Santoso',
             'receiver_phone' => '081234567890',
             'full_address' => 'Jl. Merdeka No. 10',
-            'province_id' => 1,
-            'regency_id' => 1,
-            'district_id' => 1,
-            'village_id' => 1,
+            'province_id' => '1',
+            'regency_id' => '2',
+            'district_id' => '3',
+            'village_id' => '4',
+            'province_name' => 'DKI Jakarta',
+            'city_name' => 'Jakarta Selatan',
+            'district_name' => 'Kebayoran Baru',
+            'village_name' => 'Senayan',
+            'region_source' => 'rajaongkir',
             'postal_code' => '12190',
             'is_main' => true,
         ]);
@@ -518,12 +607,13 @@ class CheckoutTest extends TestCase
 
         return $this->manualCheckoutPayload($paymentMethod, [
             'shipping_postal_code' => '30111',
+            '_shipping_cost' => 20000,
         ]);
     }
 
     private function manualCheckoutPayload(PaymentMethod $paymentMethod, array $overrides = []): array
     {
-        return array_merge([
+        $payload = array_merge([
             'shipping_name' => 'Budi Santoso',
             'shipping_phone' => '081234567890',
             'shipping_address' => 'Jl. Merdeka No. 10',
@@ -538,6 +628,18 @@ class CheckoutTest extends TestCase
             'shipping_postal_code' => '40135',
             'payment_method_id' => $paymentMethod->id,
         ], $overrides);
+
+        $shippingCost = (int) ($payload['_shipping_cost'] ?? 45000);
+        unset($payload['_shipping_cost']);
+
+        if (($payload['shipping_fallback'] ?? null) !== 'admin_manual' && empty($payload['shipping_quote_token'])) {
+            $payload['shipping_quote_token'] = $this->shippingQuoteToken(
+                destinationDistrictId: (string) ($payload['shipping_district_id'] ?? '3'),
+                cost: $shippingCost
+            );
+        }
+
+        return $payload;
     }
 
     private function mockPalembangCheckoutRegion(): void
@@ -577,6 +679,11 @@ class CheckoutTest extends TestCase
             $resolvedRegions,
         ): void {
             $mock->shouldReceive('isConfigured')->zeroOrMoreTimes()->andReturn($configured);
+            $mock->shouldReceive('canCalculateShipping')->zeroOrMoreTimes()->andReturn($configured);
+            $mock->shouldReceive('originDistrictId')->zeroOrMoreTimes()->andReturn('1391');
+            $mock->shouldReceive('originLabel')->zeroOrMoreTimes()->andReturn('Gudang utama');
+            $mock->shouldReceive('shippingQuoteTtl')->zeroOrMoreTimes()->andReturn(600);
+            $mock->shouldReceive('defaultCouriers')->zeroOrMoreTimes()->andReturn('jne:sicepat:jnt:tiki:pos');
 
             if (! $configured) {
                 return;
@@ -591,6 +698,40 @@ class CheckoutTest extends TestCase
                     'district' => ['id' => $districtId, 'name' => $districtName, 'postal_code' => null],
                     'subdistrict' => ['id' => $villageId, 'name' => $villageName, 'postal_code' => $postalCode],
                 ]);
+
+            $mock->shouldReceive('calculateDistrictDomesticCost')
+                ->zeroOrMoreTimes()
+                ->with('1391', $districtId, 2000)
+                ->andReturn([
+                    [
+                        'courier_name' => 'Jalur Nugraha Ekakurir (JNE)',
+                        'courier_code' => 'jne',
+                        'service' => 'REG',
+                        'description' => 'Regular Service',
+                        'cost' => 45000,
+                        'etd' => '1-2 day',
+                    ],
+                ]);
         });
+    }
+
+    private function shippingQuoteToken(
+        ?User $user = null,
+        ?Cart $cart = null,
+        string $originDistrictId = '1391',
+        string $destinationDistrictId = '3',
+        int $cost = 45000,
+    ): string {
+        $cart ??= Cart::with(['user', 'items.product'])->first();
+        $user ??= $cart->user;
+
+        return app(ShippingQuoteService::class)->storeQuote($user, $cart, [
+            'courier_name' => 'Jalur Nugraha Ekakurir (JNE)',
+            'courier_code' => 'jne',
+            'service' => 'REG',
+            'description' => 'Regular Service',
+            'cost' => $cost,
+            'etd' => '1-2 day',
+        ], $originDistrictId, $destinationDistrictId, app(ShippingQuoteService::class)->weightForCart($cart));
     }
 }

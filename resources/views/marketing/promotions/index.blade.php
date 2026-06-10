@@ -78,9 +78,6 @@
                                 <td class="px-5 py-4">
                                     <div class="font-bold text-texthighlight">{{ $promotion->name }}</div>
                                     <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                                        <span class="rounded bg-gray-100 px-2 py-1 font-semibold text-gray-700">
-                                            {{ $promotion->code ?: 'Tanpa kode' }}
-                                        </span>
                                         @if ($promotion->banner_image)
                                             <a class="font-semibold text-primary hover:text-primary-dark"
                                                 href="{{ asset('storage/' . $promotion->banner_image) }}"

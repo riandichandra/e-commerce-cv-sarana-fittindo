@@ -1,4 +1,22 @@
 <x-pelanggan-layout>
+    @php
+        $filterUrl = function (array $overrides = [], array $remove = []) {
+            $query = request()->except(array_merge(['page'], $remove));
+
+            foreach ($overrides as $key => $value) {
+                if (filled($value)) {
+                    $query[$key] = $value;
+                } else {
+                    unset($query[$key]);
+                }
+            }
+
+            return route('pelanggan.products.index', $query);
+        };
+
+        $selectedSort = request('sort', 'latest');
+    @endphp
+
     <!-- Header Section -->
     <div class="bg-slate-900 text-white px-12 py-12">
         <div class="max-w-6xl">
@@ -22,15 +40,15 @@
                         <div class="space-y-3">
                             <label class="flex items-center cursor-pointer">
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
-                                    @if (request('category') === '') checked @endif
-                                    onchange="document.location.href = '{{ route('pelanggan.products.index') }}';">
+                                    @checked(! request()->filled('category'))
+                                    onchange="document.location.href = '{{ $filterUrl([], ['category']) }}';">
                                 <span class="ml-3 text-sm text-gray-700">Semua Kategori</span>
                             </label>
                             @foreach ($categories as $category)
                                 <label class="flex items-center cursor-pointer">
                                     <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
-                                        @if (request('category') === $category->slug) checked @endif
-                                        onchange="document.location.href = '{{ route('pelanggan.products.index') }}?category={{ $category->slug }}';">
+                                        @checked(request('category') === $category->slug)
+                                        onchange="document.location.href = '{{ $filterUrl(['category' => $category->slug]) }}';">
                                     <span class="ml-3 text-sm text-gray-700">{{ $category->name }}</span>
                                 </label>
                             @endforeach
@@ -43,26 +61,26 @@
                         <div class="space-y-3">
                             <label class="flex items-center cursor-pointer">
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
-                                    @if (!request('price_range')) checked @endif
-                                    onchange="document.location.href = '{{ route('pelanggan.products.index') }}';">
+                                    @checked(! request()->filled('price_range'))
+                                    onchange="document.location.href = '{{ $filterUrl([], ['price_range']) }}';">
                                 <span class="ml-3 text-sm text-gray-700">Semua Harga</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
-                                    @if (request('price_range') === 'under_100k') checked @endif
-                                    onchange="document.location.href = '{{ route('pelanggan.products.index') }}?price_range=under_100k';">
+                                    @checked(request('price_range') === 'under_100k')
+                                    onchange="document.location.href = '{{ $filterUrl(['price_range' => 'under_100k']) }}';">
                                 <span class="ml-3 text-sm text-gray-700">Dibawah Rp 100K</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
-                                    @if (request('price_range') === '100k_500k') checked @endif
-                                    onchange="document.location.href = '{{ route('pelanggan.products.index') }}?price_range=100k_500k';">
+                                    @checked(request('price_range') === '100k_500k')
+                                    onchange="document.location.href = '{{ $filterUrl(['price_range' => '100k_500k']) }}';">
                                 <span class="ml-3 text-sm text-gray-700">Rp 100K - 500K</span>
                             </label>
                             <label class="flex items-center cursor-pointer">
                                 <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
-                                    @if (request('price_range') === 'above_500k') checked @endif
-                                    onchange="document.location.href = '{{ route('pelanggan.products.index') }}?price_range=above_500k';">
+                                    @checked(request('price_range') === 'above_500k')
+                                    onchange="document.location.href = '{{ $filterUrl(['price_range' => 'above_500k']) }}';">
                                 <span class="ml-3 text-sm text-gray-700">Di atas Rp 500K</span>
                             </label>
                         </div>
@@ -78,12 +96,12 @@
                     <select
                         class="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 focus:outline-none focus:border-red-600"
                         onchange="document.location.href = this.value;">
-                        <option value="{{ route('pelanggan.products.index') }}">Urutkan Berdasarkan Terbaru</option>
-                        <option value="{{ route('pelanggan.products.index') }}?sort=price_asc">Harga: Rendah ke Tinggi
+                        <option value="{{ $filterUrl([], ['sort']) }}" @selected($selectedSort === 'latest')>Urutkan Berdasarkan Terbaru</option>
+                        <option value="{{ $filterUrl(['sort' => 'price_asc']) }}" @selected($selectedSort === 'price_asc')>Harga: Rendah ke Tinggi
                         </option>
-                        <option value="{{ route('pelanggan.products.index') }}?sort=price_desc">Harga: Tinggi ke Rendah
+                        <option value="{{ $filterUrl(['sort' => 'price_desc']) }}" @selected($selectedSort === 'price_desc')>Harga: Tinggi ke Rendah
                         </option>
-                        <option value="{{ route('pelanggan.products.index') }}?sort=popular">Paling Populer</option>
+                        <option value="{{ $filterUrl(['sort' => 'popular']) }}" @selected($selectedSort === 'popular')>Paling Populer</option>
                     </select>
                 </div>
 

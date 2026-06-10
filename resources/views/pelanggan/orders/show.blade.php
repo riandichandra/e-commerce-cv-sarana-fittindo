@@ -74,6 +74,15 @@
                                 {{ $order->payment?->status_label ?? '-' }}
                             </p>
                         </div>
+                        @if ($order->shipping_service_label)
+                            <div>
+                                <p class="text-[#657891]">Layanan pengiriman</p>
+                                <p class="mt-1 font-black text-[#10233d]">{{ $order->shipping_service_label }}</p>
+                                <p class="mt-1 text-[#657891]">
+                                    {{ $order->shipping_etd ? 'Estimasi ' . $order->shipping_etd : 'Estimasi belum tersedia' }}
+                                </p>
+                            </div>
+                        @endif
                         <div>
                             <p class="text-[#657891]">Penerima</p>
                             <p class="mt-1 font-black text-[#10233d]">{{ $order->shipping_name }}</p>
@@ -89,6 +98,13 @@
                     @if ($order->isWaitingForShippingCost())
                         <div class="mt-5 border-l-4 border-orange-400 bg-orange-50 px-4 py-3 text-sm font-semibold leading-6 text-orange-800">
                             Ongkos kirim untuk alamat Anda sedang menunggu konfirmasi admin. Silakan tunggu total pembayaran final sebelum mengunggah bukti pembayaran.
+                        </div>
+                    @endif
+
+                    @if ($order->payment?->status === 'ditolak')
+                        <div class="mt-5 border-l-4 border-red-400 bg-red-50 px-4 py-3 text-sm font-semibold leading-6 text-red-800">
+                            <p class="font-black uppercase tracking-[.12em]">Pembayaran Ditolak</p>
+                            <p class="mt-2">{{ $order->payment->rejection_reason ?: 'Pembayaran ditolak oleh admin.' }}</p>
                         </div>
                     @endif
                 </div>
@@ -141,19 +157,57 @@
                             <span class="text-right font-black text-green-700">-Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
                         </div>
                     @endif
-                    <div class="flex items-start justify-between gap-4">
-                        <span class="text-[#657891]">Ongkos kirim</span>
-                        @if ($order->isWaitingForShippingCost())
-                            <span class="text-right font-black text-orange-700">Menunggu konfirmasi admin</span>
-                        @else
-                            <span class="font-black text-[#10233d]">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
-                        @endif
-                    </div>
+                        <div class="flex items-start justify-between gap-4">
+                            <span class="text-[#657891]">Ongkos kirim</span>
+                            @if ($order->isWaitingForShippingCost())
+                                <span class="text-right font-black text-orange-700">Menunggu konfirmasi admin</span>
+                            @else
+                                <span class="text-right font-black text-[#10233d]">
+                                    Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}
+                                    @if ($order->shipping_service_label)
+                                        <span class="block text-xs font-semibold text-[#657891]">{{ $order->shipping_service_label }}</span>
+                                    @endif
+                                </span>
+                            @endif
+                        </div>
                     <div class="flex justify-between border-t border-[#e8eef7] pt-3">
                         <span class="text-[#657891]">{{ $order->isWaitingForShippingCost() ? 'Total sementara' : 'Total pembayaran' }}</span>
                         <span class="font-black text-[#c8102e]">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
                     </div>
                 </div>
+
+                @if (! $order->isWaitingForShippingCost() && $order->status !== 'dibatalkan' && ! in_array($order->payment?->status, ['terverifikasi', 'ditolak']))
+                    <div class="mt-6 border-t border-[#e8eef7] pt-5 text-sm">
+                        <h3 class="text-base font-black uppercase text-[#10233d]">Detail Pembayaran</h3>
+
+                        <dl class="mt-4 space-y-3">
+                            <div>
+                                <dt class="text-[#657891]">Metode pembayaran</dt>
+                                <dd class="mt-1 font-black text-[#10233d]">{{ $order->paymentMethod?->name ?? '-' }}</dd>
+                            </div>
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                                <div>
+                                    <dt class="text-[#657891]">Bank</dt>
+                                    <dd class="mt-1 font-black text-[#10233d]">{{ $order->paymentMethod?->bank_name ?? '-' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-[#657891]">Atas nama</dt>
+                                    <dd class="mt-1 font-black text-[#10233d]">{{ $order->paymentMethod?->account_name ?? '-' }}</dd>
+                                </div>
+                            </div>
+                            <div>
+                                <dt class="text-[#657891]">Nomor rekening</dt>
+                                <dd class="mt-1 break-all text-lg font-black text-[#c8102e]">{{ $order->paymentMethod?->account_number ?? '-' }}</dd>
+                            </div>
+                        </dl>
+
+                        @if ($order->paymentMethod?->instructions)
+                            <div class="mt-4 border-l-4 border-[#c8102e] bg-[#fff7f8] px-4 py-3 text-xs font-semibold leading-5 text-[#657891]">
+                                {{ $order->paymentMethod->instructions }}
+                            </div>
+                        @endif
+                    </div>
+                @endif
 
                 @if ($order->received_image)
                     <div class="mt-6 rounded-xl border border-[#e8eef7] bg-[#f9fafb] p-4">
@@ -199,11 +253,15 @@
                     <div class="mt-7 bg-orange-50 px-4 py-3 text-center text-xs font-black uppercase tracking-[.12em] text-orange-800">
                         Menunggu Konfirmasi Ongkir
                     </div>
-                @elseif ($order->payment?->status !== 'terverifikasi')
+                @elseif ($order->payment?->status === 'ditolak')
+                    <div class="mt-7 bg-red-50 px-4 py-3 text-center text-xs font-black uppercase tracking-[.12em] text-red-800">
+                        Pembayaran Ditolak
+                    </div>
+                @elseif ($order->status !== 'dibatalkan' && $order->payment?->status !== 'terverifikasi')
                     <a href="{{ route('pelanggan.orders.payment-proof', $order) }}"
                         class="mt-7 flex h-11 w-full items-center justify-center gap-2 bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
-                        <iconify-icon icon="mdi:upload-outline"></iconify-icon>
-                        Unggah Bukti
+                        <iconify-icon icon="mdi:cash-fast"></iconify-icon>
+                        Bayar
                     </a>
                 @endif
 

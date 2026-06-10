@@ -1,10 +1,3 @@
-@php
-    $specifications = old('specifications');
-    if ($specifications === null && $product?->specifications) {
-        $specifications = implode(PHP_EOL, $product->specifications);
-    }
-@endphp
-
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="flex flex-col gap-1">
         <label for="name" class="text-sm font-medium text-gray-700">Nama Produk</label>
@@ -111,15 +104,6 @@
     <textarea name="description" id="description" rows="4"
         class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">{{ old('description', $product?->description) }}</textarea>
     @error('description')
-        <p class="text-sm text-red-600">{{ $message }}</p>
-    @enderror
-</div>
-
-<div class="flex flex-col gap-1">
-    <label for="specifications" class="text-sm font-medium text-gray-700">Spesifikasi</label>
-    <textarea name="specifications" id="specifications" rows="4"
-        class="border border-gray-300 p-2 focus:ring-primary focus:border-primary transition w-full">{{ $specifications }}</textarea>
-    @error('specifications')
         <p class="text-sm text-red-600">{{ $message }}</p>
     @enderror
 </div>

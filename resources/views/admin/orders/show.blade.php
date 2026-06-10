@@ -130,6 +130,23 @@
                                     {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
                             @endif
                         </div>
+                        @if ($order->shipping_cost_source || $order->shipping_service_label || $order->shipping_weight_gram)
+                            <div class="border-t border-gray-200 pt-2 text-xs text-gray-600">
+                                <p>Sumber: <span class="font-semibold text-texthighlight">{{ $order->shipping_cost_source ? strtoupper(str_replace('_', ' ', $order->shipping_cost_source)) : '-' }}</span></p>
+                                @if ($order->shipping_service_label)
+                                    <p class="mt-1">Layanan: <span class="font-semibold text-texthighlight">{{ $order->shipping_service_label }}</span></p>
+                                @endif
+                                @if ($order->shipping_etd)
+                                    <p class="mt-1">Estimasi: <span class="font-semibold text-texthighlight">{{ $order->shipping_etd }}</span></p>
+                                @endif
+                                @if ($order->shipping_weight_gram)
+                                    <p class="mt-1">Berat: <span class="font-semibold text-texthighlight">{{ number_format($order->shipping_weight_gram, 0, ',', '.') }} gram</span></p>
+                                @endif
+                                @if ($order->shipping_origin_district_id || $order->shipping_destination_district_id)
+                                    <p class="mt-1">Origin/Destination: <span class="font-semibold text-texthighlight">{{ $order->shipping_origin_district_id ?? '-' }} / {{ $order->shipping_destination_district_id ?? '-' }}</span></p>
+                                @endif
+                            </div>
+                        @endif
                         <div class="flex justify-between gap-4 border-t border-gray-200 pt-2">
                             <span>Total pembayaran</span>
                             <span class="font-semibold text-primary">Rp

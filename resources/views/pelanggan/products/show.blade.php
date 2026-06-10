@@ -4,7 +4,6 @@
         $primaryImage = $product->primary_image ?? $productImages->first();
         $isAvailable = $product->isAvailable();
         $isWishlisted = Auth::check() && Auth::user()->wishlists()->where('product_id', $product->id)->exists();
-        $specifications = collect($product->specifications ?? [])->filter(fn($value) => filled($value));
         $detailRows = [
             'Kategori' => $product->category?->name,
             'Merek' => $product->brand?->name,
@@ -105,7 +104,7 @@
                             <button type="button"
                                 class="flex h-full w-11 items-center justify-center text-lg font-black text-[#436aa6] hover:bg-[#f5f8fc]"
                                 onclick="decreaseQuantity()" aria-label="Kurangi jumlah">-</button>
-                            <input type="number" id="quantity" value="1" min="1" readonly
+                            <input type="number" id="quantity" value="1" min="1" max="{{ max((int) $product->stock, 1) }}" inputmode="numeric"
                                 class="h-full w-full border-x border-[#d8e2f0] text-center text-sm font-black text-[#10233d] focus:outline-none">
                             <button type="button"
                                 class="flex h-full w-11 items-center justify-center text-lg font-black text-[#436aa6] hover:bg-[#f5f8fc]"
@@ -161,7 +160,7 @@
 
         <section class="mx-auto grid max-w-7xl gap-6 px-4 pb-12 sm:px-6 lg:grid-cols-[1fr_.9fr] lg:px-8">
             <div class="rounded-md border border-[#d8e2f0] bg-white p-5 shadow-sm sm:p-6">
-                <h2 class="text-xl font-black uppercase text-[#10233d]">Spesifikasi Produk</h2>
+                <h2 class="text-xl font-black uppercase text-[#10233d]">Detail Produk</h2>
                 <div class="mt-5 grid gap-3 sm:grid-cols-2">
                     @foreach ($detailRows as $label => $value)
                         <div class="rounded-md bg-[#f5f8fc] p-4">
@@ -170,18 +169,10 @@
                             <p class="mt-1 text-sm font-bold text-[#10233d]">{{ filled($value) ? $value : '-' }}</p>
                         </div>
                     @endforeach
-                    @foreach ($specifications as $label => $value)
-                        <div class="rounded-md bg-[#f5f8fc] p-4">
-                            <p class="text-xs font-black uppercase tracking-[.14em] text-[#6e84a3]">
-                                {{ ucwords(str_replace('_', ' ', $label)) }}
-                            </p>
-                            <p class="mt-1 text-sm font-bold text-[#10233d]">{{ $value }}</p>
-                        </div>
-                    @endforeach
                 </div>
             </div>
 
-            <div class="rounded-md border border-[#d8e2f0] bg-[#10233d] p-5 text-white shadow-sm sm:p-6">
+            {{-- <div class="rounded-md border border-[#d8e2f0] bg-[#10233d] p-5 text-white shadow-sm sm:p-6">
                 <h2 class="text-xl font-black uppercase">Informasi Belanja</h2>
                 <div class="mt-5 space-y-4">
                     <div class="flex items-start gap-3">
@@ -210,7 +201,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </section>
 
         @if ($relatedProducts && $relatedProducts->count() > 0)
@@ -259,7 +250,8 @@
                                             <p class="mt-1 text-xs font-semibold text-[#6e84a3]">
                                                 {{ $related->brand->name }}</p>
                                         @endif
-                                        <p class="mt-3 text-lg font-black text-[#10233d]">Rp {{ number_format($related->price, 0, ',', '.') }}</p>
+                                        <p class="mt-3 text-lg font-black text-[#10233d]">Rp
+                                            {{ number_format($related->price, 0, ',', '.') }}</p>
 
                                         <div class="mt-auto pt-4">
                                             @if ($related->isAvailable())
@@ -308,30 +300,50 @@
 
         function increaseQuantity() {
             const input = document.getElementById('quantity');
-            const cartQuantity = document.getElementById('cart_quantity');
-            const maxStok = cartQuantity ? parseInt(cartQuantity.dataset.max, 10) : 1;
-            const nextValue = parseInt(input.value, 10) + 1;
 
-            if (nextValue <= maxStok) {
-                input.value = nextValue;
-                if (cartQuantity) {
-                    cartQuantity.value = input.value;
-                }
-            }
+            setQuantity((parseInt(input.value, 10) || 0) + 1);
         }
 
         function decreaseQuantity() {
             const input = document.getElementById('quantity');
-            const cartQuantity = document.getElementById('cart_quantity');
-            const nextValue = parseInt(input.value, 10) - 1;
+            setQuantity((parseInt(input.value, 10) || 1) - 1);
+        }
 
-            if (nextValue >= 1) {
-                input.value = nextValue;
-                if (cartQuantity) {
-                    cartQuantity.value = input.value;
-                }
+        function quantityMax() {
+            const cartQuantity = document.getElementById('cart_quantity');
+
+            return cartQuantity ? parseInt(cartQuantity.dataset.max, 10) || 1 : 1;
+        }
+
+        function syncCartQuantity(value) {
+            const cartQuantity = document.getElementById('cart_quantity');
+
+            if (cartQuantity) {
+                cartQuantity.value = value;
             }
         }
+
+        function setQuantity(value) {
+            const input = document.getElementById('quantity');
+            const maxStok = quantityMax();
+            const quantity = Math.min(Math.max(parseInt(value, 10) || 1, 1), maxStok);
+
+            input.value = quantity;
+            syncCartQuantity(quantity);
+        }
+
+        const quantityInput = document.getElementById('quantity');
+        quantityInput?.addEventListener('input', () => {
+            const rawValue = quantityInput.value;
+
+            if (rawValue === '') {
+                syncCartQuantity(1);
+                return;
+            }
+
+            setQuantity(rawValue);
+        });
+        quantityInput?.addEventListener('blur', () => setQuantity(quantityInput.value));
 
         const shareButton = document.getElementById('shareButton');
         shareButton?.addEventListener('click', async () => {
