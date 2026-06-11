@@ -30,7 +30,7 @@ class OrderController extends Controller
 
     public function history(Request $request)
     {
-        $query = Order::with(['items', 'payment', 'paymentMethod', 'delivery'])
+        $query = Order::with(['items', 'payment', 'paymentMethod'])
             ->where('user_id', $request->user()->id);
 
         // Search by order number
@@ -60,7 +60,7 @@ class OrderController extends Controller
     {
         abort_unless($order->user_id === $request->user()->id, 403);
 
-        $order->load(['items', 'payment', 'paymentMethod', 'delivery']);
+        $order->load(['items', 'payment', 'paymentMethod']);
 
         return view('pelanggan.orders.show', compact('order'));
     }

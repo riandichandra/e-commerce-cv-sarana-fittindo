@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UserAddress extends Model
 {
@@ -85,10 +84,5 @@ class UserAddress extends Model
             $this->province_display_name,
             $this->postal_code,
         ])->filter()->join(', ');
-    }
-
-    public function deliveries(): HasMany
-    {
-        return $this->hasMany(Delivery::class, 'address_id');
     }
 }

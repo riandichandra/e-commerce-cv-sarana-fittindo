@@ -25,12 +25,6 @@
             'title' => 'Alamat berhasil dihapus',
             'message' => 'Daftar alamat tersimpan Anda sudah diperbarui.',
         ],
-        'address-delete-blocked' => [
-            'tone' => 'danger',
-            'icon' => 'mdi:alert-circle-outline',
-            'title' => 'Alamat tidak dapat dihapus',
-            'message' => 'Alamat ini masih terhubung dengan data pengiriman. Tambahkan alamat baru atau pilih alamat lain sebagai alamat utama.',
-        ],
         default => null,
     };
 @endphp

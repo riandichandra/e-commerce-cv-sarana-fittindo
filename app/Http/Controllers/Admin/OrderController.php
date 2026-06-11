@@ -26,7 +26,7 @@ class OrderController extends Controller
             'dibatalkan',
         ];
 
-        $orders = Order::with(['user', 'paymentMethod', 'payment', 'delivery'])
+        $orders = Order::with(['user', 'paymentMethod', 'payment'])
             ->withCount('items')
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->q, function ($q) use ($request) {
@@ -49,7 +49,7 @@ class OrderController extends Controller
         $pagePath = explode('/', $pagePath);
         $pageName = 'Detail Pesanan';
 
-        $order->load(['user', 'paymentMethod', 'payment', 'delivery']);
+        $order->load(['user', 'paymentMethod', 'payment']);
         $items = $order->items()
             ->with('product')
             ->paginate(10, ['*'], 'items_page')

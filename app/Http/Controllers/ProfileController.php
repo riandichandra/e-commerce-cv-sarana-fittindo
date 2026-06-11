@@ -148,11 +148,6 @@ class ProfileController extends Controller
     {
         $this->ensureAddressOwner($request, $address);
 
-        if ($address->deliveries()->exists()) {
-            return Redirect::route('profile.edit')
-                ->with('status', 'address-delete-blocked');
-        }
-
         DB::transaction(function () use ($request, $address) {
             $wasMain = $address->is_main;
 

@@ -32,7 +32,6 @@ class OrderFilterTest extends TestCase
             'search' => 'Budi',
             'status' => 'selesai',
             'payment_status' => 'terverifikasi',
-            'delivery_status' => 'none',
         ]));
 
         $response->assertOk();

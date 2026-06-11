@@ -361,7 +361,7 @@ class ProfileTest extends TestCase
         $this->assertTrue($secondAddress->refresh()->is_main);
     }
 
-    public function test_user_cannot_delete_address_linked_to_delivery(): void
+    public function test_user_can_delete_saved_address_without_changing_order_shipping_snapshot(): void
     {
         $user = User::factory()->create();
         $location = $this->createLocation();
@@ -378,7 +378,7 @@ class ProfileTest extends TestCase
             'is_main' => true,
         ]);
 
-        $orderId = DB::table('orders')->insertGetId([
+        DB::table('orders')->insert([
             'user_id' => $user->id,
             'order_number' => 'TEST-ADDRESS-DELETE',
             'subtotal' => 100000,
@@ -398,23 +398,27 @@ class ProfileTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        DB::table('deliveries')->insert([
-            'order_id' => $orderId,
-            'address_id' => $address->id,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
         $response = $this
             ->actingAs($user)
             ->delete("/profile/addresses/{$address->id}");
 
         $response
             ->assertRedirect('/profile')
-            ->assertSessionHas('status', 'address-delete-blocked');
+            ->assertSessionHas('status', 'address-deleted');
 
-        $this->assertDatabaseHas('user_addresses', [
+        $this->assertDatabaseMissing('user_addresses', [
             'id' => $address->id,
+        ]);
+        $this->assertDatabaseHas('orders', [
+            'order_number' => 'TEST-ADDRESS-DELETE',
+            'shipping_name' => 'Budi',
+            'shipping_phone' => '08123456789',
+            'shipping_address' => 'Jalan Mawar No. 10',
+            'shipping_province' => 'DKI Jakarta',
+            'shipping_city' => 'Jakarta Selatan',
+            'shipping_district' => 'Kebayoran Baru',
+            'shipping_village' => 'Senayan',
+            'shipping_postal_code' => '12345',
         ]);
     }
 

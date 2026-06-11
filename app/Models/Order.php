@@ -109,11 +109,6 @@ class Order extends Model
         return $this->hasOne(Payment::class);
     }
 
-    public function delivery() : HasOne
-    {
-        return $this->hasOne(Delivery::class);
-    }
-
     public function shippingCostConfirmedBy() : BelongsTo
     {
         return $this->belongsTo(User::class, 'shipping_cost_confirmed_by');

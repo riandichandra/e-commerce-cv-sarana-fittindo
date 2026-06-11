@@ -6,8 +6,6 @@
 
 ### CartItem (`App\Models\CartItem`)
 
-### Delivery (`App\Models\Delivery`)
-
 ### District (`App\Models\District`)
 
 ### Notification (`App\Models\Notification`)
@@ -58,10 +56,6 @@
 - **BelongsTo** `cart` to Cart (Local Key: `cart_id`, Foreign Key: `id`)
 - **BelongsTo** `product` to Product (Local Key: `product_id`, Foreign Key: `id`)
 
-### Delivery Relationships
-
-- **BelongsTo** `order` to Order (Local Key: `order_id`, Foreign Key: `id`)
-
 ### District Relationships
 
 - **BelongsTo** `regency` to Regency (Local Key: `regency_id`, Foreign Key: `id`)
@@ -78,7 +72,6 @@
 - **BelongsTo** `paymentMethod` to PaymentMethod (Local Key: `payment_method_id`, Foreign Key: `id`)
 - **BelongsTo** `promotion` to Promotion (Local Key: `promotion_id`, Foreign Key: `id`)
 - **HasOne** `payment` to Payment (Local Key: `id`, Foreign Key: `order_id`)
-- **HasOne** `delivery` to Delivery (Local Key: `id`, Foreign Key: `order_id`)
 - **BelongsTo** `shippingCostConfirmedBy` to User (Local Key: `shipping_cost_confirmed_by`, Foreign Key: `id`)
 - **HasMany** `statusHistory` to OrderStatusHistory (Local Key: `id`, Foreign Key: `order_id`)
 
@@ -155,4 +148,3 @@
 
 - **BelongsTo** `user` to User (Local Key: `user_id`, Foreign Key: `id`)
 - **BelongsTo** `product` to Product (Local Key: `product_id`, Foreign Key: `id`)
-
