@@ -113,7 +113,6 @@ class CartController extends Controller
 
         $addresses = $request->user()
             ->addresses()
-            ->with(['province', 'regency', 'district', 'village'])
             ->orderByDesc('is_main')
             ->latest()
             ->get();
@@ -142,7 +141,6 @@ class CartController extends Controller
         if (! empty($validated['shipping_address_id'])) {
             $selectedAddress = $request->user()
                 ->addresses()
-                ->with(['province', 'regency', 'district', 'village'])
                 ->findOrFail($validated['shipping_address_id']);
 
             $validated = [

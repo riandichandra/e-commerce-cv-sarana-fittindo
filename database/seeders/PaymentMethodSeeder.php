@@ -17,7 +17,6 @@ class PaymentMethodSeeder extends Seeder
                 'account_name' => 'CV Sarana Fittindo',
                 'bank_name' => 'BCA',
                 'instructions' => 'Transfer ke rekening BCA, lalu upload bukti pembayaran pada halaman pesanan.',
-                'icon' => 'mdi:bank',
                 'sort_order' => 1,
             ],
             [
@@ -27,7 +26,6 @@ class PaymentMethodSeeder extends Seeder
                 'account_name' => 'CV Sarana Fittindo',
                 'bank_name' => 'Mandiri',
                 'instructions' => 'Transfer ke rekening Mandiri, lalu upload bukti pembayaran pada halaman pesanan.',
-                'icon' => 'mdi:bank',
                 'sort_order' => 2,
             ],
             [
@@ -37,7 +35,6 @@ class PaymentMethodSeeder extends Seeder
                 'account_name' => 'CV Sarana Fittindo',
                 'bank_name' => 'BRI',
                 'instructions' => 'Transfer ke rekening BRI, lalu upload bukti pembayaran pada halaman pesanan.',
-                'icon' => 'mdi:bank',
                 'sort_order' => 3,
             ],
             [
@@ -47,7 +44,6 @@ class PaymentMethodSeeder extends Seeder
                 'account_name' => 'CV Sarana Fittindo',
                 'bank_name' => 'BNI',
                 'instructions' => 'Transfer ke rekening BNI, lalu upload bukti pembayaran pada halaman pesanan.',
-                'icon' => 'mdi:bank',
                 'sort_order' => 4,
             ],
         ];

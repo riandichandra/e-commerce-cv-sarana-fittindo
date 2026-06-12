@@ -170,6 +170,26 @@
                         </div>
                     @endforeach
                 </div>
+
+                @if (! empty($product->specifications))
+                    <div class="mt-6 border-t border-[#d8e2f0] pt-5">
+                        <h3 class="text-sm font-black uppercase tracking-[.14em] text-[#10233d]">Spesifikasi</h3>
+                        <dl class="mt-4 grid gap-3">
+                            @foreach ($product->specifications as $label => $value)
+                                <div class="rounded-md bg-[#f5f8fc] p-4">
+                                    @if (is_int($label))
+                                        <dd class="text-sm font-bold text-[#10233d]">{{ $value }}</dd>
+                                    @else
+                                        <dt class="text-xs font-black uppercase tracking-[.12em] text-[#6e84a3]">
+                                            {{ $label }}
+                                        </dt>
+                                        <dd class="mt-1 text-sm font-bold text-[#10233d]">{{ $value }}</dd>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </dl>
+                    </div>
+                @endif
             </div>
 
             {{-- <div class="rounded-md border border-[#d8e2f0] bg-[#10233d] p-5 text-white shadow-sm sm:p-6">

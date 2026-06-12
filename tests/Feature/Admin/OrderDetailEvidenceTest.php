@@ -22,6 +22,7 @@ class OrderDetailEvidenceTest extends TestCase
         $order = $this->makeOrder($customer, $paymentMethod, [
             'status' => 'selesai',
             'received_image' => 'received-product-photos/test-received.jpg',
+            'notes' => 'Mohon kirim pada jam kerja.',
         ]);
 
         Payment::create([
@@ -46,6 +47,8 @@ class OrderDetailEvidenceTest extends TestCase
         $response->assertSee('Bukti Barang Diterima');
         $response->assertSee('storage/received-product-photos/test-received.jpg');
         $response->assertSee('Budi Pelanggan');
+        $response->assertSee('CATATAN PELANGGAN');
+        $response->assertSee('Mohon kirim pada jam kerja.');
     }
 
     public function test_admin_order_detail_shows_empty_states_when_evidence_is_missing(): void
@@ -92,7 +95,7 @@ class OrderDetailEvidenceTest extends TestCase
     {
         return Order::create(array_merge([
             'user_id' => $customer->id,
-            'order_number' => 'ORD-' . strtoupper(uniqid()),
+            'order_number' => 'ORD-'.strtoupper(uniqid()),
             'status' => 'belum_dibayar',
             'subtotal' => 150000,
             'discount_amount' => 0,

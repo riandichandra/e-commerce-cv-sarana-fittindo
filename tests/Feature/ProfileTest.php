@@ -461,16 +461,11 @@ class ProfileTest extends TestCase
 
     private function createLocation(): array
     {
-        DB::table('provinces')->insert(['id' => 1, 'name' => 'DKI Jakarta']);
-        DB::table('regencies')->insert(['id' => 1, 'province_id' => 1, 'name' => 'Jakarta Selatan']);
-        DB::table('districts')->insert(['id' => 1, 'regency_id' => 1, 'name' => 'Kebayoran Baru']);
-        DB::table('villages')->insert(['id' => 1, 'district_id' => 1, 'name' => 'Senayan']);
-
         return [
-            'province_id' => 1,
-            'regency_id' => 1,
-            'district_id' => 1,
-            'village_id' => 1,
+            'province_id' => '1',
+            'regency_id' => '1',
+            'district_id' => '1',
+            'village_id' => '1',
         ];
     }
 

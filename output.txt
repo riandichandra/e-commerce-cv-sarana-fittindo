@@ -6,15 +6,9 @@
 
 ### CartItem (`App\Models\CartItem`)
 
-### District (`App\Models\District`)
-
-### Notification (`App\Models\Notification`)
-
 ### Order (`App\Models\Order`)
 
 ### OrderItem (`App\Models\OrderItem`)
-
-### OrderStatusHistory (`App\Models\OrderStatusHistory`)
 
 ### Payment (`App\Models\Payment`)
 
@@ -30,17 +24,11 @@
 
 ### Promotion (`App\Models\Promotion`)
 
-### Province (`App\Models\Province`)
-
-### Regency (`App\Models\Regency`)
-
 ### Role (`App\Models\Role`)
 
 ### User (`App\Models\User`)
 
 ### UserAddress (`App\Models\UserAddress`)
-
-### Village (`App\Models\Village`)
 
 ### Wishlist (`App\Models\Wishlist`)
 
@@ -56,15 +44,6 @@
 - **BelongsTo** `cart` to Cart (Local Key: `cart_id`, Foreign Key: `id`)
 - **BelongsTo** `product` to Product (Local Key: `product_id`, Foreign Key: `id`)
 
-### District Relationships
-
-- **BelongsTo** `regency` to Regency (Local Key: `regency_id`, Foreign Key: `id`)
-- **HasMany** `villages` to Village (Local Key: `id`, Foreign Key: `district_id`)
-
-### Notification Relationships
-
-- **BelongsTo** `user` to User (Local Key: `user_id`, Foreign Key: `id`)
-
 ### Order Relationships
 
 - **BelongsTo** `user` to User (Local Key: `user_id`, Foreign Key: `id`)
@@ -73,17 +52,12 @@
 - **BelongsTo** `promotion` to Promotion (Local Key: `promotion_id`, Foreign Key: `id`)
 - **HasOne** `payment` to Payment (Local Key: `id`, Foreign Key: `order_id`)
 - **BelongsTo** `shippingCostConfirmedBy` to User (Local Key: `shipping_cost_confirmed_by`, Foreign Key: `id`)
-- **HasMany** `statusHistory` to OrderStatusHistory (Local Key: `id`, Foreign Key: `order_id`)
+- **BelongsTo** `stockRestoredBy` to User (Local Key: `stock_restored_by`, Foreign Key: `id`)
 
 ### OrderItem Relationships
 
 - **BelongsTo** `order` to Order (Local Key: `order_id`, Foreign Key: `id`)
 - **BelongsTo** `product` to Product (Local Key: `product_id`, Foreign Key: `id`)
-
-### OrderStatusHistory Relationships
-
-- **BelongsTo** `order` to Order (Local Key: `order_id`, Foreign Key: `id`)
-- **BelongsTo** `changedBy` to User (Local Key: `changed_by`, Foreign Key: `id`)
 
 ### Payment Relationships
 
@@ -112,19 +86,7 @@
 ### Promotion Relationships
 
 - **BelongsTo** `createdBy` to User (Local Key: `created_by`, Foreign Key: `id`)
-- **BelongsToMany** `products` to Product (Local Key: ``, Foreign Key: ``)
 - **HasMany** `orders` to Order (Local Key: `id`, Foreign Key: `promotion_id`)
-
-### Province Relationships
-
-- **HasMany** `regencies` to Regency (Local Key: `id`, Foreign Key: `province_id`)
-- **HasManyThrough** `districts` to District (Local Key: ``, Foreign Key: ``)
-
-### Regency Relationships
-
-- **BelongsTo** `province` to Province (Local Key: `province_id`, Foreign Key: `id`)
-- **HasMany** `districts` to District (Local Key: `id`, Foreign Key: `regency_id`)
-- **HasManyThrough** `villages` to Village (Local Key: ``, Foreign Key: ``)
 
 ### User Relationships
 
@@ -135,14 +97,6 @@
 ### UserAddress Relationships
 
 - **BelongsTo** `user` to User (Local Key: `user_id`, Foreign Key: `id`)
-- **BelongsTo** `province` to Province (Local Key: `province_id`, Foreign Key: `id`)
-- **BelongsTo** `regency` to Regency (Local Key: `regency_id`, Foreign Key: `id`)
-- **BelongsTo** `district` to District (Local Key: `district_id`, Foreign Key: `id`)
-- **BelongsTo** `village` to Village (Local Key: `village_id`, Foreign Key: `id`)
-
-### Village Relationships
-
-- **BelongsTo** `district` to District (Local Key: `district_id`, Foreign Key: `id`)
 
 ### Wishlist Relationships
 

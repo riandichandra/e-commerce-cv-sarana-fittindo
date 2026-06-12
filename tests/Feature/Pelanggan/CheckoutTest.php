@@ -557,8 +557,6 @@ class CheckoutTest extends TestCase
 
     private function createAddressForUser(User $user)
     {
-        $this->createLocation();
-
         return $user->addresses()->create([
             'label' => 'Rumah',
             'receiver_name' => 'Budi Santoso',
@@ -576,14 +574,6 @@ class CheckoutTest extends TestCase
             'postal_code' => '12190',
             'is_main' => true,
         ]);
-    }
-
-    private function createLocation(): void
-    {
-        DB::table('provinces')->insertOrIgnore(['id' => 1, 'name' => 'DKI Jakarta']);
-        DB::table('regencies')->insertOrIgnore(['id' => 1, 'province_id' => 1, 'name' => 'Jakarta Selatan']);
-        DB::table('districts')->insertOrIgnore(['id' => 1, 'regency_id' => 1, 'name' => 'Kebayoran Baru']);
-        DB::table('villages')->insertOrIgnore(['id' => 1, 'district_id' => 1, 'name' => 'Senayan']);
     }
 
     private function makePromotion(array $overrides = []): Promotion

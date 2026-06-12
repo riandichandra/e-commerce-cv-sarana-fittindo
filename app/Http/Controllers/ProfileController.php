@@ -36,7 +36,6 @@ class ProfileController extends Controller
         $addresses = $isCustomer
             ? $user
                 ->addresses()
-                ->with(['province', 'regency', 'district', 'village'])
                 ->orderByDesc('is_main')
                 ->latest()
                 ->get()

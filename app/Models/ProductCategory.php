@@ -8,13 +8,13 @@ use Illuminate\Support\Str;
 
 class ProductCategory extends Model
 {
-    protected $fillable = ['name', 'slug', 'description', 'icon', 'is_active'];
+    protected $fillable = ['name', 'slug', 'description', 'is_active'];
 
     protected $casts = [
         'is_active' => 'boolean',
     ];
 
-    public function products() : HasMany
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class, 'category_id');
     }

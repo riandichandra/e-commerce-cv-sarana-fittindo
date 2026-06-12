@@ -35,44 +35,24 @@ class UserAddress extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function province(): BelongsTo
-    {
-        return $this->belongsTo(Province::class);
-    }
-
-    public function regency(): BelongsTo
-    {
-        return $this->belongsTo(Regency::class);
-    }
-
-    public function district(): BelongsTo
-    {
-        return $this->belongsTo(District::class);
-    }
-
-    public function village(): BelongsTo
-    {
-        return $this->belongsTo(Village::class);
-    }
-
     public function getProvinceDisplayNameAttribute(): ?string
     {
-        return $this->province_name ?: $this->province?->name;
+        return $this->province_name;
     }
 
     public function getCityDisplayNameAttribute(): ?string
     {
-        return $this->city_name ?: $this->regency?->name;
+        return $this->city_name;
     }
 
     public function getDistrictDisplayNameAttribute(): ?string
     {
-        return $this->district_name ?: $this->district?->name;
+        return $this->district_name;
     }
 
     public function getVillageDisplayNameAttribute(): ?string
     {
-        return $this->village_name ?: $this->village?->name;
+        return $this->village_name;
     }
 
     public function getRegionSummaryAttribute(): string

@@ -102,6 +102,13 @@
                 </div>
             </div>
 
+            @if ($order->notes)
+                <div class="mt-4 border-l-4 border-blue-400 bg-white px-4 py-3 text-sm text-gray-700">
+                    <p class="font-semibold tracking-wider text-texthighlight">CATATAN PELANGGAN</p>
+                    <p class="mt-2 whitespace-pre-line">{{ $order->notes }}</p>
+                </div>
+            @endif
+
             <div class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="bg-white p-4">
                     <h3 class="font-semibold tracking-wider text-texthighlight">ALAMAT PENGIRIMAN</h3>

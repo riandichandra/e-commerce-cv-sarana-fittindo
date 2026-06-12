@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Payment extends Model
 {
     protected $fillable = [
-        'order_id', 
-        'payment_method_id', 
-        'amount', 
+        'order_id',
+        'payment_method_id',
+        'amount',
         'proof_image',
         'transfer_date',
         'sender_name',
@@ -27,8 +27,6 @@ class Payment extends Model
         'verified_at' => 'datetime',
     ];
 
-    protected $enumStatuses = ['menunggu', 'terverifikasi', 'ditolak'];
-
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
@@ -39,17 +37,17 @@ class Payment extends Model
         };
     }
 
-    public function order() : BelongsTo
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
-    public function paymentMethod() : BelongsTo
+    public function paymentMethod(): BelongsTo
     {
         return $this->belongsTo(PaymentMethod::class);
     }
 
-    public function verifiedBy() : BelongsTo
+    public function verifiedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
     }

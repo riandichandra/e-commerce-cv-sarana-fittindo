@@ -125,6 +125,13 @@
                         </div>
                     @endif
 
+                    @if ($order->notes)
+                        <div class="mt-5 border-l-4 border-[#436aa6] bg-[#f5f8fc] px-4 py-3 text-sm leading-6 text-[#10233d]">
+                            <p class="font-black uppercase tracking-[.12em]">Catatan Pesanan</p>
+                            <p class="mt-2 whitespace-pre-line">{{ $order->notes }}</p>
+                        </div>
+                    @endif
+
                     @if ($order->payment?->status === 'ditolak')
                         <div class="mt-5 border-l-4 border-red-400 bg-red-50 px-4 py-3 text-sm font-semibold leading-6 text-red-800">
                             <p class="font-black uppercase tracking-[.12em]">Pembayaran Ditolak</p>

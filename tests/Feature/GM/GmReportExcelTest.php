@@ -42,6 +42,13 @@ class GmReportExcelTest extends TestCase
         $this->assertStringContainsString($order->order_number, $content);
         $this->assertStringContainsString('Pelanggan Test', $content);
         $this->assertStringContainsString('Produk Test (2)', $content);
+        $this->assertStringContainsString('Detail Barang Terjual', $content);
+        $this->assertStringContainsString('Nama Barang', $content);
+        $this->assertStringContainsString('Harga Satuan', $content);
+        $this->assertStringContainsString('Subtotal Barang', $content);
+        $this->assertStringContainsString('Produk Test', $content);
+        $this->assertStringContainsString('100000.00', $content);
+        $this->assertStringContainsString('200000.00', $content);
     }
 
     public function test_gm_report_excel_download_shows_all_period_when_dates_are_empty(): void

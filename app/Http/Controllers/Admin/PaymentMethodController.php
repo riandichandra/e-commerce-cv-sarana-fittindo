@@ -38,7 +38,6 @@ class PaymentMethodController extends Controller
         $validated = $this->validatePaymentMethod($request);
         $validated['is_active'] = $request->boolean('is_active');
         $validated['code'] = $this->generateUniqueCode($validated['bank_name'], $validated['account_number']);
-        $validated['icon'] = null;
 
         PaymentMethod::create($validated);
 
@@ -62,7 +61,6 @@ class PaymentMethodController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
         $validated['code'] = $paymentMethod->code
             ?: $this->generateUniqueCode($validated['bank_name'], $validated['account_number'], $paymentMethod);
-        $validated['icon'] = null;
 
         $paymentMethod->update($validated);
 
@@ -86,7 +84,7 @@ class PaymentMethodController extends Controller
 
     private function generateUniqueCode(string $bankName, string $accountNumber, ?PaymentMethod $paymentMethod = null): string
     {
-        $baseCode = Str::limit(Str::slug($bankName . '-' . $accountNumber, '_'), 44, '');
+        $baseCode = Str::limit(Str::slug($bankName.'-'.$accountNumber, '_'), 44, '');
         $baseCode = $baseCode ?: 'rekening_bank';
         $code = $baseCode;
         $counter = 1;
@@ -96,7 +94,7 @@ class PaymentMethodController extends Controller
                 ->when($paymentMethod, fn ($query) => $query->whereKeyNot($paymentMethod->id))
                 ->exists()
         ) {
-            $code = Str::limit($baseCode, 44, '') . '_' . $counter;
+            $code = Str::limit($baseCode, 44, '').'_'.$counter;
             $counter++;
         }
 

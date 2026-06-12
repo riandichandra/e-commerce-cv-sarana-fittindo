@@ -53,7 +53,9 @@ class OrderListTest extends TestCase
         $customer = $this->makeCustomer();
         $paymentMethod = $this->makePaymentMethod();
         $product = $this->makeProduct();
-        $order = $this->makeOrder($customer, $paymentMethod, $product, 'terverifikasi', 'dikirim');
+        $order = $this->makeOrder($customer, $paymentMethod, $product, 'terverifikasi', 'dikirim', [
+            'notes' => 'Hubungi penerima sebelum tiba.',
+        ]);
 
         $response = $this->actingAs($customer)->get(route('pelanggan.orders.show', $order));
 
@@ -63,6 +65,8 @@ class OrderListTest extends TestCase
         $response->assertSee('Status Pesanan');
         $response->assertSee('Dikirim');
         $response->assertSeeText('Foto Produk Sudah Sampai');
+        $response->assertSee('Catatan Pesanan');
+        $response->assertSee('Hubungi penerima sebelum tiba.');
         $response->assertSee('Selesai');
         $response->assertSee('Dibatalkan');
     }
@@ -230,7 +234,7 @@ class OrderListTest extends TestCase
     {
         return PaymentMethod::create([
             'name' => 'Transfer Bank BCA',
-            'code' => 'bca_test_' . PaymentMethod::count(),
+            'code' => 'bca_test_'.PaymentMethod::count(),
             'account_number' => '1234567890',
             'account_name' => 'CV Sarana Fittindo',
             'bank_name' => 'BCA',
@@ -259,11 +263,17 @@ class OrderListTest extends TestCase
         ]);
     }
 
-    private function makeOrder(User $user, PaymentMethod $paymentMethod, Product $product, string $paymentStatus, ?string $orderStatus = null): Order
-    {
-        $order = Order::create([
+    private function makeOrder(
+        User $user,
+        PaymentMethod $paymentMethod,
+        Product $product,
+        string $paymentStatus,
+        ?string $orderStatus = null,
+        array $overrides = []
+    ): Order {
+        $order = Order::create(array_merge([
             'user_id' => $user->id,
-            'order_number' => 'SF' . now()->format('Ymd') . str_pad((string) (Order::count() + 1), 4, '0', STR_PAD_LEFT),
+            'order_number' => 'SF'.now()->format('Ymd').str_pad((string) (Order::count() + 1), 4, '0', STR_PAD_LEFT),
             'status' => $orderStatus ?? ($paymentStatus === 'terverifikasi' ? 'pembayaran_dikonfirmasi' : 'belum_dibayar'),
             'subtotal' => 150000,
             'discount_amount' => 0,
@@ -278,7 +288,7 @@ class OrderListTest extends TestCase
             'shipping_district' => 'Coblong',
             'shipping_village' => 'Dago',
             'shipping_postal_code' => '40135',
-        ]);
+        ], $overrides));
 
         OrderItem::create([
             'order_id' => $order->id,

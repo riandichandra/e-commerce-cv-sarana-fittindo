@@ -2,7 +2,65 @@
 
 ## Status
 
-Dokumen ini berisi hasil analisis dan rencana implementasi. Belum ada model, tabel, migration, seeder, package, atau data wilayah yang dihapus pada tahap ini.
+Selesai diimplementasikan pada 11 Juni 2026.
+
+Hasil utama:
+
+- tabel `provinces`, `regencies`, `districts`, `villages`, dan `shipping_costs` sudah dihapus dari database aktif
+- model dan relasi wilayah lokal sudah dihapus
+- seeder serta package IndoRegion sudah dihapus
+- profil dan checkout tetap memakai endpoint RajaOngkir
+- data produk, alamat, pesanan, dan item pesanan tidak berubah
+- ERD sudah diperbarui tanpa entitas wilayah lokal
+
+Backup sebelum migration tersedia di:
+
+```text
+storage/app/backups/sarana_fittindo_before_drop_legacy_regions_20260611.sql
+```
+
+Migration implementasi:
+
+```text
+database/migrations/2026_06_11_130000_drop_legacy_region_tables.php
+```
+
+## Hasil Implementasi
+
+### Perubahan Aplikasi
+
+1. Relasi `province`, `regency`, `district`, dan `village` dihapus dari `UserAddress`.
+2. Nama wilayah pada alamat hanya dibaca dari snapshot RajaOngkir.
+3. Eager-load relasi wilayah lokal di `ProfileController` dan `CartController` dihapus.
+4. Model Province, Regency, District, dan Village dihapus.
+5. Seeder IndoRegion dan `WilayahSeeder` dihapus.
+6. Dependency `azishapidin/indoregion` dihapus dari Composer.
+7. Fixture test tidak lagi membuat data pada tabel wilayah lokal.
+8. Test regresi ditambahkan untuk memastikan tabel legacy tidak ada dan snapshot alamat tetap berfungsi.
+
+### Validasi Data
+
+| Data | Sebelum | Sesudah |
+|---|---:|---:|
+| Produk | 22 | 22 |
+| Total stok produk | 1024 | 1024 |
+| Gambar produk | 22 | 22 |
+| Pesanan | 7 | 7 |
+| Item pesanan | 7 | 7 |
+| Alamat pelanggan | 1 | 1 |
+
+Alamat pelanggan yang tersimpan tetap memiliki ID dan nama wilayah RajaOngkir lengkap. Tidak ada isi tabel produk atau transaksi yang dihapus oleh migration.
+
+### Validasi Migration dan Test
+
+- migration maju berhasil menghapus lima tabel legacy
+- rollback terisolasi berhasil membuat kembali kelima tabel
+- migration dapat dijalankan kembali setelah rollback
+- fresh migration SQLite berhasil
+- 51 test terfokus lulus dengan 410 assertions
+- suite penuh menghasilkan 135 test lulus dan 1 test lama yang tidak terkait perubahan ini gagal
+
+Kegagalan suite penuh berada di `MarketingListUiTest`, karena test mengharapkan teks `WEEKEND` pada daftar promosi. Fitur wilayah, profil, checkout, ongkir, pesanan, dan test perlindungan data legacy lulus.
 
 ## Tujuan
 

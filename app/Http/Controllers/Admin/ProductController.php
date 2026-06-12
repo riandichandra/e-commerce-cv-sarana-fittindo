@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Product;
-use App\Models\ProductCategory;
 use App\Models\ProductBrand;
+use App\Models\ProductCategory;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
@@ -61,6 +61,7 @@ class ProductController extends Controller
             'weight' => 'required|numeric|min:1',
             'thickness' => 'nullable|string|max:50',
             'dimensions' => 'nullable|string|max:100',
+            'specifications_text' => 'nullable|string|max:10000',
             'is_featured' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
             'images' => 'nullable|array|max:8',
@@ -70,6 +71,8 @@ class ProductController extends Controller
 
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['specifications'] = $this->normalizeSpecifications($validated['specifications_text'] ?? null);
+        unset($validated['specifications_text']);
         unset($validated['images'], $validated['primary_image']);
 
         $product = Product::create($validated);
@@ -115,6 +118,7 @@ class ProductController extends Controller
             'weight' => 'required|numeric|min:1',
             'thickness' => 'nullable|string|max:50',
             'dimensions' => 'nullable|string|max:100',
+            'specifications_text' => 'nullable|string|max:10000',
             'is_featured' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
             'images' => 'nullable|array|max:8',
@@ -124,6 +128,8 @@ class ProductController extends Controller
 
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['specifications'] = $this->normalizeSpecifications($validated['specifications_text'] ?? null);
+        unset($validated['specifications_text']);
         unset($validated['images'], $validated['primary_image']);
 
         $product->update($validated);
@@ -147,4 +153,32 @@ class ProductController extends Controller
             ->with('success', 'Produk berhasil diperbarui.');
     }
 
+    private function normalizeSpecifications(?string $specifications): ?array
+    {
+        $lines = collect(preg_split('/\R/', (string) $specifications))
+            ->map(fn (string $line) => trim($line))
+            ->filter();
+
+        if ($lines->isEmpty()) {
+            return null;
+        }
+
+        $normalized = [];
+
+        foreach ($lines as $line) {
+            if (str_contains($line, ':')) {
+                [$label, $value] = array_map('trim', explode(':', $line, 2));
+
+                if ($label !== '' && $value !== '') {
+                    $normalized[$label] = $value;
+
+                    continue;
+                }
+            }
+
+            $normalized[] = $line;
+        }
+
+        return $normalized;
+    }
 }

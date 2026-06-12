@@ -10,10 +10,10 @@ use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\User;
+use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Faker\Factory as Faker;
 
 class DummyDataSeeder extends Seeder
 {
@@ -58,7 +58,6 @@ class DummyDataSeeder extends Seeder
                 'account_name' => 'CV Sarana Fittindo',
                 'bank_name' => 'BCA',
                 'instructions' => 'Transfer ke rekening BCA kami dan upload bukti pembayaran.',
-                'icon' => 'mdi:bank',
             ],
             [
                 'name' => 'Bank Transfer Mandiri',
@@ -67,7 +66,6 @@ class DummyDataSeeder extends Seeder
                 'account_name' => 'CV Sarana Fittindo',
                 'bank_name' => 'Mandiri',
                 'instructions' => 'Transfer ke rekening Mandiri kami dan upload bukti pembayaran.',
-                'icon' => 'mdi:bank',
             ],
             [
                 'name' => 'e-Wallet OVO',
@@ -76,7 +74,6 @@ class DummyDataSeeder extends Seeder
                 'account_name' => 'CV Sarana Fittindo',
                 'bank_name' => 'OVO',
                 'instructions' => 'Bayar menggunakan aplikasi OVO dengan kode merchant kami.',
-                'icon' => 'mdi:wallet',
             ],
         ];
 
@@ -113,7 +110,7 @@ class DummyDataSeeder extends Seeder
             ->values();
 
         if ($missingCategories->isNotEmpty()) {
-            throw new \RuntimeException('Kategori produk dummy belum tersedia: ' . $missingCategories->join(', '));
+            throw new \RuntimeException('Kategori produk dummy belum tersedia: '.$missingCategories->join(', '));
         }
 
         $missingBrands = collect($items)
@@ -123,7 +120,7 @@ class DummyDataSeeder extends Seeder
             ->values();
 
         if ($missingBrands->isNotEmpty()) {
-            throw new \RuntimeException('Brand produk dummy belum tersedia: ' . $missingBrands->join(', '));
+            throw new \RuntimeException('Brand produk dummy belum tersedia: '.$missingBrands->join(', '));
         }
 
         $products = collect();
@@ -321,6 +318,6 @@ class DummyDataSeeder extends Seeder
 
     protected function generateOrderNumber($date): string
     {
-        return 'SF' . $date->format('Ymd') . Str::upper(Str::random(6));
+        return 'SF'.$date->format('Ymd').Str::upper(Str::random(6));
     }
 }

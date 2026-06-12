@@ -62,6 +62,36 @@ class ProductListTest extends TestCase
         $response->assertDontSee('storage/products/test-product.jpg');
     }
 
+    public function test_admin_can_store_structured_product_specifications(): void
+    {
+        $admin = $this->makeAdmin();
+        $category = ProductCategory::create([
+            'name' => 'Panel',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->post(route('admin.products.store'), [
+            'category_id' => $category->id,
+            'name' => 'Panel Spesifikasi',
+            'description' => 'Produk dengan spesifikasi terstruktur.',
+            'price' => 175000,
+            'stock' => 5,
+            'weight' => 900,
+            'specifications_text' => "Material: HPL\nFinishing: Matte\nCocok untuk interior",
+            'is_active' => '1',
+        ]);
+
+        $response->assertRedirect(route('admin.products.index'));
+
+        $product = Product::where('name', 'Panel Spesifikasi')->firstOrFail();
+
+        $this->assertSame([
+            'Material' => 'HPL',
+            'Finishing' => 'Matte',
+            0 => 'Cocok untuk interior',
+        ], $product->specifications);
+    }
+
     private function makeAdmin(): User
     {
         $role = Role::create([

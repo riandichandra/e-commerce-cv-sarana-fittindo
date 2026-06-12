@@ -73,55 +73,39 @@ class Order extends Model
         'stock_restored_at' => 'datetime',
     ];
 
-    protected $enumStatuses = [
-        'menunggu_konfirmasi_ongkir',
-        'belum_dibayar',
-        'menunggu_verifikasi_pembayaran',
-        'pembayaran_dikonfirmasi',
-        'diproses',
-        'dikirim',
-        'selesai',
-        'dibatalkan'
-    ];
-
-    public function user() : BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function items() : HasMany
+    public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
 
-    public function paymentMethod() : BelongsTo
+    public function paymentMethod(): BelongsTo
     {
         return $this->belongsTo(PaymentMethod::class);
     }
 
-    public function promotion() : BelongsTo
+    public function promotion(): BelongsTo
     {
         return $this->belongsTo(Promotion::class);
     }
 
-    public function payment() : HasOne
+    public function payment(): HasOne
     {
         return $this->hasOne(Payment::class);
     }
 
-    public function shippingCostConfirmedBy() : BelongsTo
+    public function shippingCostConfirmedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'shipping_cost_confirmed_by');
     }
 
-    public function stockRestoredBy() : BelongsTo
+    public function stockRestoredBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'stock_restored_by');
-    }
-
-    public function statusHistory() : HasMany
-    {
-        return $this->hasMany(OrderStatusHistory::class);
     }
 
     public function getStatusLabelAttribute(): string
@@ -160,12 +144,12 @@ class Order extends Model
     {
         $date = now()->format('Ymd');
         $lastOrder = self::whereDate('created_at', today())
-        ->orderBy('id', 'desc')
-        ->first();
+            ->orderBy('id', 'desc')
+            ->first();
 
         $sequence = $lastOrder ? (intval(substr($lastOrder->order_number, -4)) + 1) : 1;
-        
-        return 'SF' . $date . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+
+        return 'SF'.$date.str_pad($sequence, 4, '0', STR_PAD_LEFT);
     }
 
     public function isWaitingForShippingCost(): bool

@@ -88,5 +88,69 @@
             @endforelse
         </tbody>
     </table>
+
+    <br>
+
+    <table>
+        <tr>
+            <th colspan="8" style="font-size: 14px; font-weight: bold; text-align: left;">
+                Detail Barang Terjual
+            </th>
+        </tr>
+    </table>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Nomor Pesanan</th>
+                <th>Tanggal Pesanan</th>
+                <th>Pelanggan</th>
+                <th>Nama Barang</th>
+                <th>Harga Satuan</th>
+                <th>Qty</th>
+                <th>Subtotal Barang</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php
+                $itemNumber = 1;
+                $hasItems = false;
+            @endphp
+
+            @foreach ($orders as $order)
+                @foreach ($order->items as $item)
+                    @php
+                        $hasItems = true;
+                    @endphp
+                    <tr>
+                        <td>{{ $itemNumber++ }}</td>
+                        <td>{{ $order->order_number }}</td>
+                        <td>{{ $order->created_at->format('Y-m-d H:i') }}</td>
+                        <td>{{ $order->user?->name ?? $order->shipping_name }}</td>
+                        <td>{{ $item->product_name }}</td>
+                        <td>{{ $item->product_price }}</td>
+                        <td>{{ $item->quantity }}</td>
+                        <td>{{ $item->subtotal }}</td>
+                    </tr>
+                @endforeach
+            @endforeach
+
+            @if (! $hasItems)
+                <tr>
+                    <td colspan="8">Tidak ada data barang terjual.</td>
+                </tr>
+            @endif
+        </tbody>
+        @if ($hasItems)
+            <tfoot>
+                <tr>
+                    <th colspan="6">Total</th>
+                    <th>{{ $orders->sum(fn ($order) => $order->items->sum('quantity')) }}</th>
+                    <th>{{ $orders->sum(fn ($order) => $order->items->sum('subtotal')) }}</th>
+                </tr>
+            </tfoot>
+        @endif
+    </table>
 </body>
 </html>
