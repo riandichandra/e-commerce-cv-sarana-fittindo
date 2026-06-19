@@ -16,7 +16,6 @@ class Order extends Model
         'subtotal',
         'discount_amount',
         'promotion_id',
-        'promotion_code',
         'promotion_name',
         'promotion_type',
         'promotion_value',
@@ -33,7 +32,6 @@ class Order extends Model
         'shipping_etd',
         'shipping_rate_snapshot',
         'shipping_cost_confirmed_at',
-        'shipping_cost_confirmed_by',
         'total_amount',
         'payment_method_id',
         'shipping_name',
@@ -96,11 +94,6 @@ class Order extends Model
     public function payment(): HasOne
     {
         return $this->hasOne(Payment::class);
-    }
-
-    public function shippingCostConfirmedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'shipping_cost_confirmed_by');
     }
 
     public function stockRestoredBy(): BelongsTo

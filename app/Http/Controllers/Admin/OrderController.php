@@ -118,7 +118,6 @@ class OrderController extends Controller
             'shipping_cost_status' => 'confirmed',
             'shipping_cost_source' => 'admin_manual',
             'shipping_cost_confirmed_at' => now(),
-            'shipping_cost_confirmed_by' => auth()->id(),
             'total_amount' => $totalAmount,
             'status' => 'belum_dibayar',
         ]);

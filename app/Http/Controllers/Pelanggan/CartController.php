@@ -245,7 +245,6 @@ class CartController extends Controller
                     'subtotal' => $subtotal,
                     'discount_amount' => $discountAmount,
                     'promotion_id' => $promotion?->id,
-                    'promotion_code' => $promotion?->code,
                     'promotion_name' => $promotion?->name,
                     'promotion_type' => $promotion?->type,
                     'promotion_value' => $promotion?->value,

@@ -58,12 +58,12 @@
         <x-input-error :messages="$errors->get('end_date')" class="mt-2" />
     </div>
 
-    <div>
+    {{-- <div>
         <label for="banner_url" class="text-sm font-bold text-texthighlight">Banner URL</label>
         <input id="banner_url" name="banner_url" type="url" value="{{ old('banner_url', $promotion->banner_url) }}"
             class="mt-2 w-full border-gray-300 text-sm shadow-sm focus:border-primary focus:ring-primary">
         <x-input-error :messages="$errors->get('banner_url')" class="mt-2" />
-    </div>
+    </div> --}}
 
     <div>
         <label for="banner_image" class="text-sm font-bold text-texthighlight">Gambar Banner</label>

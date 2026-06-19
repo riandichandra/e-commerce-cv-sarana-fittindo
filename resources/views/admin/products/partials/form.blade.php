@@ -108,7 +108,7 @@
     @enderror
 </div>
 
-<div class="flex flex-col gap-1">
+{{-- <div class="flex flex-col gap-1">
     <label for="specifications_text" class="text-sm font-medium text-gray-700">Spesifikasi Produk</label>
     <textarea name="specifications_text" id="specifications_text" rows="7"
         placeholder="Satu spesifikasi per baris. Contoh:&#10;Material: HPL&#10;Finishing: Matte"
@@ -117,7 +117,7 @@
     @error('specifications_text')
         <p class="text-sm text-red-600">{{ $message }}</p>
     @enderror
-</div>
+</div> --}}
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="flex flex-col gap-1">

@@ -28,7 +28,7 @@
             <div
                 class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-[#FFF7F8] px-5 py-4">
                 <div>
-                    <h2 class="font-bold tracking-wider text-texthighlight">LIST PROMOSI</h2>
+                    <h2 class="font-bold tracking-wider text-texthighlight">DAFTAR PROMOSI</h2>
                     <p class="mt-1 text-sm text-gray-500">Data promosi yang tampil di landing page dan checkout
                         pelanggan.</p>
                 </div>

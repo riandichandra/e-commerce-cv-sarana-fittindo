@@ -16,18 +16,12 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             $table->string('shipping_cost_status', 30)->default('fixed')->after('shipping_cost');
             $table->timestamp('shipping_cost_confirmed_at')->nullable()->after('shipping_cost_status');
-            $table->foreignId('shipping_cost_confirmed_by')
-                ->nullable()
-                ->after('shipping_cost_confirmed_at')
-                ->constrained('users')
-                ->nullOnDelete();
         });
     }
 
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('shipping_cost_confirmed_by');
             $table->dropColumn([
                 'shipping_cost_status',
                 'shipping_cost_confirmed_at',
@@ -43,4 +37,3 @@ return new class extends Migration
         }
     }
 };
-

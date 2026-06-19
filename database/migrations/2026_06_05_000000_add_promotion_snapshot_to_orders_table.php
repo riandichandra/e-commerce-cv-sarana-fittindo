@@ -14,8 +14,7 @@ return new class extends Migration
                 ->after('discount_amount')
                 ->constrained('promotions')
                 ->nullOnDelete();
-            $table->string('promotion_code', 50)->nullable()->after('promotion_id');
-            $table->string('promotion_name', 150)->nullable()->after('promotion_code');
+            $table->string('promotion_name', 150)->nullable()->after('promotion_id');
             $table->string('promotion_type', 20)->nullable()->after('promotion_name');
             $table->decimal('promotion_value', 15, 2)->nullable()->after('promotion_type');
         });
@@ -26,7 +25,6 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             $table->dropConstrainedForeignId('promotion_id');
             $table->dropColumn([
-                'promotion_code',
                 'promotion_name',
                 'promotion_type',
                 'promotion_value',

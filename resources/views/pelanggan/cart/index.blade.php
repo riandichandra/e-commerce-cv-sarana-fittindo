@@ -56,7 +56,7 @@
                                         <button type="submit"
                                             class="h-10 bg-[#c8102e] px-4 text-xs font-black uppercase tracking-[.12em] text-white hover:bg-[#9f0d24]"
                                             @if ($item->product->stock <= 0) disabled @endif>
-                                            Update
+                                            Edit
                                         </button>
                                     </form>
 

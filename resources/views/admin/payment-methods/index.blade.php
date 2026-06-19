@@ -15,7 +15,7 @@
             </div>
             <x-button bgColor="primary" textColor="white" icon="mdi:plus" size="auto"
                 href="{{ route('admin.payment-methods.create') }}">
-                TAMBAH REKENING BANK
+                TAMBAH METODE PEMBAYARAN
             </x-button>
         </div>
 

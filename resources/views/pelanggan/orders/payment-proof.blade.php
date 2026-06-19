@@ -14,23 +14,27 @@
                 </div>
             @endif
 
-            <form action="{{ route('pelanggan.orders.payment-proof.store', $order) }}" method="POST" enctype="multipart/form-data"
-                class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
+            <form action="{{ route('pelanggan.orders.payment-proof.store', $order) }}" method="POST"
+                enctype="multipart/form-data" class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
                 @csrf
 
                 <div class="space-y-6">
                     <div class="bg-white p-6 shadow-sm">
-                        <div class="flex flex-col gap-2 border-b border-[#e8eef7] pb-5 sm:flex-row sm:items-start sm:justify-between">
+                        <div
+                            class="flex flex-col gap-2 border-b border-[#e8eef7] pb-5 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <h2 class="text-xl font-black uppercase text-[#10233d]">{{ $order->order_number }}</h2>
                                 <p class="mt-1 text-sm text-[#657891]">{{ $order->created_at->format('d M Y H:i') }}</p>
                             </div>
                             <div class="flex flex-col items-start gap-2 sm:items-end">
-                                <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Pesanan</p>
-                                <span class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
+                                <p class="text-xs font-black uppercase tracking-[.14em] text-[#657891]">Status Pesanan
+                                </p>
+                                <span
+                                    class="w-fit px-3 py-1 text-xs font-black uppercase tracking-[.12em] {{ $order->status_badge_class }}">
                                     {{ $order->status_label }}
                                 </span>
-                                <p class="text-2xl font-black text-[#c8102e]">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</p>
+                                <p class="text-2xl font-black text-[#c8102e]">Rp
+                                    {{ number_format($order->total_amount, 0, ',', '.') }}</p>
                             </div>
                         </div>
 
@@ -41,15 +45,18 @@
                             </div>
                             <div>
                                 <p class="text-[#657891]">Bank</p>
-                                <p class="mt-1 font-black text-[#10233d]">{{ $order->paymentMethod?->bank_name ?? '-' }}</p>
+                                <p class="mt-1 font-black text-[#10233d]">{{ $order->paymentMethod?->bank_name ?? '-' }}
+                                </p>
                             </div>
                             <div>
                                 <p class="text-[#657891]">Nomor rekening</p>
-                                <p class="mt-1 font-black text-[#10233d]">{{ $order->paymentMethod?->account_number ?? '-' }}</p>
+                                <p class="mt-1 font-black text-[#10233d]">
+                                    {{ $order->paymentMethod?->account_number ?? '-' }}</p>
                             </div>
                             <div>
                                 <p class="text-[#657891]">Atas nama</p>
-                                <p class="mt-1 font-black text-[#10233d]">{{ $order->paymentMethod?->account_name ?? '-' }}</p>
+                                <p class="mt-1 font-black text-[#10233d]">
+                                    {{ $order->paymentMethod?->account_name ?? '-' }}</p>
                             </div>
                         </div>
 
@@ -66,24 +73,30 @@
                         <div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
                             <div>
                                 <label for="sender_name" class="text-sm font-bold text-[#10233d]">Nama pengirim</label>
-                                <input id="sender_name" name="sender_name" type="text" value="{{ old('sender_name', $order->payment?->sender_name) }}"
+                                <input id="sender_name" name="sender_name" type="text"
+                                    value="{{ old('sender_name', $order->payment?->sender_name) }}"
                                     class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
                                 <x-input-error :messages="$errors->get('sender_name')" class="mt-2" />
                             </div>
 
                             <div>
-                                <label for="transfer_date" class="text-sm font-bold text-[#10233d]">Tanggal transfer</label>
-                                <input id="transfer_date" name="transfer_date" type="date" value="{{ old('transfer_date', optional($order->payment?->transfer_date)->format('Y-m-d')) }}"
+                                <label for="transfer_date" class="text-sm font-bold text-[#10233d]">Tanggal
+                                    transfer</label>
+                                <input id="transfer_date" name="transfer_date" type="date"
+                                    value="{{ old('transfer_date', optional($order->payment?->transfer_date)->format('Y-m-d')) }}"
                                     max="{{ now()->format('Y-m-d') }}"
                                     class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">
                                 <x-input-error :messages="$errors->get('transfer_date')" class="mt-2" />
                             </div>
 
                             <div class="md:col-span-2">
-                                <label for="proof_image" class="text-sm font-bold text-[#10233d]">Bukti pembayaran</label>
-                                <input id="proof_image" name="proof_image" type="file" accept="image/png,image/jpeg,image/webp"
+                                <label for="proof_image" class="text-sm font-bold text-[#10233d]">Bukti
+                                    pembayaran</label>
+                                <input id="proof_image" name="proof_image" type="file"
+                                    accept="image/png,image/jpeg,image/webp"
                                     class="mt-2 w-full border border-[#d8e2f0] bg-white p-3 text-sm file:mr-4 file:border-0 file:bg-[#c8102e] file:px-4 file:py-2 file:text-xs file:font-black file:uppercase file:tracking-[.12em] file:text-white focus:border-[#c8102e] focus:ring-[#c8102e]">
-                                <p class="mt-2 text-xs font-semibold text-[#657891]">Format JPG, PNG, atau WEBP. Maksimal 2MB.</p>
+                                <p class="mt-2 text-xs font-semibold text-[#657891]">Format JPG, PNG, atau WEBP.
+                                    Maksimal 2MB.</p>
                                 <x-input-error :messages="$errors->get('proof_image')" class="mt-2" />
                             </div>
 
@@ -98,12 +111,12 @@
                                 </div>
                             @endif
 
-                            <div class="md:col-span-2">
+                            {{-- <div class="md:col-span-2">
                                 <label for="notes" class="text-sm font-bold text-[#10233d]">Catatan</label>
                                 <textarea id="notes" name="notes" rows="4"
                                     class="mt-2 w-full border-[#d8e2f0] text-sm focus:border-[#c8102e] focus:ring-[#c8102e]">{{ old('notes', $order->payment?->notes) }}</textarea>
                                 <x-input-error :messages="$errors->get('notes')" class="mt-2" />
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -117,9 +130,11 @@
                                 <div class="flex items-start justify-between gap-4 text-sm">
                                     <div>
                                         <p class="font-bold text-[#10233d]">{{ $item->product_name }}</p>
-                                        <p class="mt-1 text-[#657891]">{{ $item->quantity }} x Rp {{ number_format($item->product_price, 0, ',', '.') }}</p>
+                                        <p class="mt-1 text-[#657891]">{{ $item->quantity }} x Rp
+                                            {{ number_format($item->product_price, 0, ',', '.') }}</p>
                                     </div>
-                                    <p class="shrink-0 font-black text-[#c8102e]">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</p>
+                                    <p class="shrink-0 font-black text-[#c8102e]">Rp
+                                        {{ number_format($item->subtotal, 0, ',', '.') }}</p>
                                 </div>
                             </div>
                         @endforeach
@@ -128,22 +143,27 @@
                     <div class="mt-6 space-y-3 border-t border-[#f2c8d0] pt-4 text-sm">
                         <div class="flex justify-between">
                             <span class="text-[#657891]">Subtotal</span>
-                            <span class="font-black text-[#10233d]">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span>
+                            <span class="font-black text-[#10233d]">Rp
+                                {{ number_format($order->subtotal, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-[#657891]">Ongkos kirim</span>
-                            <span class="font-black text-[#10233d]">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
+                            <span class="font-black text-[#10233d]">Rp
+                                {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between border-t border-[#e8eef7] pt-3">
                             <span class="text-[#657891]">Total pembayaran</span>
-                            <span class="font-black text-[#c8102e]">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                            <span class="font-black text-[#c8102e]">Rp
+                                {{ number_format($order->total_amount, 0, ',', '.') }}</span>
                         </div>
                     </div>
 
-                    <button type="submit" class="mt-7 flex h-11 w-full items-center justify-center bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
+                    <button type="submit"
+                        class="mt-7 flex h-11 w-full items-center justify-center bg-[#c8102e] text-xs font-black uppercase tracking-[.16em] text-white hover:bg-[#9f0d24]">
                         Unggah Bukti
                     </button>
-                    <a href="{{ route('pelanggan.orders.index') }}" class="mt-3 flex h-11 w-full items-center justify-center border border-[#d8e2f0] text-xs font-black uppercase tracking-[.16em] text-[#10233d] hover:border-[#c8102e] hover:text-[#c8102e]">
+                    <a href="{{ route('pelanggan.orders.index') }}"
+                        class="mt-3 flex h-11 w-full items-center justify-center border border-[#d8e2f0] text-xs font-black uppercase tracking-[.16em] text-[#10233d] hover:border-[#c8102e] hover:text-[#c8102e]">
                         Kembali
                     </a>
                 </aside>

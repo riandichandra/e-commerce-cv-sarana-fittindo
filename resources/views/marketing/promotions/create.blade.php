@@ -12,7 +12,8 @@
             <h1 class="text-4xl font-bold text-texthighlight">{{ $pageName }}</h1>
         </div>
 
-        <form method="POST" action="{{ route('marketing.promotions.store') }}" enctype="multipart/form-data" class="bg-white p-6 shadow-sm">
+        <form method="POST" action="{{ route('marketing.promotions.store') }}" enctype="multipart/form-data"
+            class="bg-white p-6 shadow-sm">
             @include('marketing.promotions.partials.form')
         </form>
     </div>

@@ -16,7 +16,7 @@
         @if (session('success') || session('error') || $errors->any())
             <div
                 class="border-l-4 {{ session('success') ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-500 bg-red-50 text-red-700' }} px-4 py-3 text-sm font-semibold">
-                {{ session('success') ?? session('error') ?? $errors->first() }}
+                {{ session('success') ?? (session('error') ?? $errors->first()) }}
             </div>
         @endif
 
@@ -110,7 +110,7 @@
                                         <a class="inline-flex h-9 items-center justify-center gap-1.5 bg-primary px-3 text-xs font-bold text-white transition hover:bg-red-700"
                                             href="{{ asset('storage/' . $payment->proof_image) }}" target="_blank">
                                             <iconify-icon icon="mdi:image" class="fs-6"></iconify-icon>
-                                            VIEW
+                                            LIHAT
                                         </a>
                                     @else
                                         <span class="text-gray-500">-</span>
@@ -121,7 +121,8 @@
                                         {{ $payment->status_label }}
                                     </span>
                                     @if ($payment->rejection_reason)
-                                        <div class="mt-3 max-w-[220px] border-l-4 border-red-300 bg-red-50 px-3 py-2 text-xs leading-5 text-red-800">
+                                        <div
+                                            class="mt-3 max-w-[220px] border-l-4 border-red-300 bg-red-50 px-3 py-2 text-xs leading-5 text-red-800">
                                             <p class="font-bold uppercase tracking-wide">Keterangan</p>
                                             <p class="mt-1">{{ $payment->rejection_reason }}</p>
                                         </div>
@@ -159,13 +160,15 @@
                                                 <div class="w-full max-w-lg border border-red-100 bg-white text-left shadow-2xl"
                                                     x-on:click.outside="rejectOpen = false">
                                                     <div class="border-b border-red-100 bg-red-50 px-6 py-4">
-                                                        <p class="text-xs font-black uppercase tracking-[.16em] text-red-700">
+                                                        <p
+                                                            class="text-xs font-black uppercase tracking-[.16em] text-red-700">
                                                             Tolak Pembayaran</p>
                                                         <h3 class="mt-1 text-xl font-black text-texthighlight">
                                                             {{ $payment->order?->order_number ?? 'Pesanan' }}
                                                         </h3>
                                                         <p class="mt-2 text-sm leading-6 text-red-800">
-                                                            Masukkan keterangan yang jelas agar pelanggan memahami alasan pembayaran ditolak.
+                                                            Masukkan keterangan yang jelas agar pelanggan memahami
+                                                            alasan pembayaran ditolak.
                                                         </p>
                                                     </div>
 
@@ -176,15 +179,16 @@
 
                                                         <div>
                                                             <label for="rejection_reason_{{ $payment->id }}"
-                                                                class="text-sm font-bold text-texthighlight">Keterangan Penolakan</label>
+                                                                class="text-sm font-bold text-texthighlight">Keterangan
+                                                                Penolakan</label>
                                                             <textarea id="rejection_reason_{{ $payment->id }}" name="rejection_reason" rows="5" maxlength="1000"
                                                                 class="mt-2 w-full border border-red-200 bg-red-50 px-3 py-2 text-sm leading-6 text-red-900 placeholder-red-300 shadow-sm focus:border-red-500 focus:outline-none"
-                                                                placeholder="Contoh: Nominal transfer tidak sesuai dengan total pembayaran." required
-                                                                x-ref="rejectionReason">{{ old('rejection_reason') }}</textarea>
+                                                                placeholder="Contoh: Nominal transfer tidak sesuai dengan total pembayaran." required x-ref="rejectionReason">{{ old('rejection_reason') }}</textarea>
                                                             <x-input-error :messages="$errors->get('rejection_reason')" class="mt-2" />
                                                         </div>
 
-                                                        <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                                                        <div
+                                                            class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                                                             <button type="button"
                                                                 class="inline-flex h-10 items-center justify-center border border-gray-300 bg-white px-4 text-xs font-bold text-gray-700 transition hover:bg-gray-50"
                                                                 x-on:click="rejectOpen = false">
@@ -212,7 +216,8 @@
                                             class="flex h-14 w-14 items-center justify-center bg-[#fff1f3] text-primary">
                                             <iconify-icon icon="mdi:cash-check" class="fs-3"></iconify-icon>
                                         </div>
-                                        <p class="mt-4 text-base font-bold text-texthighlight">Belum ada pembayaran.</p>
+                                        <p class="mt-4 text-base font-bold text-texthighlight">Belum ada pembayaran.
+                                        </p>
                                         <p class="mt-2 text-sm text-gray-500">Data pembayaran pelanggan akan muncul di
                                             halaman ini.</p>
                                     </div>
