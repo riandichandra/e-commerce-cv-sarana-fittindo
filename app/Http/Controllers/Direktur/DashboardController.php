@@ -18,7 +18,8 @@ class DashboardController extends Controller
         $pagePath = explode('/', 'DIREKTUR/DASHBOARD');
         $pageName = 'Dasbor Monitoring';
 
-        $availableYears = Payment::where('status', 'terverifikasi')
+        $availableYears = Payment::nonDummyOrder()
+            ->where('status', 'terverifikasi')
             ->whereNotNull('verified_at')
             ->orderBy('verified_at')
             ->pluck('verified_at')
@@ -37,7 +38,8 @@ class DashboardController extends Controller
             $selectedYear = $availableYears->first();
         }
 
-        $availableMonths = Payment::where('status', 'terverifikasi')
+        $availableMonths = Payment::nonDummyOrder()
+            ->where('status', 'terverifikasi')
             ->whereYear('verified_at', $selectedYear)
             ->whereNotNull('verified_at')
             ->orderBy('verified_at')
@@ -61,18 +63,20 @@ class DashboardController extends Controller
             }
         }
 
-        $totalRevenue = Payment::where('status', 'terverifikasi')
+        $totalRevenue = Payment::nonDummyOrder()
+            ->where('status', 'terverifikasi')
             ->whereYear('verified_at', $selectedYear)
             ->sum('amount');
 
-        $monthlyRevenue = Payment::where('status', 'terverifikasi')
+        $monthlyRevenue = Payment::nonDummyOrder()
+            ->where('status', 'terverifikasi')
             ->whereYear('verified_at', $selectedYear)
             ->whereMonth('verified_at', $selectedMonth)
             ->sum('amount');
 
-        $totalOrders = Order::count();
-        $selesaiOrders = Order::where('status', 'selesai')->count();
-        $activeOrders = Order::whereIn('status', ['menunggu_verifikasi_pembayaran', 'pembayaran_dikonfirmasi', 'diproses', 'dikirim'])->count();
+        $totalOrders = Order::nonDummy()->count();
+        $selesaiOrders = Order::nonDummy()->where('status', 'selesai')->count();
+        $activeOrders = Order::nonDummy()->whereIn('status', ['menunggu_verifikasi_pembayaran', 'pembayaran_dikonfirmasi', 'diproses', 'dikirim'])->count();
         $totalCustomers = User::whereHas('roles', fn ($query) => $query->where('name', 'pelanggan'))->count();
         $activeProducts = Product::where('is_active', true)->count();
         $runningPromotions = Promotion::where('is_active', true)
@@ -85,7 +89,8 @@ class DashboardController extends Controller
 
             return [
                 'label' => $date->format('M'),
-                'amount' => Payment::where('status', 'terverifikasi')
+                'amount' => Payment::nonDummyOrder()
+                    ->where('status', 'terverifikasi')
                     ->whereYear('verified_at', $date->year)
                     ->whereMonth('verified_at', $date->month)
                     ->sum('amount'),
@@ -94,11 +99,12 @@ class DashboardController extends Controller
 
         $maxMonthlyRevenue = max((float) $monthlyRevenueTrend->max('amount'), 1);
 
-        $orderStatusCounts = Order::select('status', DB::raw('count(*) as total'))
+        $orderStatusCounts = Order::nonDummy()
+            ->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        $topProducts = OrderItem::query()
+        $topProducts = OrderItem::nonDummyOrder()
             ->whereHas('order', fn($q) => $q->whereYear('created_at', $selectedYear))
             ->select('product_name')
             ->selectRaw('SUM(quantity) as total_quantity')
@@ -108,7 +114,7 @@ class DashboardController extends Controller
             ->paginate(5, ['*'], 'top_products_page')
             ->withQueryString();
 
-        $topCustomers = Order::query()
+        $topCustomers = Order::nonDummy()
             ->when($selectedYear, fn($q) => $q->whereYear('created_at', $selectedYear))
             ->when($selectedMonth, fn($q) => $q->whereMonth('created_at', $selectedMonth))
             ->select('user_id')
@@ -122,7 +128,8 @@ class DashboardController extends Controller
             ->paginate(5, ['*'], 'top_customers_page')
             ->withQueryString();
 
-        $recentOrders = Order::with(['user', 'payment'])
+        $recentOrders = Order::nonDummy()
+            ->with(['user', 'payment'])
             ->withCount('items')
             ->latest()
             ->paginate(6, ['*'], 'recent_orders_page')

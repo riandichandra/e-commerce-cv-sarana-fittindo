@@ -12,7 +12,8 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $orders = Order::with(['items', 'payment', 'paymentMethod'])
+        $orders = Order::nonDummy()
+            ->with(['items', 'payment', 'paymentMethod'])
             ->where('user_id', $request->user()->id)
             ->latest()
             ->get();
@@ -30,7 +31,8 @@ class OrderController extends Controller
 
     public function history(Request $request)
     {
-        $query = Order::with(['items', 'payment', 'paymentMethod'])
+        $query = Order::nonDummy()
+            ->with(['items', 'payment', 'paymentMethod'])
             ->where('user_id', $request->user()->id);
 
         // Search by order number

@@ -19,7 +19,7 @@
                     <p>PRODUK</p>
                 </li>
             </a>
-            <a href="{{ route('admin.orders.index') }}">
+            <a href="{{ $paidUnprocessedOrderCount > 0 ? route('admin.orders.index', ['status' => 'pembayaran_dikonfirmasi']) : route('admin.orders.index') }}">
                 <li
                     class="p-3 px-5 flex items-center gap-3 hover:bg-gray-200 cursor-pointer {{ request()->routeIs('admin.orders.*') ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'hover:bg-gray-200' }}">
                     <iconify-icon icon="mdi:shopping" class="nav-small-cap-icon fs-5"></iconify-icon>

@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
+    public const DUMMY_ORDER_PREFIX = 'SFDM';
+
     protected $fillable = [
         'user_id',
         'order_number',
@@ -74,6 +76,11 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeNonDummy($query)
+    {
+        return $query->where('order_number', 'not like', self::DUMMY_ORDER_PREFIX.'%');
     }
 
     public function items(): HasMany

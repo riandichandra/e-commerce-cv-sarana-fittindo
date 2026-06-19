@@ -18,7 +18,8 @@ class PaymentController extends Controller
 
         $statuses = ['menunggu', 'terverifikasi', 'ditolak'];
 
-        $payments = Payment::with(['order.user', 'paymentMethod', 'verifiedBy'])
+        $payments = Payment::nonDummyOrder()
+            ->with(['order.user', 'paymentMethod', 'verifiedBy'])
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->q, function ($q) use ($request) {
                 $kw = $request->q;

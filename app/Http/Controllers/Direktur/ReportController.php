@@ -18,7 +18,8 @@ class ReportController extends Controller
         $pageName = 'Laporan Monitoring';
         $filters = $this->filters($request);
 
-        $ordersQuery = Order::with(['user', 'payment', 'items'])
+        $ordersQuery = Order::nonDummy()
+            ->with(['user', 'payment', 'items'])
             ->when($filters['start_date'], fn ($query, $date) => $query->whereDate('created_at', '>=', $date))
             ->when($filters['end_date'], fn ($query, $date) => $query->whereDate('created_at', '<=', $date))
             ->when($filters['status'], fn ($query, $status) => $query->where('status', $status));
@@ -32,13 +33,15 @@ class ReportController extends Controller
             'total_orders' => (clone $ordersQuery)->count(),
             'total_sales' => (clone $ordersQuery)->sum('total_amount'),
             'total_discount' => (clone $ordersQuery)->sum('discount_amount'),
-            'verified_revenue' => Payment::where('status', 'terverifikasi')
+            'verified_revenue' => Payment::nonDummyOrder()
+                ->where('status', 'terverifikasi')
                 ->when($filters['start_date'], fn ($query, $date) => $query->whereDate('verified_at', '>=', $date))
                 ->when($filters['end_date'], fn ($query, $date) => $query->whereDate('verified_at', '<=', $date))
                 ->sum('amount'),
         ];
 
-        $topProducts = OrderItem::select('product_name')
+        $topProducts = OrderItem::nonDummyOrder()
+            ->select('product_name')
             ->selectRaw('SUM(quantity) as total_quantity')
             ->selectRaw('SUM(subtotal) as total_sales')
             ->groupBy('product_name')

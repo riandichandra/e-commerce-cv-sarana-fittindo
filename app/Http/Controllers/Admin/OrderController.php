@@ -26,7 +26,8 @@ class OrderController extends Controller
             'dibatalkan',
         ];
 
-        $orders = Order::with(['user', 'paymentMethod', 'payment'])
+        $orders = Order::nonDummy()
+            ->with(['user', 'paymentMethod', 'payment'])
             ->withCount('items')
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->q, function ($q) use ($request) {
@@ -85,7 +86,8 @@ class OrderController extends Controller
         $pagePath = explode('/', $pagePath);
         $pageName = 'Pesanan Menunggu Konfirmasi Ongkir';
 
-        $orders = Order::with(['user', 'paymentMethod', 'items'])
+        $orders = Order::nonDummy()
+            ->with(['user', 'paymentMethod', 'items'])
             ->withCount('items')
             ->where(function ($q) {
                 $q->where('status', 'menunggu_konfirmasi_ongkir')

@@ -22,8 +22,8 @@ class DashboardController extends Controller
             ->whereDate('end_date', '>=', now())
             ->count();
         $upcomingPromotions = Promotion::whereDate('start_date', '>', now())->count();
-        $selesaiOrders = Order::where('status', 'selesai')->count();
-        $totalDiscountGiven = Order::sum('discount_amount');
+        $selesaiOrders = Order::nonDummy()->where('status', 'selesai')->count();
+        $totalDiscountGiven = Order::nonDummy()->sum('discount_amount');
 
         $recentPromotions = Promotion::with('createdBy')
             ->latest()

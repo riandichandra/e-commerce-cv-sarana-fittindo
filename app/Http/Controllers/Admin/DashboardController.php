@@ -17,30 +17,35 @@ class DashboardController extends Controller
         $pageName = 'Dasbor';
 
         $totalProducts = Product::count();
-        $availableProducts = Product::where('stock', true)->count();
-        $totalOrders = Order::count();
-        $waitingConfirmation = Order::where('status', 'menunggu_verifikasi_pembayaran')->count();
-        $pendingPayment = Order::where('status', 'belum_dibayar')->count();
-        $diprosesOrders = Order::whereIn('status', ['pembayaran_dikonfirmasi', 'diproses', 'dikirim'])->count();
+        $availableProducts = Product::where('is_active', true)
+            ->where('status', Product::STATUS_AVAILABLE)
+            ->where('stock', '>', 0)
+            ->count();
+        $totalOrders = Order::nonDummy()->count();
+        $waitingConfirmation = Order::nonDummy()->where('status', 'menunggu_verifikasi_pembayaran')->count();
+        $pendingPayment = Order::nonDummy()->where('status', 'belum_dibayar')->count();
+        $diprosesOrders = Order::nonDummy()->whereIn('status', ['pembayaran_dikonfirmasi', 'diproses', 'dikirim'])->count();
         $totalCustomers = User::whereHas('roles', fn ($query) => $query->where('name', 'pelanggan'))->count();
-        $verifiedRevenue = Payment::where('status', 'terverifikasi')->sum('amount');
-        $pendingPaymentAmount = Payment::where('status', 'menunggu')->sum('amount');
+        $verifiedRevenue = Payment::nonDummyOrder()->where('status', 'terverifikasi')->sum('amount');
+        $pendingPaymentAmount = Payment::nonDummyOrder()->where('status', 'menunggu')->sum('amount');
 
-        $recentOrders = Order::with(['user', 'payment', 'paymentMethod'])
+        $recentOrders = Order::nonDummy()
+            ->with(['user', 'payment', 'paymentMethod'])
             ->withCount('items')
             ->latest()
             ->paginate(5, ['*'], 'recent_orders_page')
             ->withQueryString();
 
-        $recentPayments = Payment::with(['order.user', 'paymentMethod'])
+        $recentPayments = Payment::nonDummyOrder()
+            ->with(['order.user', 'paymentMethod'])
             ->latest()
             ->paginate(5, ['*'], 'recent_payments_page')
             ->withQueryString();
 
         $paymentStatusCounts = [
-            'menunggu' => Payment::where('status', 'menunggu')->count(),
-            'terverifikasi' => Payment::where('status', 'terverifikasi')->count(),
-            'ditolak' => Payment::where('status', 'ditolak')->count(),
+            'menunggu' => Payment::nonDummyOrder()->where('status', 'menunggu')->count(),
+            'terverifikasi' => Payment::nonDummyOrder()->where('status', 'terverifikasi')->count(),
+            'ditolak' => Payment::nonDummyOrder()->where('status', 'ditolak')->count(),
         ];
 
         $monthlyRevenue = collect(range(5, 0))->map(function (int $monthsAgo) {
@@ -48,7 +53,8 @@ class DashboardController extends Controller
 
             return [
                 'label' => $date->format('M'),
-                'amount' => Payment::where('status', 'terverifikasi')
+                'amount' => Payment::nonDummyOrder()
+                    ->where('status', 'terverifikasi')
                     ->whereYear('verified_at', $date->year)
                     ->whereMonth('verified_at', $date->month)
                     ->sum('amount'),

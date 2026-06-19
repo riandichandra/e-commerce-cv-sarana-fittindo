@@ -22,8 +22,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('layouts.admin.navigation', function ($view) {
-            $paidUnprocessedOrderCount = Order::where('status', 'pembayaran_dikonfirmasi')->count();
-            $pendingShippingCount = Order::where(function ($q) {
+            $paidUnprocessedOrderCount = Order::nonDummy()->where('status', 'pembayaran_dikonfirmasi')->count();
+            $pendingShippingCount = Order::nonDummy()->where(function ($q) {
                 $q->where('status', 'menunggu_konfirmasi_ongkir')
                     ->orWhere('shipping_cost_status', 'waiting_admin');
             })->count();

@@ -37,6 +37,11 @@ class Payment extends Model
         };
     }
 
+    public function scopeNonDummyOrder($query)
+    {
+        return $query->whereHas('order', fn ($order) => $order->nonDummy());
+    }
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);

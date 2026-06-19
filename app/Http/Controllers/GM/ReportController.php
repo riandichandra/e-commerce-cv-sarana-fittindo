@@ -84,7 +84,8 @@ class ReportController extends Controller
 
     private function reportQuery(array $filters)
     {
-        return Order::with(['user', 'payment.paymentMethod', 'items'])
+        return Order::nonDummy()
+            ->with(['user', 'payment.paymentMethod', 'items'])
             ->when($filters['start_date'], fn ($query, $date) => $query->whereDate('created_at', '>=', $date))
             ->when($filters['end_date'], fn ($query, $date) => $query->whereDate('created_at', '<=', $date))
             ->when($filters['status'], fn ($query, $status) => $query->where('status', $status))
