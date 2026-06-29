@@ -33,13 +33,9 @@ class RajaOngkirShippingController extends Controller
 
         $validated = $request->validate([
             'shipping_address_id' => [
-                'nullable',
+                'required',
                 Rule::exists('user_addresses', 'id')->where('user_id', $request->user()->id),
             ],
-            'shipping_province_id' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:32'],
-            'shipping_city_id' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:32'],
-            'shipping_district_id' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:32'],
-            'shipping_village_id' => ['required_without:shipping_address_id', 'nullable', 'string', 'max:32'],
         ]);
 
         $cart = Cart::getForUser($request->user());
@@ -47,7 +43,7 @@ class RajaOngkirShippingController extends Controller
 
         try {
             $weightGram = $shippingQuotes->weightForCart($cart);
-            $destinationDistrictId = $this->resolveDestinationDistrictId($request, $validated, $rajaOngkir);
+            $destinationDistrictId = $this->resolveDestinationDistrictId($request, $validated);
             $originDistrictId = (string) $rajaOngkir->originDistrictId();
 
             $options = $rajaOngkir->calculateDistrictDomesticCost(
@@ -107,43 +103,16 @@ class RajaOngkirShippingController extends Controller
         }
     }
 
-    private function resolveDestinationDistrictId(Request $request, array $validated, RajaOngkirService $rajaOngkir): string
+    private function resolveDestinationDistrictId(Request $request, array $validated): string
     {
-        if (! empty($validated['shipping_address_id'])) {
-            $address = $request->user()
-                ->addresses()
-                ->findOrFail($validated['shipping_address_id']);
+        $address = $request->user()
+            ->addresses()
+            ->findOrFail($validated['shipping_address_id']);
 
-            if ($address->region_source !== 'rajaongkir' || ! filled($address->district_id)) {
-                throw new RuntimeException('Alamat tersimpan perlu diperbarui ke data RajaOngkir sebelum ongkir otomatis dapat dihitung.');
-            }
-
-            return (string) $address->district_id;
+        if ($address->region_source !== 'rajaongkir' || ! filled($address->district_id)) {
+            throw new RuntimeException('Alamat tersimpan perlu diperbarui ke data RajaOngkir sebelum ongkir otomatis dapat dihitung.');
         }
 
-        $regions = $rajaOngkir->resolveRegionChain(
-            (string) $validated['shipping_province_id'],
-            (string) $validated['shipping_city_id'],
-            (string) $validated['shipping_district_id'],
-            (string) $validated['shipping_village_id'],
-        );
-
-        if (! $regions['province']) {
-            throw new RuntimeException('Provinsi tidak ditemukan di RajaOngkir.');
-        }
-
-        if (! $regions['city']) {
-            throw new RuntimeException('Kabupaten/kota tidak sesuai dengan provinsi.');
-        }
-
-        if (! $regions['district']) {
-            throw new RuntimeException('Kecamatan tidak sesuai dengan kabupaten/kota.');
-        }
-
-        if (! $regions['subdistrict']) {
-            throw new RuntimeException('Desa/kelurahan tidak sesuai dengan kecamatan.');
-        }
-
-        return (string) $validated['shipping_district_id'];
+        return (string) $address->district_id;
     }
 }

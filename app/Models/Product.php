@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -19,7 +18,6 @@ class Product extends Model
         'category_id',
         'brand_id',
         'name',
-        'slug',
         'description',
         'price',
         'stock',
@@ -72,6 +70,18 @@ class Product extends Model
         return $query->where('is_active', true);
     }
 
+    // Scope: Products visible in customer-facing catalog
+    public function scopeVisibleToCustomers($query)
+    {
+        return $query
+            ->active()
+            ->whereHas('category', fn ($query) => $query->active())
+            ->where(function ($query) {
+                $query->whereNull('brand_id')
+                    ->orWhereHas('brand', fn ($query) => $query->active());
+            });
+    }
+
     // Scope: Featured products
     public function scopeFeatured($query)
     {
@@ -82,14 +92,25 @@ class Product extends Model
     public function scopeAvailable($query)
     {
         return $query
-            ->where('is_active', true)
+            ->visibleToCustomers()
             ->where('status', self::STATUS_AVAILABLE)
             ->where('stock', '>', 0);
     }
 
+    public function isVisibleToCustomers(): bool
+    {
+        $this->loadMissing(['category', 'brand']);
+
+        return $this->is_active
+            && (bool) $this->category?->is_active
+            && ($this->brand_id === null || (bool) $this->brand?->is_active);
+    }
+
     public function isAvailable(): bool
     {
-        return $this->is_active && $this->stock > 0 && $this->status === self::STATUS_AVAILABLE;
+        return $this->isVisibleToCustomers()
+            && $this->stock > 0
+            && $this->status === self::STATUS_AVAILABLE;
     }
 
     public function syncStatusFromStock(): void
@@ -118,14 +139,13 @@ class Product extends Model
         $this->syncStatusFromStock();
     }
 
-    // Generate slug and keep status in sync
+    // Keep stock and status in sync before persisting
     protected static function boot()
     {
         parent::boot();
 
         static::saving(function (Product $product) {
             $product->stock = max(0, (int) $product->stock);
-            $product->slug = Str::slug($product->name);
             $product->syncStatusFromStock();
         });
     }

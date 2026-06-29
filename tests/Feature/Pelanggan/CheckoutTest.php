@@ -25,6 +25,7 @@ class CheckoutTest extends TestCase
     public function test_customer_can_open_checkout_detail_page_from_cart(): void
     {
         $user = $this->makeCustomerWithCart();
+        $this->createAddressForUser($user);
 
         $response = $this->actingAs($user)->get(route('pelanggan.cart.checkout'));
 
@@ -49,16 +50,44 @@ class CheckoutTest extends TestCase
         $response->assertSee($address->full_address);
     }
 
-    public function test_customer_can_fetch_rajaongkir_shipping_options(): void
+    public function test_customer_without_saved_address_is_redirected_from_checkout_page(): void
     {
         $user = $this->makeCustomerWithCart();
-        $this->mockCheckoutRegion(cityName: 'Bandung');
 
-        $response = $this->actingAs($user)->postJson(route('pelanggan.shipping.domestic-cost'), [
+        $response = $this->actingAs($user)->get(route('pelanggan.cart.checkout'));
+
+        $response->assertRedirect(route('profile.edit'));
+        $response->assertSessionHas('error', 'Tambahkan alamat pengiriman di profil sebelum checkout.');
+    }
+
+    public function test_customer_cannot_checkout_without_saved_address_id(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), [
+            'shipping_name' => 'Budi Santoso',
+            'shipping_phone' => '081234567890',
+            'shipping_address' => 'Jl. Merdeka No. 10',
             'shipping_province_id' => '1',
             'shipping_city_id' => '2',
             'shipping_district_id' => '3',
             'shipping_village_id' => '4',
+            'payment_method_id' => $paymentMethod->id,
+        ]);
+
+        $response->assertSessionHasErrors('shipping_address_id');
+        $this->assertSame(0, Order::count());
+    }
+
+    public function test_customer_can_fetch_rajaongkir_shipping_options(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $address = $this->createAddressForUser($user);
+        $this->mockCheckoutRegion(cityName: 'Bandung');
+
+        $response = $this->actingAs($user)->postJson(route('pelanggan.shipping.domestic-cost'), [
+            'shipping_address_id' => $address->id,
         ]);
 
         $response->assertOk();
@@ -69,9 +98,21 @@ class CheckoutTest extends TestCase
         $this->assertNotEmpty($response->json('data.0.quote_token'));
     }
 
+    public function test_shipping_quote_endpoint_requires_saved_address(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $this->mockCheckoutRegion(cityName: 'Bandung');
+
+        $response = $this->actingAs($user)->postJson(route('pelanggan.shipping.domestic-cost'), []);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('shipping_address_id');
+    }
+
     public function test_shipping_quote_endpoint_requires_origin_configuration(): void
     {
         $user = $this->makeCustomerWithCart();
+        $address = $this->createAddressForUser($user);
 
         $this->mock(RajaOngkirService::class, function ($mock): void {
             $mock->shouldReceive('isConfigured')->once()->andReturn(true);
@@ -79,10 +120,7 @@ class CheckoutTest extends TestCase
         });
 
         $response = $this->actingAs($user)->postJson(route('pelanggan.shipping.domestic-cost'), [
-            'shipping_province_id' => '1',
-            'shipping_city_id' => '2',
-            'shipping_district_id' => '3',
-            'shipping_village_id' => '4',
+            'shipping_address_id' => $address->id,
         ]);
 
         $response->assertStatus(503);
@@ -96,7 +134,7 @@ class CheckoutTest extends TestCase
         $product = $user->cart()->first()->items()->first()->product;
         $this->mockCheckoutRegion(cityName: 'Bandung');
 
-        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod, [
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->savedAddressCheckoutPayload($paymentMethod, [
             'shipping_province' => 'Provinsi dari browser',
             'shipping_city' => 'Kota dari browser',
             'shipping_district' => 'Kecamatan dari browser',
@@ -108,11 +146,11 @@ class CheckoutTest extends TestCase
             'user_id' => $user->id,
             'payment_method_id' => $paymentMethod->id,
             'shipping_name' => 'Budi Santoso',
-            'shipping_province' => 'Jawa Barat',
-            'shipping_city' => 'Bandung',
-            'shipping_district' => 'Coblong',
-            'shipping_village' => 'Dago',
-            'shipping_postal_code' => '40135',
+            'shipping_province' => 'DKI Jakarta',
+            'shipping_city' => 'Jakarta Selatan',
+            'shipping_district' => 'Kebayoran Baru',
+            'shipping_village' => 'Senayan',
+            'shipping_postal_code' => '12190',
             'notes' => 'Kirim pagi.',
             'status' => 'belum_dibayar',
             'shipping_cost_status' => 'calculated',
@@ -152,7 +190,7 @@ class CheckoutTest extends TestCase
         $paymentMethod = PaymentMethod::first();
         $this->mockPalembangCheckoutRegion();
 
-        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod, [
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->savedAddressCheckoutPayload($paymentMethod, [
             'shipping_postal_code' => '30111',
             '_shipping_cost' => 20000,
         ]));
@@ -187,7 +225,7 @@ class CheckoutTest extends TestCase
             'value' => 50000,
         ]);
 
-        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangCheckoutPayload($paymentMethod));
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangSavedAddressCheckoutPayload($paymentMethod));
 
         $order = Order::first();
 
@@ -218,7 +256,7 @@ class CheckoutTest extends TestCase
             'value' => 10,
         ]);
 
-        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangCheckoutPayload($paymentMethod));
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangSavedAddressCheckoutPayload($paymentMethod));
 
         $this->assertDatabaseHas('orders', [
             'discount_amount' => 30000,
@@ -240,7 +278,7 @@ class CheckoutTest extends TestCase
             'max_discount' => 75000,
         ]);
 
-        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangCheckoutPayload($paymentMethod));
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangSavedAddressCheckoutPayload($paymentMethod));
 
         $this->assertDatabaseHas('orders', [
             'discount_amount' => 75000,
@@ -258,7 +296,7 @@ class CheckoutTest extends TestCase
             'min_purchase' => 400000,
         ]);
 
-        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangCheckoutPayload($paymentMethod));
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangSavedAddressCheckoutPayload($paymentMethod));
 
         $this->assertDatabaseHas('orders', [
             'promotion_id' => null,
@@ -276,7 +314,7 @@ class CheckoutTest extends TestCase
         $this->makePromotion(['name' => 'Upcoming', 'value' => 50000, 'start_date' => now()->addDay(), 'end_date' => now()->addDays(3)]);
         $this->makePromotion(['name' => 'Expired', 'value' => 50000, 'start_date' => now()->subDays(3), 'end_date' => now()->subDay()]);
 
-        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangCheckoutPayload($paymentMethod));
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangSavedAddressCheckoutPayload($paymentMethod));
 
         $this->assertDatabaseHas('orders', [
             'promotion_id' => null,
@@ -292,7 +330,7 @@ class CheckoutTest extends TestCase
         $this->makePromotion(['name' => 'Small Promo', 'type' => 'nominal', 'value' => 25000]);
         $bestPromotion = $this->makePromotion(['name' => 'Best Promo', 'type' => 'percent', 'value' => 20]);
 
-        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangCheckoutPayload($paymentMethod));
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->palembangSavedAddressCheckoutPayload($paymentMethod));
 
         $this->assertDatabaseHas('orders', [
             'promotion_id' => $bestPromotion->id,
@@ -309,7 +347,7 @@ class CheckoutTest extends TestCase
         $this->makePromotion(['type' => 'nominal', 'value' => 50000]);
         $this->mockCheckoutRegion(cityName: 'Bandung');
 
-        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod));
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->savedAddressCheckoutPayload($paymentMethod));
 
         $order = Order::first();
 
@@ -339,7 +377,7 @@ class CheckoutTest extends TestCase
         $user->cart()->first()->items()->first()->update(['quantity' => 2]);
         $this->mockCheckoutRegion(cityName: 'Bandung');
 
-        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod));
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->savedAddressCheckoutPayload($paymentMethod));
 
         $order = Order::first();
 
@@ -358,9 +396,24 @@ class CheckoutTest extends TestCase
         $user->cart()->first()->items()->first()->update(['quantity' => 2]);
         $this->mockCheckoutRegion(cityName: 'Bandung');
 
-        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod));
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->savedAddressCheckoutPayload($paymentMethod));
 
         $response->assertSessionHas('error');
+        $this->assertSame(0, Order::count());
+        $this->assertSame(0, Payment::count());
+    }
+
+    public function test_customer_cannot_checkout_when_product_category_is_inactive(): void
+    {
+        $user = $this->makeCustomerWithCart();
+        $paymentMethod = PaymentMethod::first();
+        $product = $user->cart()->first()->items()->first()->product;
+        $product->category->update(['is_active' => false]);
+        $this->mockCheckoutRegion(cityName: 'Bandung');
+
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->savedAddressCheckoutPayload($paymentMethod));
+
+        $response->assertSessionHas('error', 'Produk Besi Hollow sedang tidak tersedia.');
         $this->assertSame(0, Order::count());
         $this->assertSame(0, Payment::count());
     }
@@ -419,7 +472,7 @@ class CheckoutTest extends TestCase
         $paymentMethod = PaymentMethod::first();
         $this->mockCheckoutRegion(cityName: 'Bandung');
 
-        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod, [
+        $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->savedAddressCheckoutPayload($paymentMethod, [
             'shipping_fallback' => 'admin_manual',
             'shipping_quote_token' => null,
         ]));
@@ -448,32 +501,36 @@ class CheckoutTest extends TestCase
         $this->assertSame(0, Order::count());
     }
 
-    public function test_customer_cannot_checkout_with_invalid_manual_raja_ongkir_region_chain(): void
+    public function test_customer_cannot_checkout_when_saved_address_region_is_invalid(): void
     {
         $user = $this->makeCustomerWithCart();
         $paymentMethod = PaymentMethod::first();
-        $this->mockCheckoutRegion(resolvedRegions: [
-            'province' => ['id' => '1', 'name' => 'Jawa Barat', 'postal_code' => null],
-            'city' => null,
-            'district' => null,
-            'subdistrict' => null,
+        $address = $this->createAddressForUser($user);
+        $address->update([
+            'region_source' => 'legacy',
         ]);
 
-        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod));
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), [
+            'shipping_address_id' => $address->id,
+            'payment_method_id' => $paymentMethod->id,
+            'shipping_quote_token' => 'invalid-address-token',
+        ]);
 
-        $response->assertSessionHasErrors('shipping_city_id');
+        $response->assertSessionHasErrors('shipping_quote_token');
         $this->assertSame(0, Order::count());
     }
 
-    public function test_customer_cannot_checkout_manual_address_when_raja_ongkir_key_is_missing(): void
+    public function test_customer_cannot_fetch_shipping_options_when_raja_ongkir_key_is_missing(): void
     {
         $user = $this->makeCustomerWithCart();
-        $paymentMethod = PaymentMethod::first();
+        $address = $this->createAddressForUser($user);
         $this->mockCheckoutRegion(configured: false);
 
-        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod));
+        $response = $this->actingAs($user)->postJson(route('pelanggan.shipping.domestic-cost'), [
+            'shipping_address_id' => $address->id,
+        ]);
 
-        $response->assertSessionHasErrors('shipping_province_id');
+        $response->assertStatus(503);
         $this->assertSame(0, Order::count());
     }
 
@@ -483,7 +540,7 @@ class CheckoutTest extends TestCase
         $paymentMethod = PaymentMethod::first();
         $this->mockCheckoutRegion(cityName: 'Bandung');
 
-        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->manualCheckoutPayload($paymentMethod, [
+        $response = $this->actingAs($user)->post(route('pelanggan.cart.checkout.process'), $this->savedAddressCheckoutPayload($paymentMethod, [
             'shipping_quote_token' => 'invalid-token',
         ]));
 
@@ -496,7 +553,7 @@ class CheckoutTest extends TestCase
         $user = $this->makeCustomerWithCart();
         $paymentMethod = PaymentMethod::first();
         $this->mockCheckoutRegion(cityName: 'Bandung');
-        $payload = $this->manualCheckoutPayload($paymentMethod);
+        $payload = $this->savedAddressCheckoutPayload($paymentMethod);
 
         $user->cart()->first()->items()->first()->update(['quantity' => 1]);
 
@@ -591,31 +648,24 @@ class CheckoutTest extends TestCase
         ], $overrides));
     }
 
-    private function palembangCheckoutPayload(PaymentMethod $paymentMethod): array
+    private function palembangSavedAddressCheckoutPayload(PaymentMethod $paymentMethod): array
     {
         $this->mockPalembangCheckoutRegion();
 
-        return $this->manualCheckoutPayload($paymentMethod, [
+        return $this->savedAddressCheckoutPayload($paymentMethod, [
             'shipping_postal_code' => '30111',
             '_shipping_cost' => 20000,
         ]);
     }
 
-    private function manualCheckoutPayload(PaymentMethod $paymentMethod, array $overrides = []): array
+    private function savedAddressCheckoutPayload(PaymentMethod $paymentMethod, array $overrides = []): array
     {
+        $cart = Cart::with(['user', 'items.product'])->first();
+        $user = $cart->user;
+        $address = $user->addresses()->first() ?? $this->createAddressForUser($user);
+
         $payload = array_merge([
-            'shipping_name' => 'Budi Santoso',
-            'shipping_phone' => '081234567890',
-            'shipping_address' => 'Jl. Merdeka No. 10',
-            'shipping_province_id' => '1',
-            'shipping_city_id' => '2',
-            'shipping_district_id' => '3',
-            'shipping_village_id' => '4',
-            'shipping_province' => 'Jawa Barat',
-            'shipping_city' => 'Bandung',
-            'shipping_district' => 'Coblong',
-            'shipping_village' => 'Dago',
-            'shipping_postal_code' => '40135',
+            'shipping_address_id' => $address->id,
             'payment_method_id' => $paymentMethod->id,
         ], $overrides);
 
@@ -624,7 +674,9 @@ class CheckoutTest extends TestCase
 
         if (($payload['shipping_fallback'] ?? null) !== 'admin_manual' && empty($payload['shipping_quote_token'])) {
             $payload['shipping_quote_token'] = $this->shippingQuoteToken(
-                destinationDistrictId: (string) ($payload['shipping_district_id'] ?? '3'),
+                user: $user,
+                cart: $cart,
+                destinationDistrictId: (string) $address->district_id,
                 cost: $shippingCost
             );
         }

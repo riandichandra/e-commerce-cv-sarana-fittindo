@@ -31,7 +31,7 @@ class ProductDetailPageTest extends TestCase
 
         $response->assertOk();
         $response->assertSee($product->name);
-        $response->assertSee('Rp 250.000');
+        $response->assertSeeTextInOrder(['Rp', '250.000']);
         $response->assertSee('Detail Produk');
         $response->assertSee('Berat');
         $response->assertSee('Ketebalan');
@@ -43,6 +43,8 @@ class ProductDetailPageTest extends TestCase
         $response->assertSee('Kayu');
         $response->assertSee('Tambah ke Keranjang');
         $response->assertSee('name="quantity"', false);
+        $response->assertSee(route('pelanggan.categories.show', $product->category), false);
+        $response->assertSee(route('pelanggan.brands.show', $product->brand), false);
         $response->assertSee($related->name);
         $response->assertSee(route('pelanggan.cart.store', $related), false);
     }
@@ -59,6 +61,41 @@ class ProductDetailPageTest extends TestCase
         $response->assertSee('Produk Tanpa Gambar');
         $response->assertSee('Gambar produk belum tersedia');
         $response->assertDontSee('âˆ’');
+    }
+
+    public function test_product_detail_page_returns_not_found_when_category_or_brand_is_inactive(): void
+    {
+        [$productWithInactiveCategory] = $this->makeProductSet([
+            'name' => 'Produk Kategori Disembunyikan',
+        ]);
+        $productWithInactiveCategory->category->update(['is_active' => false]);
+
+        $this->get(route('pelanggan.products.show', $productWithInactiveCategory))
+            ->assertNotFound();
+
+        $category = ProductCategory::create([
+            'name' => 'Kategori Brand Disembunyikan',
+            'is_active' => true,
+        ]);
+
+        $brand = ProductBrand::create([
+            'name' => 'Brand Disembunyikan',
+            'is_active' => false,
+        ]);
+
+        $productWithInactiveBrand = Product::create([
+            'category_id' => $category->id,
+            'brand_id' => $brand->id,
+            'name' => 'Produk Brand Disembunyikan',
+            'description' => 'Produk tidak boleh tampil.',
+            'price' => 250000,
+            'stock' => 12,
+            'weight' => 1800,
+            'is_active' => true,
+        ]);
+
+        $this->get(route('pelanggan.products.show', $productWithInactiveBrand))
+            ->assertNotFound();
     }
 
     private function makeUserWithRole(string $roleName, array $attributes = []): User

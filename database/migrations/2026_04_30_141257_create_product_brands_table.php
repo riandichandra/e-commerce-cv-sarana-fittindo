@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('product_brands', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100);
-            $table->string('slug', 100)->unique();
             $table->text('description')->nullable();
             $table->string('logo', 255)->nullable();
             $table->boolean('is_active')->default(true);

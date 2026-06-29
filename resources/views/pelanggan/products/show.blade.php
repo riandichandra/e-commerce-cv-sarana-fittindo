@@ -5,13 +5,21 @@
         $isAvailable = $product->isAvailable();
         $isWishlisted = Auth::check() && Auth::user()->wishlists()->where('product_id', $product->id)->exists();
         $detailRows = [
-            'Kategori' => $product->category?->name,
-            'Merek' => $product->brand?->name,
-            'Berat' => $product->weight ? number_format((float) $product->weight, 0, ',', '.') . ' gram' : null,
-            'Ketebalan' => $product->thickness,
-            'Dimensi' => $product->dimensions,
-            'Stok' => $product->stock . ' item',
-            'Status' => $isAvailable ? 'Tersedia' : 'Habis',
+            [
+                'label' => 'Kategori',
+                'value' => $product->category?->name,
+                'url' => $product->category ? route('pelanggan.categories.show', $product->category) : null,
+            ],
+            [
+                'label' => 'Merek',
+                'value' => $product->brand?->name,
+                'url' => $product->brand ? route('pelanggan.brands.show', $product->brand) : null,
+            ],
+            ['label' => 'Berat', 'value' => $product->weight ? number_format((float) $product->weight, 0, ',', '.') . ' gram' : null],
+            ['label' => 'Ketebalan', 'value' => $product->thickness],
+            ['label' => 'Dimensi', 'value' => $product->dimensions],
+            ['label' => 'Stok', 'value' => $product->stock . ' item'],
+            ['label' => 'Status', 'value' => $isAvailable ? 'Tersedia' : 'Habis'],
         ];
     @endphp
 
@@ -62,15 +70,22 @@
             <div class="lg:sticky lg:top-6 lg:self-start">
                 <div class="rounded-md border border-[#d8e2f0] bg-white p-5 shadow-sm sm:p-6">
                     <div class="flex flex-wrap items-center gap-2">
-                        <span
-                            class="rounded-full bg-[#e9f1fb] px-3 py-1 text-xs font-black uppercase tracking-[.12em] text-[#436aa6]">
-                            {{ $product->category?->name ?? 'Tanpa Kategori' }}
-                        </span>
-                        @if ($product->brand)
+                        @if ($product->category)
+                            <a href="{{ route('pelanggan.categories.show', $product->category) }}"
+                                class="rounded-full bg-[#e9f1fb] px-3 py-1 text-xs font-black uppercase tracking-[.12em] text-[#436aa6] transition hover:bg-[#dce9f8] hover:text-[#c8102e]">
+                                {{ $product->category->name }}
+                            </a>
+                        @else
                             <span
-                                class="rounded-full bg-[#fff1f3] px-3 py-1 text-xs font-black uppercase tracking-[.12em] text-[#c8102e]">
-                                {{ $product->brand->name }}
+                                class="rounded-full bg-[#e9f1fb] px-3 py-1 text-xs font-black uppercase tracking-[.12em] text-[#436aa6]">
+                                Tanpa Kategori
                             </span>
+                        @endif
+                        @if ($product->brand)
+                            <a href="{{ route('pelanggan.brands.show', $product->brand) }}"
+                                class="rounded-full bg-[#fff1f3] px-3 py-1 text-xs font-black uppercase tracking-[.12em] text-[#c8102e] transition hover:bg-[#ffe1e6] hover:text-[#10233d]">
+                                {{ $product->brand->name }}
+                            </a>
                         @endif
                     </div>
 
@@ -80,7 +95,8 @@
                     <div class="mt-5 flex flex-wrap items-end justify-between gap-4 border-b border-[#d8e2f0] pb-5">
                         <div>
                             <p class="text-xs font-black uppercase tracking-[.18em] text-[#6e84a3]">Harga</p>
-                            <p class="mt-1 text-3xl font-black text-[#10233d]">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
+                            <p class="mt-1 text-3xl font-black text-[#10233d]">Rp
+                                {{ number_format($product->price, 0, ',', '.') }}</p>
                         </div>
                         <div class="text-right">
                             <span
@@ -104,7 +120,8 @@
                             <button type="button"
                                 class="flex h-full w-11 items-center justify-center text-lg font-black text-[#436aa6] hover:bg-[#f5f8fc]"
                                 onclick="decreaseQuantity()" aria-label="Kurangi jumlah">-</button>
-                            <input type="number" id="quantity" value="1" min="1" max="{{ max((int) $product->stock, 1) }}" inputmode="numeric"
+                            <input type="number" id="quantity" value="1" min="1"
+                                max="{{ max((int) $product->stock, 1) }}" inputmode="numeric"
                                 class="h-full w-full border-x border-[#d8e2f0] text-center text-sm font-black text-[#10233d] focus:outline-none">
                             <button type="button"
                                 class="flex h-full w-11 items-center justify-center text-lg font-black text-[#436aa6] hover:bg-[#f5f8fc]"
@@ -148,11 +165,11 @@
                                 Wishlist
                             </button>
                         </form>
-                        <button type="button" id="shareButton"
+                        {{-- <button type="button" id="shareButton"
                             class="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[#d8e2f0] text-sm font-black uppercase tracking-[.12em] text-[#10233d] transition hover:border-[#c8102e] hover:text-[#c8102e]">
                             <iconify-icon icon="mdi:share-variant-outline"></iconify-icon>
                             Bagikan
-                        </button>
+                        </button> --}}
                     </div>
                 </div>
             </div>
@@ -162,16 +179,23 @@
             <div class="rounded-md border border-[#d8e2f0] bg-white p-5 shadow-sm sm:p-6">
                 <h2 class="text-xl font-black uppercase text-[#10233d]">Detail Produk</h2>
                 <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                    @foreach ($detailRows as $label => $value)
+                    @foreach ($detailRows as $row)
                         <div class="rounded-md bg-[#f5f8fc] p-4">
-                            <p class="text-xs font-black uppercase tracking-[.14em] text-[#6e84a3]">{{ $label }}
+                            <p class="text-xs font-black uppercase tracking-[.14em] text-[#6e84a3]">{{ $row['label'] }}
                             </p>
-                            <p class="mt-1 text-sm font-bold text-[#10233d]">{{ filled($value) ? $value : '-' }}</p>
+                            @if (filled($row['value']) && !empty($row['url']))
+                                <a href="{{ $row['url'] }}"
+                                    class="mt-1 inline-flex text-sm font-bold text-[#10233d] hover:text-[#c8102e]">
+                                    {{ $row['value'] }}
+                                </a>
+                            @else
+                                <p class="mt-1 text-sm font-bold text-[#10233d]">{{ filled($row['value']) ? $row['value'] : '-' }}</p>
+                            @endif
                         </div>
                     @endforeach
                 </div>
 
-                @if (! empty($product->specifications))
+                @if (!empty($product->specifications))
                     <div class="mt-6 border-t border-[#d8e2f0] pt-5">
                         <h3 class="text-sm font-black uppercase tracking-[.14em] text-[#10233d]">Spesifikasi</h3>
                         <dl class="mt-4 grid gap-3">
@@ -232,7 +256,7 @@
                             <p class="text-sm font-black uppercase tracking-[.18em] text-[#c8102e]">Rekomendasi</p>
                             <h2 class="mt-2 text-3xl font-black text-[#10233d]">Produk Terkait</h2>
                         </div>
-                        <a href="{{ route('pelanggan.products.index', ['category' => $product->category?->slug]) }}"
+                        <a href="{{ route('pelanggan.products.index', ['category' => $product->category_id]) }}"
                             class="text-sm font-black uppercase tracking-[.14em] text-[#436aa6] hover:text-[#c8102e]">Lihat
                             Kategori</a>
                     </div>

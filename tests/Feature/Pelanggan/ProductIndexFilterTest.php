@@ -3,6 +3,7 @@
 namespace Tests\Feature\Pelanggan;
 
 use App\Models\Product;
+use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -36,7 +37,7 @@ class ProductIndexFilterTest extends TestCase
         $category = ProductCategory::where('name', 'Perekat')->first();
 
         $response = $this->get(route('pelanggan.products.index', [
-            'category' => $category->slug,
+            'category' => $category->id,
             'price_range' => 'under_100k',
         ]));
 
@@ -45,7 +46,55 @@ class ProductIndexFilterTest extends TestCase
         $response->assertDontSee('HPL Murah');
         $response->assertDontSee('Perekat Sedang');
         $response->assertSee('price_range=under_100k', false);
-        $response->assertSee('category=' . $category->slug, false);
+        $response->assertSee('category=' . $category->id, false);
+    }
+
+    public function test_customer_product_index_hides_products_when_category_or_brand_is_inactive(): void
+    {
+        $this->makeProduct('Produk Terlihat', 'Kategori Aktif', 250000);
+
+        $inactiveCategory = ProductCategory::create([
+            'name' => 'Kategori Nonaktif',
+            'is_active' => false,
+        ]);
+
+        Product::create([
+            'category_id' => $inactiveCategory->id,
+            'name' => 'Produk Kategori Nonaktif',
+            'description' => 'Produk tidak boleh tampil.',
+            'price' => 250000,
+            'stock' => 10,
+            'weight' => 1000,
+            'is_active' => true,
+        ]);
+
+        $activeCategory = ProductCategory::create([
+            'name' => 'Kategori Brand Nonaktif',
+            'is_active' => true,
+        ]);
+
+        $inactiveBrand = ProductBrand::create([
+            'name' => 'Brand Nonaktif',
+            'is_active' => false,
+        ]);
+
+        Product::create([
+            'category_id' => $activeCategory->id,
+            'brand_id' => $inactiveBrand->id,
+            'name' => 'Produk Brand Nonaktif',
+            'description' => 'Produk tidak boleh tampil.',
+            'price' => 250000,
+            'stock' => 10,
+            'weight' => 1000,
+            'is_active' => true,
+        ]);
+
+        $response = $this->get(route('pelanggan.products.index'));
+
+        $response->assertOk();
+        $response->assertSee('Produk Terlihat');
+        $response->assertDontSee('Produk Kategori Nonaktif');
+        $response->assertDontSee('Produk Brand Nonaktif');
     }
 
     private function makeProduct(string $name, string $categoryName, int $price): Product

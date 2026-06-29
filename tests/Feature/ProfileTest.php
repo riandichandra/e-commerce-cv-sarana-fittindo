@@ -196,7 +196,8 @@ class ProfileTest extends TestCase
             ->assertSee('Alamat berhasil dihapus')
             ->assertSee('Hapus alamat ini?')
             ->assertSee('Ya, Hapus Alamat')
-            ->assertSee('Riwayat pesanan yang sudah dibuat tidak akan berubah.');
+            ->assertSeeTextInOrder(['Riwayat pesanan yang sudah dibuat', 'tidak akan berubah.'])
+            ->assertSee('Anda perlu menambahkan alamat baru sebelum checkout.');
     }
 
     public function test_user_cannot_update_another_users_address(): void

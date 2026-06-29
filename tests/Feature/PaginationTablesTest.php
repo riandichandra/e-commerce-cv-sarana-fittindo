@@ -62,11 +62,10 @@ class PaginationTablesTest extends TestCase
 
         $order = $this->createOrder($pelanggan, ['status' => 'belum_dibayar', 'subtotal' => 150000, 'total_amount' => 150000]);
 
-        $category = \App\Models\ProductCategory::create(['name' => 'Test Category', 'slug' => 'test-category', 'is_active' => true]);
+        $category = \App\Models\ProductCategory::create(['name' => 'Test Category', 'is_active' => true]);
         $product = \App\Models\Product::create([
             'category_id' => $category->id,
             'name' => 'Test Product',
-            'slug' => 'test-product-' . uniqid(),
             'price' => 10000,
             'weight' => 1000,
             'stock' => true,
@@ -121,13 +120,12 @@ class PaginationTablesTest extends TestCase
     {
         $category = \App\Models\ProductCategory::firstOrCreate(
             ['name' => 'Pagination Category'],
-            ['slug' => 'pagination-category', 'is_active' => true]
+            ['is_active' => true]
         );
 
         $product = \App\Models\Product::create([
             'category_id' => $category->id,
             'name' => $productName,
-            'slug' => 'pagination-product-' . uniqid(),
             'price' => 10000,
             'weight' => 1000,
             'stock' => 10,

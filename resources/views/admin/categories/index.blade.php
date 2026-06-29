@@ -57,7 +57,6 @@
                                     {{ $categories->firstItem() + $loop->index }}</td>
                                 <td class="px-5 py-4">
                                     <p class="font-bold text-texthighlight">{{ $category->name }}</p>
-                                    <p class="mt-1 text-xs text-gray-500">{{ $category->slug }}</p>
                                     @if ($category->description)
                                         <p class="mt-1 max-w-xl text-xs text-gray-500">
                                             {{ \Illuminate\Support\Str::limit($category->description, 90) }}</p>

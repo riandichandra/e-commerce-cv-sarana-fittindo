@@ -13,24 +13,24 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $categories = ProductCategory::active()
-            ->withCount(['products' => fn ($query) => $query->active()])
+            ->withCount(['products' => fn ($query) => $query->visibleToCustomers()])
             ->limit(6)
             ->get();
 
-        $featuredProducts = Product::active()
+        $featuredProducts = Product::visibleToCustomers()
             ->featured()
             ->with(['category', 'brand', 'images'])
             ->latest()
             ->limit(4)
             ->get();
 
-        $latestProducts = Product::active()
+        $latestProducts = Product::visibleToCustomers()
             ->with(['category', 'brand', 'images'])
             ->latest()
             ->limit(8)
             ->get();
 
-        $products = Product::active()
+        $products = Product::visibleToCustomers()
             ->with(['category', 'brand', 'images'])
             ->latest()
             ->limit(4)

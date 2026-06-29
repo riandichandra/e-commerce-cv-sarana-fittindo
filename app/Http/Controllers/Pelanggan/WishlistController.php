@@ -21,6 +21,10 @@ class WishlistController extends Controller
             return back()->with('success', 'Produk dihapus dari wishlist.');
         }
 
+        if (! $product->isVisibleToCustomers()) {
+            return back()->with('error', 'Produk sedang tidak tersedia.');
+        }
+
         Wishlist::create([
             'user_id' => $request->user()->id,
             'product_id' => $product->id,

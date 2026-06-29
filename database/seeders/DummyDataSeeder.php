@@ -89,24 +89,24 @@ class DummyDataSeeder extends Seeder
 
     protected function seedProducts($faker)
     {
-        $categories = ProductCategory::pluck('id', 'slug')->toArray();
+        $categories = ProductCategory::pluck('id', 'name')->toArray();
         $brands = ProductBrand::where('is_active', true)->pluck('id', 'name')->toArray();
 
         $items = [
-            ['name' => 'HPL Wood Grain Walnut', 'slug' => 'hpl-wood-grain-walnut', 'category' => 'hpl', 'brand' => 'Sarana HPL', 'price' => 325000],
-            ['name' => 'HPL Concrete Matte', 'slug' => 'hpl-concrete-matte', 'category' => 'hpl', 'brand' => 'Sarana HPL', 'price' => 295000],
-            ['name' => 'Plywood Marine Grade 18mm', 'slug' => 'plywood-marine-grade-18mm', 'category' => 'plywood', 'brand' => 'Fittindo Plywood', 'price' => 450000],
-            ['name' => 'Plywood Meranti 12mm', 'slug' => 'plywood-meranti-12mm', 'category' => 'plywood', 'brand' => 'Fittindo Plywood', 'price' => 375000],
-            ['name' => 'Laminate Oak Texture', 'slug' => 'laminate-oak-texture', 'category' => 'laminate', 'brand' => 'Prime Laminate', 'price' => 220000],
-            ['name' => 'Laminate Ash Stone', 'slug' => 'laminate-ash-stone', 'category' => 'laminate', 'brand' => 'Prime Laminate', 'price' => 235000],
-            ['name' => 'Contact Adhesive 1L', 'slug' => 'contact-adhesive-1l', 'category' => 'adhesives', 'brand' => 'Ultra Adhesives', 'price' => 88000],
-            ['name' => 'Super Glue Sealant', 'slug' => 'super-glue-sealant', 'category' => 'adhesives', 'brand' => 'Ultra Adhesives', 'price' => 76000],
+            ['name' => 'HPL Wood Grain Walnut', 'category' => 'HPL', 'brand' => 'Sarana HPL', 'price' => 325000],
+            ['name' => 'HPL Concrete Matte', 'category' => 'HPL', 'brand' => 'Sarana HPL', 'price' => 295000],
+            ['name' => 'Plywood Marine Grade 18mm', 'category' => 'Plywood', 'brand' => 'Fittindo Plywood', 'price' => 450000],
+            ['name' => 'Plywood Meranti 12mm', 'category' => 'Plywood', 'brand' => 'Fittindo Plywood', 'price' => 375000],
+            ['name' => 'Laminate Oak Texture', 'category' => 'Pelapis', 'brand' => 'Prime Laminate', 'price' => 220000],
+            ['name' => 'Laminate Ash Stone', 'category' => 'Pelapis', 'brand' => 'Prime Laminate', 'price' => 235000],
+            ['name' => 'Contact Adhesive 1L', 'category' => 'Perekat', 'brand' => 'Ultra Adhesives', 'price' => 88000],
+            ['name' => 'Super Glue Sealant', 'category' => 'Perekat', 'brand' => 'Ultra Adhesives', 'price' => 76000],
         ];
 
         $missingCategories = collect($items)
             ->pluck('category')
             ->unique()
-            ->reject(fn (string $slug): bool => array_key_exists($slug, $categories))
+            ->reject(fn (string $name): bool => array_key_exists($name, $categories))
             ->values();
 
         if ($missingCategories->isNotEmpty()) {
@@ -127,11 +127,10 @@ class DummyDataSeeder extends Seeder
 
         foreach ($items as $item) {
             $products->push(Product::updateOrCreate([
-                'slug' => $item['slug'],
+                'name' => $item['name'],
             ], [
                 'category_id' => $categories[$item['category']],
                 'brand_id' => $brands[$item['brand']],
-                'name' => $item['name'],
                 'description' => $faker->sentence(12),
                 'price' => $item['price'],
                 'stock' => true,
@@ -139,10 +138,6 @@ class DummyDataSeeder extends Seeder
                 'weight' => $faker->randomFloat(2, 800, 3500),
                 'thickness' => $faker->randomElement(['12mm', '15mm', '18mm', '25mm']),
                 'dimensions' => $faker->randomElement(['120x240 cm', '90x180 cm', '122x244 cm']),
-                'specifications' => [
-                    'surface' => $faker->randomElement(['glossy', 'matte', 'textured']),
-                    'usage' => $faker->randomElement(['indoor', 'outdoor', 'commercial']),
-                ],
                 'is_featured' => $faker->boolean(20),
                 'is_active' => true,
             ]));

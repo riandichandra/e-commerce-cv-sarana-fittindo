@@ -23,6 +23,8 @@ Route::get('/', [Pelanggan\DashboardController::class, 'index'])->name('dashboar
 // Public customer product routes
 Route::prefix('pelanggan')->name('pelanggan.')->group(function () {
     Route::get('/', [Pelanggan\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('brands/{brand}', [Pelanggan\BrandController::class, 'show'])->name('brands.show');
+    Route::get('categories/{category}', [Pelanggan\CategoryController::class, 'show'])->name('categories.show');
     Route::resource('products', Pelanggan\ProductController::class)->only(['index', 'show']);
 });
 

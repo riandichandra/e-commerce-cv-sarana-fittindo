@@ -56,7 +56,6 @@
                                     {{ $brands->firstItem() + $loop->index }}</td>
                                 <td class="px-5 py-4">
                                     <p class="font-bold text-texthighlight">{{ $brand->name }}</p>
-                                    <p class="mt-1 text-xs text-gray-500">{{ $brand->slug }}</p>
                                     @if ($brand->description)
                                         <p class="mt-1 max-w-xl text-xs text-gray-500">
                                             {{ \Illuminate\Support\Str::limit($brand->description, 90) }}</p>

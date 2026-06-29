@@ -47,8 +47,8 @@
                             @foreach ($categories as $category)
                                 <label class="flex items-center cursor-pointer">
                                     <input type="checkbox" class="w-4 h-4 text-red-600 rounded"
-                                        @checked(request('category') === $category->slug)
-                                        onchange="document.location.href = '{{ $filterUrl(['category' => $category->slug]) }}';">
+                                        @checked((int) request('category') === $category->id)
+                                        onchange="document.location.href = '{{ $filterUrl(['category' => $category->id]) }}';">
                                     <span class="ml-3 text-sm text-gray-700">{{ $category->name }}</span>
                                 </label>
                             @endforeach

@@ -73,13 +73,18 @@
                         @endif
                         <p>Item: {{ $order->items()->sum('quantity') }}</p>
                         @if ($order->shipped_at)
-                            <p>Dikirim pada: <span class="font-semibold text-texthighlight">{{ $order->shipped_at->format('d M Y H:i') }}</span></p>
+                            <p>Dikirim pada: <span
+                                    class="font-semibold text-texthighlight">{{ $order->shipped_at->format('d M Y H:i') }}</span>
+                            </p>
                             @if ($order->status === 'dikirim')
-                                <p class="font-semibold text-purple-700">Otomatis selesai pada {{ $order->shipped_at->copy()->addDays(3)->format('d M Y H:i') }}.</p>
+                                <p class="font-semibold text-purple-700">Otomatis selesai pada
+                                    {{ $order->shipped_at->copy()->addDays(3)->format('d M Y H:i') }}.</p>
                             @endif
                         @endif
                         @if ($order->completed_at)
-                            <p>Selesai pada: <span class="font-semibold text-texthighlight">{{ $order->completed_at->format('d M Y H:i') }}</span></p>
+                            <p>Selesai pada: <span
+                                    class="font-semibold text-texthighlight">{{ $order->completed_at->format('d M Y H:i') }}</span>
+                            </p>
                             <p class="font-semibold text-green-700">
                                 {{ $order->completion_source === 'system' ? 'Selesai otomatis oleh sistem.' : 'Diselesaikan oleh pelanggan.' }}
                             </p>
@@ -154,19 +159,27 @@
                         </div>
                         @if ($order->shipping_cost_source || $order->shipping_service_label || $order->shipping_weight_gram)
                             <div class="border-t border-gray-200 pt-2 text-xs text-gray-600">
-                                <p>Sumber: <span class="font-semibold text-texthighlight">{{ $order->shipping_cost_source ? strtoupper(str_replace('_', ' ', $order->shipping_cost_source)) : '-' }}</span></p>
+                                <p>Sumber: <span
+                                        class="font-semibold text-texthighlight">{{ $order->shipping_cost_source ? strtoupper(str_replace('_', ' ', $order->shipping_cost_source)) : '-' }}</span>
+                                </p>
                                 @if ($order->shipping_service_label)
-                                    <p class="mt-1">Layanan: <span class="font-semibold text-texthighlight">{{ $order->shipping_service_label }}</span></p>
+                                    <p class="mt-1">Layanan: <span
+                                            class="font-semibold text-texthighlight">{{ $order->shipping_service_label }}</span>
+                                    </p>
                                 @endif
                                 @if ($order->shipping_etd)
-                                    <p class="mt-1">Estimasi: <span class="font-semibold text-texthighlight">{{ $order->shipping_etd }}</span></p>
+                                    <p class="mt-1">Estimasi: <span
+                                            class="font-semibold text-texthighlight">{{ $order->shipping_etd }}</span>
+                                    </p>
                                 @endif
                                 @if ($order->shipping_weight_gram)
-                                    <p class="mt-1">Berat: <span class="font-semibold text-texthighlight">{{ number_format($order->shipping_weight_gram, 0, ',', '.') }} gram</span></p>
+                                    <p class="mt-1">Berat: <span
+                                            class="font-semibold text-texthighlight">{{ number_format($order->shipping_weight_gram, 0, ',', '.') }}
+                                            gram</span></p>
                                 @endif
-                                @if ($order->shipping_origin_district_id || $order->shipping_destination_district_id)
+                                {{-- @if ($order->shipping_origin_district_id || $order->shipping_destination_district_id)
                                     <p class="mt-1">Origin/Destination: <span class="font-semibold text-texthighlight">{{ $order->shipping_origin_district_id ?? '-' }} / {{ $order->shipping_destination_district_id ?? '-' }}</span></p>
-                                @endif
+                                @endif --}}
                             </div>
                         @endif
                         <div class="flex justify-between gap-4 border-t border-gray-200 pt-2">
@@ -327,8 +340,8 @@
                                 {{ $order->completion_source === 'system'
                                     ? 'Pesanan selesai otomatis setelah 3 hari sejak dikirim, tanpa foto bukti dari pelanggan.'
                                     : ($order->status === 'selesai'
-                                    ? 'Pesanan selesai, tetapi foto bukti belum tersimpan.'
-                                    : 'Bukti akan tersedia setelah pelanggan menandai pesanan selesai.') }}
+                                        ? 'Pesanan selesai, tetapi foto bukti belum tersimpan.'
+                                        : 'Bukti akan tersedia setelah pelanggan menandai pesanan selesai.') }}
                             </p>
                         </div>
                     @endif

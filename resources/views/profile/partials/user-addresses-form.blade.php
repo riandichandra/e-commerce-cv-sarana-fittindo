@@ -463,7 +463,7 @@
 
             <template x-if="deleteAddress?.is_only_address">
                 <div class="mt-4 border border-blue-200 bg-blue-50 p-4 text-sm font-medium leading-6 text-blue-900">
-                    Ini satu-satunya alamat tersimpan. Checkout tetap bisa memakai input alamat manual.
+                    Ini satu-satunya alamat tersimpan. Setelah dihapus, Anda perlu menambahkan alamat baru sebelum checkout.
                 </div>
             </template>
 

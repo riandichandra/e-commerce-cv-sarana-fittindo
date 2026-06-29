@@ -11,7 +11,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::active()
+        $products = Product::visibleToCustomers()
             ->with(['category', 'brand', 'images'])
             ->when($request->filled('q'), function ($query) use ($request) {
                 $search = $request->string('q')->toString();
@@ -22,7 +22,15 @@ class ProductController extends Controller
                 });
             })
             ->when($request->filled('category'), function ($query) use ($request) {
-                $query->whereHas('category', fn ($query) => $query->where('slug', $request->string('category')->toString()));
+                $categoryId = $request->integer('category');
+
+                if ($categoryId <= 0) {
+                    return;
+                }
+
+                $query->whereHas('category', fn ($query) => $query
+                    ->active()
+                    ->whereKey($categoryId));
             })
             ->when($request->filled('price_range'), function ($query) use ($request) {
                 match ($request->string('price_range')->toString()) {
@@ -48,7 +56,9 @@ class ProductController extends Controller
     {
         $product->load(['category', 'brand', 'images']);
 
-        $relatedProducts = Product::active()
+        abort_unless($product->isVisibleToCustomers(), 404);
+
+        $relatedProducts = Product::visibleToCustomers()
             ->with(['category', 'brand', 'images'])
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)

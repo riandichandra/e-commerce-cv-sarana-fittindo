@@ -1,3 +1,16 @@
+@php
+    $navCategories = \App\Models\ProductCategory::active()
+        ->whereIn('name', ['HPL', 'Plywood', 'Pelapis', 'Perekat'])
+        ->pluck('id', 'name');
+    $navCategoryLinks = [
+        'HPL' => 'HPL',
+        'Plywood' => 'Plywood',
+        'Pelapis' => 'Pelapis',
+        'Perekat' => 'Perekat',
+    ];
+    $selectedCategoryId = (int) request()->query('category');
+@endphp
+
 <nav x-data="{ open: false, profileOpen: false }" class="sticky top-0 z-50 h-[50px] border-b border-[#f2c8d0] bg-white/95 backdrop-blur">
     <div class="mx-auto flex h-full max-w-[1365px] items-center px-4 sm:px-6 lg:px-8">
         <a href="{{ route('pelanggan.dashboard') }}"
@@ -11,25 +24,17 @@
                 Beranda
             </a>
             <a href="{{ route('pelanggan.products.index') }}"
-                class="flex h-full items-center border-b-2 {{ request()->routeIs('pelanggan.products.*') && !request('category') ? 'border-[#c8102e] text-[#c8102e]' : 'border-transparent text-[#436aa6]' }} text-[12px] font-semibold">
+                class="flex h-full items-center border-b-2 {{ request()->routeIs('pelanggan.products.*') && !request()->query('category') ? 'border-[#c8102e] text-[#c8102e]' : 'border-transparent text-[#436aa6]' }} text-[12px] font-semibold">
                 Semua Produk
             </a>
-            <a href="{{ route('pelanggan.products.index', ['category' => 'hpl']) }}"
-                class="flex h-full items-center border-b-2 {{ request('category') === 'hpl' ? 'border-[#c8102e] text-[#c8102e]' : 'border-transparent text-[#436aa6]' }} text-[12px] font-semibold">
-                HPL
-            </a>
-            <a href="{{ route('pelanggan.products.index', ['category' => 'plywood']) }}"
-                class="flex h-full items-center border-b-2 {{ request('category') === 'plywood' ? 'border-[#c8102e] text-[#c8102e]' : 'border-transparent text-[#436aa6]' }} text-[12px] font-semibold">
-                Plywood
-            </a>
-            <a href="{{ route('pelanggan.products.index', ['category' => 'laminate']) }}"
-                class="flex h-full items-center border-b-2 {{ request('category') === 'laminate' ? 'border-[#c8102e] text-[#c8102e]' : 'border-transparent text-[#436aa6]' }} text-[12px] font-semibold">
-                Pelapis
-            </a>
-            <a href="{{ route('pelanggan.products.index', ['category' => 'adhesives']) }}"
-                class="flex h-full items-center border-b-2 {{ request('category') === 'adhesives' ? 'border-[#c8102e] text-[#c8102e]' : 'border-transparent text-[#436aa6]' }} text-[12px] font-semibold">
-                Perekat
-            </a>
+            @foreach ($navCategoryLinks as $categoryName => $label)
+                @if ($navCategories->has($categoryName))
+                    <a href="{{ route('pelanggan.products.index', ['category' => $navCategories[$categoryName]]) }}"
+                        class="flex h-full items-center border-b-2 {{ $selectedCategoryId === $navCategories[$categoryName] ? 'border-[#c8102e] text-[#c8102e]' : 'border-transparent text-[#436aa6]' }} text-[12px] font-semibold">
+                        {{ $label }}
+                    </a>
+                @endif
+            @endforeach
             @auth
                 <a href="{{ route('pelanggan.orders.index') }}"
                     class="flex h-full items-center border-b-2 {{ request()->routeIs('pelanggan.orders.*') ? 'border-[#c8102e] text-[#c8102e]' : 'border-transparent text-[#436aa6]' }} text-[12px] font-semibold">
@@ -113,10 +118,12 @@
             <a href="{{ route('pelanggan.dashboard') }}"
                 class="{{ request()->routeIs('pelanggan.dashboard') ? 'text-[#c8102e]' : '' }}">Beranda</a>
             <a href="{{ route('pelanggan.products.index') }}">Semua Produk</a>
-            <a href="{{ route('pelanggan.products.index', ['category' => 'hpl']) }}">HPL</a>
-            <a href="{{ route('pelanggan.products.index', ['category' => 'plywood']) }}">Plywood</a>
-            <a href="{{ route('pelanggan.products.index', ['category' => 'laminate']) }}">Laminate</a>
-            <a href="{{ route('pelanggan.products.index', ['category' => 'adhesives']) }}">Adhesives</a>
+            @foreach ($navCategoryLinks as $categoryName => $label)
+                @if ($navCategories->has($categoryName))
+                    <a href="{{ route('pelanggan.products.index', ['category' => $navCategories[$categoryName]]) }}"
+                        class="{{ $selectedCategoryId === $navCategories[$categoryName] ? 'text-[#c8102e]' : '' }}">{{ $label }}</a>
+                @endif
+            @endforeach
             <a href="{{ Auth::check() ? route('pelanggan.cart.index') : route('login') }}">Keranjang</a>
             @auth
                 <a href="{{ route('pelanggan.orders.index') }}"

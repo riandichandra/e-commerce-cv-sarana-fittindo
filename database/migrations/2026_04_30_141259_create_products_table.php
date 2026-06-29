@@ -20,7 +20,6 @@ return new class extends Migration
             $table->foreignId('brand_id')->nullable()->constrained('product_brands')->onDelete('set null');
             
             $table->string('name', 200);
-            $table->string('slug', 200)->unique();
             $table->text('description')->nullable();
             $table->decimal('price', 15, 2);
             $table->boolean('stock')->default(true)->comment('1 tersedia, 0 tidak tersedia');

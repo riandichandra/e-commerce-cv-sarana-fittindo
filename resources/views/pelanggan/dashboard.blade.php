@@ -195,7 +195,7 @@
                 @if ($categories->isNotEmpty())
                     <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
                         @foreach ($categories as $category)
-                            <a href="{{ route('pelanggan.products.index', ['category' => $category->slug]) }}"
+                            <a href="{{ route('pelanggan.products.index', ['category' => $category->id]) }}"
                                 class="group rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md">
                                 <div class="flex h-11 w-11 items-center justify-center rounded-md bg-[#f1f5f9] text-[#10233d] group-hover:bg-[#fff1f3] group-hover:text-primary">
                                     <iconify-icon icon="mdi:shape-outline" class="fs-5"></iconify-icon>

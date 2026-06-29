@@ -99,9 +99,6 @@
                                                 </span>
                                             @endif
                                         </div>
-                                        <p class="mt-1 text-xs text-gray-500">
-                                            {{ $product->slug }}
-                                        </p>
                                         @if ($product->thickness || $product->dimensions)
                                             <p class="mt-1 text-xs text-gray-500">
                                                 {{ collect([$product->thickness, $product->dimensions])->filter()->join(' | ') }}
